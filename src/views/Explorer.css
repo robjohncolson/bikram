@@ -1,0 +1,504 @@
+/* ————————————————————————————————————————————— Explorer
+   Browse the sequence through two lenses: chakras (energy) or
+   muscles (anatomy). A selection rail on the left, a detail
+   panel on the right; both collapse into one column on mobile. */
+
+/* ——————————————————————————————— hero */
+
+.ex-hero {
+  padding: 26px 20px 36px;
+}
+
+.ex-title {
+  font-size: clamp(30px, 5vw, 42px);
+  letter-spacing: -0.01em;
+  max-width: 22ch;
+  margin: 12px 0;
+}
+
+.ex-lede {
+  font-size: clamp(15px, 1.9vw, 17px);
+  max-width: 56ch;
+}
+
+/* segmented lens control */
+.ex-seg {
+  display: inline-flex;
+  gap: 4px;
+  margin-top: 24px;
+  padding: 4px;
+  background: var(--bg-sunken);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+}
+
+.ex-seg-btn {
+  padding: 7px 18px;
+  border-radius: 999px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-soft);
+  transition: color 0.16s ease, background 0.16s ease, box-shadow 0.16s ease;
+}
+
+.ex-seg-btn:hover {
+  color: var(--text);
+}
+
+.ex-seg-btn.is-active {
+  background: var(--bg-raised);
+  color: var(--ember-text);
+  box-shadow: inset 0 0 0 1px var(--border), var(--shadow-card);
+}
+
+/* ——————————————————————————————— two-column layout */
+
+.ex-layout {
+  display: grid;
+  grid-template-columns: 340px minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+
+@media (min-width: 881px) {
+  .ex-rail--chakra {
+    position: sticky;
+    top: calc(var(--nav-height) + 20px);
+  }
+}
+
+/* ——————————————————————————————— chakra spine (left rail) */
+
+.ex-spine {
+  position: relative;
+  display: grid;
+  gap: 6px;
+}
+
+/* the subtle vertical channel the chakra dots sit on */
+.ex-spine::before {
+  content: '';
+  position: absolute;
+  z-index: -1;
+  left: 19px; /* button pad 12px + half of 16px dot − 1px */
+  top: 32px;
+  bottom: 32px;
+  width: 2px;
+  border-radius: 1px;
+  background: linear-gradient(
+    to bottom,
+    transparent,
+    var(--border-strong) 10%,
+    var(--border-strong) 90%,
+    transparent
+  );
+}
+
+.ex-chakra {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-md);
+  text-align: left;
+  transition: background 0.16s ease, border-color 0.16s ease,
+    box-shadow 0.16s ease;
+}
+
+.ex-chakra:hover {
+  background: color-mix(in srgb, var(--c) 8%, transparent);
+}
+
+.ex-chakra.is-active {
+  background: color-mix(in srgb, var(--c) 10%, var(--bg-raised));
+  border-color: color-mix(in srgb, var(--c) 42%, var(--border));
+  box-shadow: var(--shadow-card);
+}
+
+/* glowing chakra dot — reused at large size in the detail card */
+.ex-dot {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--c, var(--ember));
+  box-shadow:
+    0 0 0 3px color-mix(in srgb, var(--c, var(--ember)) 18%, transparent),
+    0 0 12px color-mix(in srgb, var(--c, var(--ember)) 40%, transparent);
+  transition: box-shadow 0.16s ease;
+}
+
+.ex-chakra.is-active .ex-dot {
+  box-shadow:
+    0 0 0 4px color-mix(in srgb, var(--c) 24%, transparent),
+    0 0 18px color-mix(in srgb, var(--c) 55%, transparent);
+}
+
+.ex-dot--lg {
+  width: 34px;
+  height: 34px;
+  box-shadow:
+    0 0 0 6px color-mix(in srgb, var(--c, var(--ember)) 16%, transparent),
+    0 0 26px color-mix(in srgb, var(--c, var(--ember)) 50%, transparent);
+}
+
+.ex-chakra-text {
+  min-width: 0;
+}
+
+.ex-chakra-en {
+  display: block;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 15.5px;
+  line-height: 1.25;
+  color: var(--text);
+}
+
+.ex-chakra-num {
+  display: inline-block;
+  margin-right: 7px;
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--text-faint);
+}
+
+.ex-chakra-sa {
+  display: block;
+  font-size: 12.5px;
+  font-style: italic;
+  color: var(--text-soft);
+}
+
+.ex-chakra-count {
+  min-width: 26px;
+  height: 26px;
+  padding: 0 5px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-faint);
+  transition: color 0.16s ease, border-color 0.16s ease;
+}
+
+.ex-chakra.is-active .ex-chakra-count {
+  color: color-mix(in srgb, var(--c) 75%, var(--text));
+  border-color: color-mix(in srgb, var(--c) 45%, var(--border));
+}
+
+/* ——————————————————————————————— muscle rail (body map + region chips) */
+
+.ex-map {
+  padding: 16px;
+}
+
+.ex-regions {
+  display: grid;
+  gap: 16px;
+  margin-top: 18px;
+}
+
+.ex-region-label {
+  margin-bottom: 7px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.ex-muscle-btns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+}
+
+.ex-muscle-btn {
+  padding: 5px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-raised);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-soft);
+  transition: color 0.16s ease, border-color 0.16s ease, background 0.16s ease;
+}
+
+.ex-muscle-btn:hover {
+  color: var(--text);
+  border-color: var(--border-strong);
+}
+
+.ex-muscle-btn.is-active {
+  color: var(--ember-text);
+  border-color: color-mix(in srgb, var(--ember) 50%, var(--border));
+  background: color-mix(in srgb, var(--ember) 10%, var(--bg-raised));
+}
+
+/* ——————————————————————————————— detail panel */
+
+.ex-detail {
+  display: grid;
+  gap: 28px;
+  animation: ex-in 0.3s ease both;
+}
+
+@keyframes ex-in {
+  from {
+    opacity: 0;
+    transform: translateY(5px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+.ex-card {
+  padding: 24px 26px;
+}
+
+.ex-card-head {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  margin-bottom: 18px;
+}
+
+.ex-card-title {
+  font-size: clamp(22px, 3vw, 28px);
+}
+
+.ex-card-title--muscle {
+  margin-top: 6px;
+}
+
+.ex-card-sub {
+  margin-top: 2px;
+  font-size: 14.5px;
+  font-style: italic;
+  color: var(--text-soft);
+}
+
+/* location / element / bija facts */
+.ex-facts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 30px;
+  margin: 0 0 16px;
+}
+
+.ex-facts dt {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.ex-facts dd {
+  margin: 1px 0 0;
+  font-size: 14.5px;
+}
+
+.ex-themes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  margin-bottom: 16px;
+}
+
+.ex-desc {
+  margin-top: 10px;
+  font-size: 15.5px;
+  color: var(--text-soft);
+  max-width: 62ch;
+}
+
+/* ——————————————————————————————— pose sections */
+
+.ex-section-head {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.ex-section-head h3 {
+  font-size: clamp(19px, 2.4vw, 22px);
+}
+
+.ex-count {
+  padding: 1px 9px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  background: var(--bg-raised);
+  font-size: 12.5px;
+  font-weight: 700;
+  color: var(--text-faint);
+}
+
+/* strengthens / stretches marker in section headers */
+.ex-work-dot {
+  width: 11px;
+  height: 11px;
+  border-radius: 50%;
+  flex: none;
+  background: var(--w, var(--ember));
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--w, var(--ember)) 18%, transparent);
+}
+
+.ex-count--work {
+  color: color-mix(in srgb, var(--w) 70%, var(--text));
+  border-color: color-mix(in srgb, var(--w) 35%, var(--border));
+}
+
+.ex-pose-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.ex-pose {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 14px;
+  padding: 12px 16px 12px 12px;
+  transition: box-shadow 0.18s ease, transform 0.18s ease,
+    border-color 0.18s ease;
+}
+
+.ex-pose:hover,
+.ex-pose:focus-visible {
+  box-shadow: var(--shadow-pop);
+  transform: translateY(-2px);
+  border-color: color-mix(in srgb, var(--ember) 45%, var(--border));
+}
+
+.ex-pose-fig {
+  display: flex;
+  flex: none;
+}
+
+.ex-pose-body {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.ex-pose-top {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 9px;
+}
+
+.ex-pose-order {
+  align-self: center;
+  width: 22px;
+  height: 22px;
+  display: grid;
+  place-items: center;
+  border: 1px solid var(--border-strong);
+  border-radius: 50%;
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 11.5px;
+  color: var(--text-faint);
+  flex: none;
+}
+
+.ex-pose-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 16.5px;
+  line-height: 1.25;
+}
+
+.ex-pose-sanskrit {
+  font-size: 12.5px;
+  font-style: italic;
+  color: var(--text-soft);
+}
+
+.ex-pose-note {
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--text-soft);
+}
+
+/* ——————————————————————————————— empty state */
+
+.ex-empty {
+  padding: 18px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  text-align: center;
+  font-size: 14.5px;
+  font-style: italic;
+  color: var(--text-faint);
+}
+
+/* ——————————————————————————————— utilities */
+
+.ex-vh {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* ——————————————————————————————— responsive */
+
+@media (max-width: 880px) {
+  .ex-layout {
+    grid-template-columns: 1fr;
+    gap: 28px;
+  }
+}
+
+@media (max-width: 480px) {
+  .ex-card {
+    padding: 18px;
+  }
+
+  .ex-card-head {
+    gap: 14px;
+  }
+
+  .ex-dot--lg {
+    width: 26px;
+    height: 26px;
+  }
+
+  .ex-pose {
+    padding: 10px 12px;
+  }
+
+  /* PoseFigure sets its size inline; shrink it for narrow screens */
+  .ex-pose-fig .pose-figure {
+    width: 44px !important;
+    height: 44px !important;
+  }
+
+  .ex-pose-fig .pose-figure--badge {
+    font-size: 15px !important;
+  }
+}

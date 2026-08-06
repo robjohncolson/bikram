@@ -1,0 +1,593 @@
+/* ————————————————————————————————————————————— PoseDetail
+   One posture, taught completely. Editorial rhythm: generous
+   whitespace, serif display type, ember accents, chakra colors
+   only via the --chakra custom property carried from data. */
+
+/* ——— not found */
+.pd-missing {
+  max-width: 560px;
+  padding-top: 72px;
+  display: grid;
+  justify-items: start;
+  gap: 14px;
+}
+
+.pd-missing h1 {
+  font-size: clamp(30px, 6vw, 42px);
+}
+
+.pd-missing-copy {
+  line-height: 1.65;
+}
+
+.pd-missing-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 8px;
+  padding: 10px 18px;
+  border: 1px solid var(--border-strong);
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 15px;
+  transition: background-color 0.18s ease, border-color 0.18s ease;
+}
+
+.pd-missing-link:hover {
+  background: var(--ember-soft);
+  border-color: color-mix(in srgb, var(--ember) 45%, var(--border-strong));
+}
+
+/* ——— compact top prev/next */
+.pd-topnav {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  margin-bottom: 34px;
+}
+
+.pd-toplink {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 8px;
+  max-width: 46%;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-soft);
+  transition: color 0.18s ease;
+}
+
+.pd-toplink:hover {
+  color: var(--ember-text);
+}
+
+.pd-toplink--next {
+  margin-left: auto;
+  text-align: right;
+}
+
+.pd-toplink-text {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.pd-toplink-order {
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+/* ——— header */
+.pd-header {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 32px;
+  align-items: center;
+}
+
+.pd-title {
+  font-size: clamp(34px, 6vw, 48px);
+  margin-top: 10px;
+  letter-spacing: -0.01em;
+}
+
+.pd-sanskrit {
+  margin-top: 10px;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 19px;
+  color: var(--text-soft);
+}
+
+.pd-pron {
+  font-style: normal;
+  font-family: var(--font-body);
+  font-size: 14.5px;
+  color: var(--text-faint);
+  letter-spacing: 0.02em;
+}
+
+.pd-pills {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 18px;
+}
+
+.pd-figurewrap {
+  display: grid;
+  place-items: center;
+  width: 196px;
+  height: 196px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: radial-gradient(
+    circle at 32% 26%,
+    color-mix(in srgb, var(--ember) 11%, var(--bg-sunken)),
+    var(--bg-sunken) 72%
+  );
+  color: var(--text);
+}
+
+/* ——— summary */
+.pd-summary {
+  margin-top: 30px;
+  max-width: 62ch;
+  font-size: 19px;
+  line-height: 1.7;
+  color: var(--text-soft);
+}
+
+/* ——— section headings */
+.pd-h {
+  font-size: 21px;
+  margin-bottom: 16px;
+}
+
+.pd-h::after {
+  content: '';
+  display: block;
+  width: 26px;
+  height: 2px;
+  margin-top: 8px;
+  border-radius: 2px;
+  background: color-mix(in srgb, var(--ember) 65%, transparent);
+}
+
+/* ——— main grid */
+.pd-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
+  gap: 44px 40px;
+  margin-top: 48px;
+}
+
+.pd-grid--single {
+  grid-template-columns: minmax(0, 640px);
+}
+
+.pd-col {
+  min-width: 0;
+  display: grid;
+  gap: 36px;
+  align-content: start;
+}
+
+/* ——— getting in (numbered steps) */
+.pd-steps {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  counter-reset: step;
+  display: grid;
+  gap: 14px;
+}
+
+.pd-steps li {
+  counter-increment: step;
+  position: relative;
+  padding-left: 42px;
+  line-height: 1.6;
+}
+
+.pd-steps li::before {
+  content: counter(step);
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 27px;
+  height: 27px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ember-text);
+  background: color-mix(in srgb, var(--ember) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--ember) 28%, transparent);
+}
+
+/* ——— cues (ember bullets) */
+.pd-cues {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 11px;
+}
+
+.pd-cues li {
+  position: relative;
+  padding-left: 22px;
+  line-height: 1.6;
+}
+
+.pd-cues li::before {
+  content: '';
+  position: absolute;
+  left: 2px;
+  top: 0.55em;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--ember);
+}
+
+/* ——— breath callout */
+.pd-breath {
+  display: flex;
+  gap: 18px;
+  padding: 22px 24px;
+  border-color: color-mix(in srgb, var(--ember) 26%, var(--border));
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--ember) 7%, var(--bg-raised)),
+    var(--bg-raised) 70%
+  );
+}
+
+.pd-breath-icon {
+  flex: none;
+  margin-top: 4px;
+  color: var(--ember);
+}
+
+.pd-breath-h {
+  margin-bottom: 8px;
+}
+
+.pd-breath-h::after {
+  display: none;
+}
+
+.pd-breath-text {
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 17.5px;
+  line-height: 1.65;
+  color: var(--text-soft);
+}
+
+/* ——— right-column cards */
+.pd-card {
+  padding: 24px;
+  min-width: 0;
+}
+
+.pd-bodymap {
+  margin-bottom: 14px;
+}
+
+/* legend */
+.pd-legend {
+  display: flex;
+  gap: 18px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  font-weight: 600;
+}
+
+.pd-legend-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.pd-legend-dot {
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: currentColor;
+}
+
+.pd-action--strengthens {
+  color: var(--strengthens);
+}
+
+.pd-action--stretches {
+  color: var(--stretches);
+}
+
+/* muscle list */
+.pd-muscles {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.pd-muscle {
+  padding: 11px 0;
+  border-top: 1px solid var(--border);
+}
+
+.pd-muscle-line {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+}
+
+.pd-muscle-name {
+  font-weight: 600;
+  font-size: 15.5px;
+}
+
+.pd-action {
+  font-size: 13.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+}
+
+.pd-tag {
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ember-text);
+  border: 1px solid color-mix(in srgb, var(--ember) 35%, transparent);
+  border-radius: 999px;
+  padding: 1px 8px;
+  align-self: center;
+}
+
+.pd-muscle-note {
+  margin-top: 3px;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--text-soft);
+}
+
+/* ——— energy (chakras) */
+.pd-chakras {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 14px;
+}
+
+.pd-chakra {
+  --chakra: var(--ember);
+  display: flex;
+  gap: 13px;
+  padding: 12px 16px;
+  border-left: 3px solid color-mix(in srgb, var(--chakra) 60%, transparent);
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
+  background: color-mix(in srgb, var(--chakra) 5%, transparent);
+}
+
+.pd-chakra-dot {
+  flex: none;
+  width: 12px;
+  height: 12px;
+  margin-top: 6px;
+  border-radius: 50%;
+  background: var(--chakra);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--chakra) 22%, transparent);
+}
+
+.pd-chakra-name {
+  font-size: 15.5px;
+}
+
+.pd-chakra-meta {
+  color: var(--text-faint);
+  font-size: 13.5px;
+}
+
+.pd-chakra-why {
+  margin-top: 4px;
+  font-size: 14.5px;
+  line-height: 1.6;
+  color: var(--text-soft);
+}
+
+/* ——— benefits / take care, remember / why here */
+.pd-pair {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 300px), 1fr));
+  gap: 24px;
+  margin-top: 40px;
+}
+
+.pd-benefits,
+.pd-cautions {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.pd-benefits li,
+.pd-cautions li {
+  position: relative;
+  padding-left: 24px;
+  line-height: 1.6;
+}
+
+.pd-benefits li::before {
+  content: '+';
+  position: absolute;
+  left: 0;
+  top: -1px;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 600;
+  color: var(--ember);
+}
+
+.pd-cautions li::before {
+  content: '·';
+  position: absolute;
+  left: 4px;
+  top: -3px;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--ember);
+}
+
+.pd-care {
+  border-color: color-mix(in srgb, var(--ember) 38%, var(--border));
+  background: color-mix(in srgb, var(--ember) 4%, var(--bg-raised));
+}
+
+/* ——— remember it (mnemonic) */
+.pd-remember {
+  background: linear-gradient(
+    150deg,
+    color-mix(in srgb, var(--ember) 7%, var(--bg-raised)),
+    var(--bg-raised) 65%
+  );
+}
+
+.pd-quote {
+  position: relative;
+  padding: 14px 4px 4px 34px;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 21px;
+  line-height: 1.55;
+  color: var(--text);
+  text-wrap: pretty;
+}
+
+.pd-quote::before {
+  content: '\201C';
+  position: absolute;
+  left: -4px;
+  top: -12px;
+  font-size: 74px;
+  line-height: 1;
+  font-style: normal;
+  color: color-mix(in srgb, var(--ember) 55%, transparent);
+}
+
+.pd-whyhere {
+  font-size: 15.5px;
+  line-height: 1.7;
+  color: var(--text-soft);
+}
+
+/* ——— bottom prev/next cards */
+.pd-navcards {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+  margin-top: 56px;
+}
+
+.pd-navcard {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 18px 20px;
+  min-width: 0;
+  transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+}
+
+.pd-navcard:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-pop);
+  border-color: var(--border-strong);
+}
+
+.pd-navcard--prev {
+  grid-column: 1;
+}
+
+.pd-navcard--next {
+  grid-column: 2;
+  flex-direction: row-reverse;
+  text-align: right;
+}
+
+.pd-navcard-text {
+  display: grid;
+  gap: 3px;
+  min-width: 0;
+}
+
+.pd-navcard-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.pd-navcard:hover .pd-navcard-label {
+  color: var(--ember-text);
+}
+
+.pd-navcard-name {
+  font-family: var(--font-display);
+  font-weight: 600;
+  font-size: 19px;
+  line-height: 1.25;
+}
+
+/* ————————————————————————————————————————————— responsive */
+@media (max-width: 640px) {
+  .pd-header {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+    gap: 26px;
+  }
+
+  .pd-figurewrap {
+    order: -1;
+    width: 168px;
+    height: 168px;
+  }
+
+  .pd-pills {
+    justify-content: center;
+  }
+
+  .pd-summary {
+    font-size: 17.5px;
+  }
+
+  .pd-grid {
+    margin-top: 40px;
+    gap: 36px;
+  }
+
+  .pd-navcards {
+    grid-template-columns: 1fr;
+    margin-top: 44px;
+  }
+
+  .pd-navcard--prev,
+  .pd-navcard--next {
+    grid-column: auto;
+  }
+
+  .pd-breath {
+    flex-direction: column;
+    gap: 10px;
+  }
+}

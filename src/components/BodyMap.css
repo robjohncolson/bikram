@@ -1,0 +1,112 @@
+/* BodyMap — stylized front/back body silhouettes with tintable
+   muscle regions. Geometry lives in BodyMap.tsx; all color here is
+   derived from theme tokens (or currentColor) so both themes work. */
+
+.bodymap {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 12px 28px;
+  color: var(--text);
+}
+
+.bodymap-figure {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.bodymap-figure-label {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  user-select: none;
+}
+
+.bodymap-svg {
+  display: block;
+  max-width: 100%;
+  height: auto;
+}
+
+/* ------------------------------------------------------------ silhouette */
+.bodymap-silhouette {
+  fill: color-mix(in srgb, currentColor 6%, transparent);
+  stroke: color-mix(in srgb, currentColor 35%, transparent);
+  stroke-width: 1.1;
+  stroke-linejoin: round;
+  stroke-linecap: round;
+}
+
+/* ------------------------------------------------------------ regions */
+.bodymap-region {
+  fill: color-mix(in srgb, currentColor 7%, transparent);
+  stroke: transparent;
+  stroke-width: 1;
+  stroke-linejoin: round;
+  transition: fill 0.15s ease, stroke 0.15s ease;
+}
+
+.bodymap:not(.bodymap--interactive) .bodymap-region {
+  pointer-events: none;
+}
+
+.bodymap-region[data-hl='strengthens'] {
+  fill: color-mix(in srgb, var(--strengthens) 50%, transparent);
+}
+
+.bodymap-region[data-hl='stretches'] {
+  fill: color-mix(in srgb, var(--stretches) 50%, transparent);
+}
+
+/* hover (interactive only): fill deepens */
+.bodymap--interactive .bodymap-region {
+  cursor: pointer;
+}
+
+.bodymap--interactive .bodymap-region:hover {
+  fill: color-mix(in srgb, currentColor 18%, transparent);
+}
+
+.bodymap--interactive .bodymap-region[data-hl='strengthens']:hover {
+  fill: color-mix(in srgb, var(--strengthens) 66%, transparent);
+}
+
+.bodymap--interactive .bodymap-region[data-hl='stretches']:hover {
+  fill: color-mix(in srgb, var(--stretches) 66%, transparent);
+}
+
+/* selected: full-strength fill + ring in the same hue */
+.bodymap-region--selected,
+.bodymap--interactive .bodymap-region--selected:hover {
+  fill: color-mix(in srgb, currentColor 32%, transparent);
+  stroke: color-mix(in srgb, currentColor 65%, transparent);
+  stroke-width: 1.5;
+  filter: brightness(1.05);
+}
+
+.bodymap-region--selected[data-hl='strengthens'],
+.bodymap--interactive .bodymap-region--selected[data-hl='strengthens']:hover {
+  fill: var(--strengthens);
+  stroke: color-mix(in srgb, var(--strengthens) 60%, var(--text));
+}
+
+.bodymap-region--selected[data-hl='stretches'],
+.bodymap--interactive .bodymap-region--selected[data-hl='stretches']:hover {
+  fill: var(--stretches);
+  stroke: color-mix(in srgb, var(--stretches) 60%, var(--text));
+}
+
+/* keyboard focus: reinforce the global outline with a stroke, since
+   outlines draw around a path's bounding box */
+.bodymap-region:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+  stroke: var(--focus-ring);
+  stroke-width: 1.2;
+}
