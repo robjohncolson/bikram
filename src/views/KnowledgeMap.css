@@ -1,0 +1,584 @@
+/* ————————————————————————————————————————————— KnowledgeMap
+   The learner's Bayesian estimates drawn as one structure: a wide
+   subway-map SVG (identities → transitions → arcs → root), every
+   node filled by its P(known) as an ember tint over the sunken
+   surface. Tokens only; probability tints are color-mix on --ember. */
+
+/* ——— header */
+
+.km-head {
+  padding-bottom: 26px;
+  max-width: 760px;
+}
+
+.km-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  margin-bottom: 18px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-soft);
+  padding: 7px 12px 7px 8px;
+  border-radius: 999px;
+  border: 1px solid transparent;
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.km-back:hover {
+  color: var(--text);
+  border-color: var(--border);
+  background: var(--bg-raised);
+}
+
+.km-title {
+  font-size: clamp(28px, 5vw, 40px);
+  margin-top: 10px;
+}
+
+.km-lede {
+  margin-top: 12px;
+  font-size: 16px;
+  line-height: 1.6;
+  max-width: 62ch;
+}
+
+/* ——— stat row */
+
+.km-stats {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 14px 18px;
+  padding: 16px 22px;
+  margin-bottom: 18px;
+}
+
+.km-stat-main {
+  display: flex;
+  align-items: baseline;
+  gap: 9px;
+}
+
+.km-stat-num {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--ember-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.km-stat-cap {
+  font-size: 12.5px;
+}
+
+.km-stat-sep {
+  width: 1px;
+  align-self: stretch;
+  background: var(--border);
+  flex: none;
+}
+
+.km-stat-arcs {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.km-arcpill {
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+  font-variant-numeric: tabular-nums;
+}
+
+.km-arcpill:hover {
+  border-color: color-mix(in srgb, var(--pill) 60%, transparent);
+  transform: translateY(-1px);
+}
+
+.km-arcpill[aria-pressed='true'] {
+  border-color: var(--pill);
+}
+
+.km-stat-bands {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  font-size: 13px;
+  color: var(--text-soft);
+}
+
+.km-bandcount {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  white-space: nowrap;
+}
+
+.km-bandcount strong {
+  color: var(--text);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+/* ——— empty state */
+
+.km-empty {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 12px 20px;
+  padding: 16px 20px;
+  margin-bottom: 18px;
+  border-left: 3px solid var(--ember);
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+
+.km-cta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: 999px;
+  background: var(--ember);
+  border: 1px solid var(--ember);
+  color: var(--bg);
+  font-size: 14px;
+  font-weight: 600;
+  white-space: nowrap;
+  transition: background 0.15s ease, transform 0.15s ease;
+}
+
+.km-cta:hover {
+  background: color-mix(in srgb, var(--ember) 88%, var(--text));
+  transform: translateY(-1px);
+}
+
+/* ——— the map */
+
+.km-map {
+  padding: 14px 10px 10px;
+  margin-bottom: 18px;
+}
+
+.km-scroll {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.km-svg {
+  display: block;
+  min-width: 920px;
+  width: 100%;
+  height: auto;
+}
+
+.km-map-hint {
+  margin: 8px 10px 4px;
+  font-size: 12.5px;
+  text-align: center;
+}
+
+/* membership zones behind the leaf rows */
+.km-zone {
+  fill: color-mix(in srgb, var(--ember) 4%, transparent);
+  stroke: color-mix(in srgb, var(--border) 55%, transparent);
+  stroke-width: 1;
+}
+
+/* edges: recessive by default, warming when both endpoints are solid */
+.km-edge {
+  stroke: var(--border);
+  stroke-width: 1.25;
+  fill: none;
+  transition: stroke 0.3s ease;
+}
+
+.km-edge[data-lit] {
+  stroke: color-mix(in srgb, var(--ember) 60%, var(--border));
+  stroke-width: 1.75;
+}
+
+.km-trunk {
+  stroke-width: 1.5;
+}
+
+/* nodes */
+.km-node {
+  cursor: pointer;
+}
+
+.km-node .km-shape {
+  transition: stroke 0.15s ease, stroke-width 0.15s ease;
+}
+
+.km-node[data-band='unseen'] .km-shape {
+  stroke: var(--border);
+  stroke-width: 1.25;
+}
+
+.km-node[data-band='shaky'] .km-shape {
+  stroke: var(--border-strong);
+  stroke-width: 1.5;
+}
+
+.km-node[data-band='developing'] .km-shape {
+  stroke: color-mix(in srgb, var(--ember) 45%, var(--border-strong));
+  stroke-width: 1.75;
+}
+
+.km-node[data-band='solid'] .km-shape {
+  stroke: var(--ember);
+  stroke-width: 2;
+}
+
+.km-node:hover .km-shape {
+  stroke: color-mix(in srgb, var(--ember) 65%, var(--border-strong));
+}
+
+.km-node[data-selected] .km-shape {
+  stroke: var(--focus-ring);
+  stroke-width: 2.5;
+  filter: drop-shadow(0 0 5px color-mix(in srgb, var(--ember) 50%, transparent));
+}
+
+.km-node:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+/* svg text — halo knockout so labels stay readable over edge lines */
+.km-order,
+.km-arclabel {
+  font-family: var(--font-body);
+  paint-order: stroke;
+  stroke: var(--bg-raised);
+  stroke-width: 3;
+  stroke-linejoin: round;
+}
+
+.km-order {
+  font-size: 10px;
+  font-weight: 600;
+  fill: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.km-node[data-band='solid'] .km-order {
+  fill: var(--ember-text);
+  font-weight: 700;
+}
+
+.km-arclabel {
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  fill: var(--text-soft);
+}
+
+.km-arclabel-pct {
+  font-weight: 600;
+  fill: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.km-node[data-band='solid'] .km-arclabel-pct {
+  fill: var(--ember-text);
+}
+
+.km-root-name {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 600;
+  fill: var(--text);
+}
+
+.km-root-pct {
+  font-family: var(--font-body);
+  font-size: 11.5px;
+  font-weight: 600;
+  fill: var(--text-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+/* text flips to the raised-surface tone once the ember fill is strong —
+   works in both themes because dark mode's raised surface is dark */
+.km-node[data-strong] .km-root-name,
+.km-node[data-strong] .km-root-pct {
+  fill: var(--bg-raised);
+}
+
+/* ——— below the map: detail + legend */
+
+.km-below {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: 18px;
+  align-items: start;
+}
+
+.km-detail {
+  padding: 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.km-detail-head {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.km-detail-head .pose-figure {
+  color: var(--ember-text);
+}
+
+.km-detail-title {
+  font-size: clamp(19px, 3.4vw, 24px);
+  line-height: 1.2;
+}
+
+.km-detail-sanskrit {
+  margin-top: 3px;
+  font-family: var(--font-display);
+  font-style: italic;
+  font-size: 15px;
+}
+
+.km-meter-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.km-meter-num {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 600;
+  color: var(--ember-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.km-meter {
+  height: 6px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-faint) 18%, transparent);
+  overflow: hidden;
+}
+
+.km-meter-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--ember);
+  transition: width 0.4s ease;
+}
+
+.km-kind-note {
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.km-evidence {
+  font-size: 13.5px;
+  color: var(--text-soft);
+}
+
+.km-evidence strong {
+  color: var(--text);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.km-children {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 2px;
+}
+
+.km-subhead {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.km-childlist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+
+.km-childrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 9px 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  background: var(--bg);
+  text-align: left;
+  font-size: 14px;
+  cursor: pointer;
+  transition: border-color 0.15s ease, transform 0.15s ease;
+}
+
+.km-childrow:hover {
+  border-color: color-mix(in srgb, var(--ember) 45%, var(--border));
+  transform: translateY(-1px);
+}
+
+.km-childrow .pose-figure {
+  color: var(--text-soft);
+}
+
+.km-childname {
+  font-weight: 600;
+  min-width: 0;
+  line-height: 1.35;
+}
+
+.km-childtag {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  flex: none;
+}
+
+.km-childpct {
+  margin-left: auto;
+  flex: none;
+  font-weight: 700;
+  font-size: 13.5px;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.km-childpct[data-band='developing'] {
+  color: color-mix(in srgb, var(--ember-text) 70%, var(--text-soft));
+}
+
+.km-childpct[data-band='solid'] {
+  color: var(--ember-text);
+}
+
+.km-poselink {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  align-self: flex-start;
+  margin-top: 2px;
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+  color: var(--ember-text);
+}
+
+.km-poselink svg {
+  transition: transform 0.2s ease;
+}
+
+.km-poselink:hover svg {
+  transform: translateX(3px);
+}
+
+/* ——— legend */
+
+.km-legend {
+  padding: 20px 22px;
+}
+
+.km-legend-list {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+
+.km-legend-list li {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-size: 13.5px;
+}
+
+.km-swatch {
+  flex: none;
+  width: 18px;
+  height: 18px;
+  border-radius: 6px;
+  border: 1.5px solid var(--border);
+}
+
+.km-swatch--sm {
+  width: 11px;
+  height: 11px;
+  border-radius: 4px;
+}
+
+.km-swatch[data-band='shaky'] {
+  border-color: var(--border-strong);
+}
+
+.km-swatch[data-band='developing'] {
+  border-color: color-mix(in srgb, var(--ember) 45%, var(--border-strong));
+}
+
+.km-swatch[data-band='solid'] {
+  border-color: var(--ember);
+}
+
+.km-legend-word {
+  font-weight: 600;
+}
+
+.km-legend-range {
+  margin-left: auto;
+  font-variant-numeric: tabular-nums;
+}
+
+.km-legend-note {
+  margin-top: 16px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+/* ——— responsive */
+
+@media (max-width: 760px) {
+  .km-below {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 560px) {
+  .km-stats {
+    padding: 14px 16px;
+  }
+
+  .km-stat-sep {
+    display: none;
+  }
+
+  .km-detail {
+    padding: 18px 18px;
+  }
+
+  .km-legend {
+    padding: 18px 18px;
+  }
+
+  .km-map {
+    padding: 10px 6px 8px;
+  }
+}

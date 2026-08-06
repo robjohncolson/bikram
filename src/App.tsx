@@ -4,6 +4,7 @@ import { Timeline } from './views/Timeline';
 import { PoseDetail } from './views/PoseDetail';
 import { Explorer } from './views/Explorer';
 import { Trainer } from './views/Trainer';
+import { KnowledgeMap } from './views/KnowledgeMap';
 import './App.css';
 
 function ScrollToTop() {
@@ -37,6 +38,7 @@ export default function App() {
           <Route path="/pose/:id" element={<PoseDetail />} />
           <Route path="/explore" element={<Explorer />} />
           <Route path="/train" element={<Trainer />} />
+          <Route path="/train/map" element={<KnowledgeMap />} />
         </Routes>
       </main>
     </>

@@ -86,6 +86,47 @@
   transition: transform 0.2s ease;
 }
 
+/* the headline mode: smart review spans the row and carries a warm wash */
+.tr-mode-card--primary {
+  grid-column: 1 / -1;
+  border-color: color-mix(in srgb, var(--ember) 30%, var(--border));
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      color-mix(in srgb, var(--ember) 8%, transparent),
+      transparent 55%
+    ),
+    var(--bg-raised);
+}
+
+.tr-mode-kicker {
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.tr-review-badges {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 2px;
+  font-variant-numeric: tabular-nums;
+}
+
+.tr-review-badges .pill[data-tone='due'] {
+  --pill: var(--ember);
+}
+
+.tr-review-badges .pill[data-tone='new'] {
+  --pill: var(--stretches);
+}
+
+.tr-review-badges .pill[data-zero] {
+  opacity: 0.55;
+}
+
 /* ————————————————————————————————————————————— landing: progress panel */
 
 .tr-progress {
@@ -147,16 +188,20 @@
   transition: background 0.25s ease, border-color 0.25s ease;
 }
 
+/* four-band faint → ember ramp, driven by P(known) */
 .tr-dot[data-state='unseen'] {
   background: color-mix(in srgb, var(--text-faint) 22%, transparent);
 }
 
-.tr-dot[data-state='practicing'] {
-  background: var(--ember-soft);
-  border: 1.5px solid color-mix(in srgb, var(--ember) 55%, transparent);
+.tr-dot[data-state='shaky'] {
+  background: color-mix(in srgb, var(--ember) 30%, transparent);
 }
 
-.tr-dot[data-state='mastered'] {
+.tr-dot[data-state='developing'] {
+  background: color-mix(in srgb, var(--ember) 62%, transparent);
+}
+
+.tr-dot[data-state='solid'] {
   background: var(--ember);
 }
 
@@ -191,6 +236,75 @@
 
 .tr-progress-streak svg {
   color: var(--ember);
+}
+
+/* whole-sequence probability + knowledge-map link */
+.tr-progress-foot {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.tr-root-stat {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  padding: 16px 18px;
+  border-radius: var(--radius-sm);
+  background: var(--bg-sunken);
+}
+
+.tr-root-num {
+  font-family: var(--font-display);
+  font-size: 30px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--ember-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.tr-root-cap {
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+.tr-map-link {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 5px;
+  padding: 16px 18px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.tr-map-link:hover {
+  border-color: color-mix(in srgb, var(--ember) 40%, var(--border));
+  background: var(--bg-raised);
+}
+
+.tr-map-link:hover .tr-map-link-name svg {
+  transform: translateX(3px);
+}
+
+.tr-map-link-name {
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  font-size: 14.5px;
+  font-weight: 700;
+  color: var(--ember-text);
+}
+
+.tr-map-link-name svg {
+  transition: transform 0.2s ease;
+}
+
+.tr-map-link-sub {
+  font-size: 12.5px;
+  line-height: 1.45;
 }
 
 /* ————————————————————————————————————————————— mode chrome */
@@ -271,7 +385,27 @@
   }
 }
 
-/* ————————————————————————————————————————————— quiz: what comes next */
+/* ————————————————————————————————————————————— review: why-this-card tag */
+
+.tr-why {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 14px;
+}
+
+.tr-why .pill[data-reason='due'] {
+  --pill: var(--ember);
+}
+
+.tr-why .pill[data-reason='new'] {
+  --pill: var(--stretches);
+}
+
+.tr-why .pill[data-reason='weak'] {
+  --pill: color-mix(in srgb, var(--ember) 55%, var(--text));
+}
+
+/* ————————————————————————————————————————————— quiz: multiple choice */
 
 .tr-prompt {
   display: flex;
@@ -293,6 +427,22 @@
   margin-top: 4px;
   font-size: 15px;
   font-style: italic;
+}
+
+/* which-posture-is-#N: a bare sequence number as the stimulus */
+.tr-posnum {
+  display: grid;
+  place-items: center;
+  width: 110px;
+  height: 110px;
+  flex: none;
+  border-radius: 50%;
+  border: 1.5px dashed color-mix(in srgb, var(--ember) 55%, var(--border));
+  background: color-mix(in srgb, var(--ember) 7%, transparent);
+  color: var(--ember-text);
+  font-family: var(--font-display);
+  font-size: 44px;
+  font-weight: 600;
 }
 
 .tr-ask {
@@ -723,6 +873,25 @@
   font-variant-numeric: tabular-nums;
 }
 
+.tr-done-root {
+  margin-top: 4px;
+  font-size: 14.5px;
+  line-height: 1.55;
+  max-width: 46ch;
+}
+
+.tr-done-root strong {
+  color: var(--ember-text);
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+}
+
+.tr-done-note {
+  font-size: 12.5px;
+  line-height: 1.5;
+  max-width: 46ch;
+}
+
 .tr-done-actions {
   display: flex;
   gap: 12px;
@@ -772,6 +941,10 @@
 
   .tr-progress {
     padding: 20px 18px;
+  }
+
+  .tr-progress-foot {
+    grid-template-columns: 1fr;
   }
 
   .tr-face {

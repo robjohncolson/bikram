@@ -13,8 +13,14 @@ posture's technique, benefits, chakra connections, and muscle-group work.
   strengthens and stretches.
 - **Explore** — flip the lens: browse by chakra (root to crown) or by muscle
   group (clickable body map) to see which postures work each one.
-- **Train** — memorize the sequence: "what comes next?" drills with mnemonics,
-  English↔Sanskrit flashcards, and mastery tracking saved locally.
+- **Train** — memorize the sequence: a spaced-repetition review queue
+  (SM-2-style intervals) over three card types — "what comes next?",
+  English↔Sanskrit, and "which posture is #N?" — plus free-practice drills.
+  Every answer feeds Bayesian knowledge tracing, so mastery is a real
+  probability, not a tally.
+- **Knowledge map** — the sequence as a DAG: posture identities feed
+  transitions, transitions feed arcs, arcs feed the whole sequence —
+  each node tinted by the current estimate that you know it.
 
 ## Run it
 

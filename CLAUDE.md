@@ -23,9 +23,21 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
     separately from content on purpose.
   - `chakras.ts` / `muscles.ts` — reference data; their `id` unions in `types.ts`
     are the contract used by pose data and the BodyMap regions.
-- `src/views/` — one folder-free file pair per route: Timeline (`/`),
-  PoseDetail (`/pose/:id`), Explorer (`/explore?lens=chakra|muscle&id=…`),
-  Trainer (`/train`, progress in localStorage `yoga-trainer-v1`).
+- `src/views/` — one file pair per route: Timeline (`/`), PoseDetail
+  (`/pose/:id`), Explorer (`/explore?lens=chakra|muscle&id=…`), Trainer
+  (`/train`), KnowledgeMap (`/train/map`).
+- `src/trainer/` — the learning engine (pure TS, unit-tested with vitest,
+  `npm test`). Views import ONLY from `src/trainer/index.ts`. Three layers:
+  - `graph.ts` — the knowledge DAG: 26 identity KCs + 25 transition KCs
+    (prereq edges from their two identities) + 4 arc aggregates + root;
+    plus the 77 practice cards (name/pos/next) in introduction order.
+  - `bkt.ts` — Bayesian knowledge tracing per leaf KC (guess/slip/learn
+    tuned per card kind); aggregates are computed noisy-AND products,
+    never stored. `nodeP`/`band` are the only mastery math allowed in UI.
+  - `srs.ts` + `store.ts` + `engine.ts` — SM-2-lite scheduling (30m → 1d →
+    3d → ×ease, lapses cost ease), versioned localStorage
+    (`yoga-trainer-v2`, auto-migrates v1 tallies), and the session facade
+    (`buildQueue`/`recordAnswer`/`dueCount`).
 - `src/components/` — shared `PoseFigure` (figure or numbered-badge fallback)
   and `BodyMap` (front/back silhouettes, tintable muscle regions; its props
   contract is load-bearing for PoseDetail and Explorer).
