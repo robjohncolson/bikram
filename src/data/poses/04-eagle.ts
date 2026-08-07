@@ -8,8 +8,8 @@ export const eagle: Pose = {
   pronunciation: 'gah-roo-DAHS-ah-nah',
   category: 'standing',
   sets: 2,
-  timing: "2 sets, each side ~10s",
-  approxTotalSeconds: 180,
+  timing: "2 sets, each side — ~10s holds plus the wrap",
+  approxTotalSeconds: 120,
   summary:
     'Arms and legs each wrapped and intertwined while sitting low on one bent leg — the whole body braided toward its midline. Traditionally said to open all fourteen of the body’s largest joints, it is equal parts deep compression and one-pointed balance.',
   setup: [

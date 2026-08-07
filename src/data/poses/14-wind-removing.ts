@@ -9,7 +9,7 @@ export const windRemoving: Pose = {
   category: 'floor',
   sets: 2,
   timing: "2 sets — right leg, left leg, then both",
-  approxTotalSeconds: 220,
+  approxTotalSeconds: 205,
   summary:
     'Lying on your back, you hug the right knee to the chest, then the left, then both — compressing the ascending, descending, and transverse colon in the order digestion actually moves. The first working posture of the floor series, and the gentlest.',
   setup: [

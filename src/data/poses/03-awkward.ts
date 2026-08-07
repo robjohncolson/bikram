@@ -8,8 +8,8 @@ export const awkward: Pose = {
   pronunciation: 'oot-kah-TAHS-ah-nah',
   category: 'standing',
   sets: 2,
-  timing: "2 sets of 3 parts, ~10–20s each",
-  approxTotalSeconds: 240,
+  timing: "2 sets of 3 parts — ~10–20s holds, second set faster",
+  approxTotalSeconds: 200,
   summary:
     'Three sits of increasing difficulty — an invisible chair, a tip-toe balance, and a slow-motion knees-together descent — all with the arms held parallel at shoulder height. It is a furnace for the quadriceps and the first big test of leg strength in the class.',
   setup: [

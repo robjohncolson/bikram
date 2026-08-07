@@ -8,8 +8,8 @@ export const triangle: Pose = {
   pronunciation: 'tree-koh-NAH-sah-nah',
   category: 'standing',
   sets: 2,
-  timing: "2 sets, ~20s each side",
-  approxTotalSeconds: 190,
+  timing: "2 sets — ~45–60s each side first set, ~30s second",
+  approxTotalSeconds: 165,
   summary:
     'A deep wide-stance lunge with the arms stretched into one vertical line — one fingertip to the floor between the toes, the other reaching for the sky. Often called the master posture of the series, it puts every major muscle group to work at the same time.',
   setup: [

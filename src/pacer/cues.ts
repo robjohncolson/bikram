@@ -16,6 +16,8 @@ export type CueKind =
   | 'guide'
   /** spoken: "Second set" (and beyond) at set boundaries */
   | 'set'
+  /** spoken: a segment boundary — "Other side.", "Twenty-second savasana."… */
+  | 'segment'
   /** tone only: short pre-change warning ticks in the final beats */
   | 'warn';
 
@@ -60,13 +62,30 @@ export function buildPoseTrack(pose: Pose, bpm: number, opts: CueOptions = {}): 
     events.push({ atBeat: GUIDE_BEAT, kind: 'guide', text: pose.setup[0] });
   }
 
-  for (let set = 1; set < pose.sets; set++) {
-    const atBeat = Math.round((totalBeats * set) / pose.sets);
-    events.push({
-      atBeat,
-      kind: 'set',
-      text: set === 1 ? 'Second set.' : `Set ${set + 1}.`,
-    });
+  if (pose.segments && pose.segments.length > 0) {
+    // segment boundaries carry their own authored cues; scale their
+    // second-offsets onto this track's beat grid
+    const totalSeconds = pose.segments.reduce((s, seg) => s + seg.seconds, 0);
+    let elapsed = 0;
+    for (let i = 0; i < pose.segments.length; i++) {
+      if (i > 0) {
+        const atBeat = Math.min(
+          totalBeats - 1,
+          Math.round((elapsed / totalSeconds) * totalBeats),
+        );
+        events.push({ atBeat, kind: 'segment', text: pose.segments[i].cue });
+      }
+      elapsed += pose.segments[i].seconds;
+    }
+  } else {
+    for (let set = 1; set < pose.sets; set++) {
+      const atBeat = Math.round((totalBeats * set) / pose.sets);
+      events.push({
+        atBeat,
+        kind: 'set',
+        text: set === 1 ? 'Second set.' : `Set ${set + 1}.`,
+      });
+    }
   }
 
   if (totalBeats >= WARN_MIN_BEATS) {
@@ -77,6 +96,37 @@ export function buildPoseTrack(pose: Pose, bpm: number, opts: CueOptions = {}): 
 
   events.sort((a, b) => a.atBeat - b.atBeat);
   return { pose, totalBeats, events };
+}
+
+export interface SegmentPosition {
+  /** index into pose.segments */
+  index: number;
+  label: string;
+  kind: string;
+  /** beats remaining in this segment (including the current one) */
+  beatsLeft: number;
+}
+
+/**
+ * Which segment a given 0-based track beat falls in, on the same scaled
+ * beat grid buildPoseTrack uses. Null when the pose has no segments.
+ */
+export function segmentAtBeat(track: PoseTrack, beat: number): SegmentPosition | null {
+  const segs = track.pose.segments;
+  if (!segs || segs.length === 0) return null;
+  const totalSeconds = segs.reduce((s, seg) => s + seg.seconds, 0);
+  const clamped = Math.min(Math.max(beat, 0), track.totalBeats - 1);
+  let elapsed = 0;
+  for (let i = 0; i < segs.length; i++) {
+    elapsed += segs[i].seconds;
+    // the last segment always closes the track exactly
+    const end = i === segs.length - 1 ? track.totalBeats : Math.round((elapsed / totalSeconds) * track.totalBeats);
+    if (clamped < end) {
+      return { index: i, label: segs[i].label, kind: segs[i].kind, beatsLeft: end - clamped };
+    }
+  }
+  const last = segs.length - 1;
+  return { index: last, label: segs[last].label, kind: segs[last].kind, beatsLeft: 1 };
 }
 
 /** Compile the whole class (from a starting posture) at a tempo. */

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import type { CSSProperties, ReactNode } from 'react';
 import {
   BPM_MAX,
@@ -10,15 +11,18 @@ import {
   buildPoseTrack,
   clampSettings,
   createMetronome,
+  createWakeLock,
   phaseSeconds,
+  segmentAtBeat,
   speak,
   speechSupported,
   stopSpeaking,
   watchVoices,
 } from '../pacer';
-import type { BeatEvent, Metronome, PacerSettings, PoseTrack, VoiceChoice } from '../pacer';
+import type { BeatEvent, Metronome, PacerSettings, PoseTrack, VoiceChoice, WakeLock } from '../pacer';
 import { classOffsetSeconds, classTotalSeconds, poses } from '../data';
 import { PoseFigure } from '../components/PoseFigure';
+import { PacerClassMode } from './PacerClassMode';
 import './Pacer.css';
 
 const STORAGE_KEY = 'yoga-pacer-v1';
@@ -108,6 +112,7 @@ export function Pacer() {
   const [beatView, setBeatView] = useState<{ beat: number; bar: number } | null>(null);
   const [classRun, setClassRun] = useState<ClassRun>({ phase: 'idle' });
   const [startIdx, setStartIdx] = useState(0);
+  const [immersed, setImmersed] = useState(false);
 
   const settingsRef = useRef(settings);
   const cuesRef = useRef(cues);
@@ -115,6 +120,8 @@ export function Pacer() {
   const trackRef = useRef<PoseTrack | null>(null);
   const pacedRef = useRef(0);
   const metRef = useRef<Metronome | null>(null);
+  const lockRef = useRef<WakeLock | null>(null);
+  const immerseBtnRef = useRef<HTMLButtonElement | null>(null);
   const timeoutsRef = useRef<Set<number>>(new Set());
 
   /** setTimeout that gets cleaned up when the pacer stops or unmounts. */
@@ -138,10 +145,14 @@ export function Pacer() {
     setClassRun(next);
   }, []);
 
-  /** Compile the cue timeline for a posture at the current tempo & prefs. */
+  /** Compile a posture's cue timeline. Tracks are always built at the
+   *  60 BPM reference, so one count = one canonical class second and the
+   *  budget equals approxTotalSeconds. The metronome tempo then sets how
+   *  fast counts actually tick — slow the tempo and the class stretches,
+   *  exactly as the idle card's math promises. */
   const buildTrack = useCallback((idx: number) => {
     const p = cuesRef.current;
-    return buildPoseTrack(poses[idx], settingsRef.current.bpm, {
+    return buildPoseTrack(poses[idx], 60, {
       sanskrit: p.sanskrit,
       guides: p.guides,
     });
@@ -229,18 +240,15 @@ export function Pacer() {
   }, [settings, cues]);
 
   // Cue prefs feed tickClass through a ref; a mid-class change also rebuilds
-  // the active track's events but keeps the stored budget/left (never the new
-  // track's totalBeats), so the countdown does not jump — past beats' events
-  // are naturally skipped because their atBeat is behind budget − left.
-  // The rebuild runs at the tempo the budget was counted at (BPM may have
-  // moved since this hold began), so event beats stay on the countdown's
-  // scale: this effective bpm makes beatsForSeconds return exactly budget.
+  // the active track's events but keeps the stored budget/left, so the
+  // countdown does not jump — past beats' events are naturally skipped
+  // because their atBeat is behind budget − left. Tracks always compile at
+  // the 60 BPM reference, so the rebuilt totalBeats equals the live budget.
   useEffect(() => {
     cuesRef.current = cues;
     const c = classRef.current;
     if (c.phase === 'running' || c.phase === 'paused') {
-      const pose = poses[c.idx];
-      trackRef.current = buildPoseTrack(pose, (c.budget * 60) / pose.approxTotalSeconds, {
+      trackRef.current = buildPoseTrack(poses[c.idx], 60, {
         sanskrit: cues.sanskrit,
         guides: cues.guides,
       });
@@ -249,6 +257,33 @@ export function Pacer() {
 
   // Voices load asynchronously; watchVoices calls back now and on changes.
   useEffect(() => watchVoices(setVoices), []);
+
+  // Keep the screen awake while the metronome runs (guarded no-op where
+  // the Wake Lock API is missing; re-acquires after tab switches).
+  useEffect(() => {
+    const lock = createWakeLock();
+    lockRef.current = lock;
+    return () => {
+      lock.dispose();
+      if (lockRef.current === lock) lockRef.current = null;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (running) lockRef.current?.acquire();
+    else lockRef.current?.release();
+  }, [running]);
+
+  // Immersion only exists while a class is running or paused.
+  useEffect(() => {
+    if (classRun.phase !== 'running' && classRun.phase !== 'paused') setImmersed(false);
+  }, [classRun.phase]);
+
+  const exitImmersion = useCallback(() => {
+    setImmersed(false);
+    if (document.fullscreenElement) void document.exitFullscreen().catch(() => {});
+    immerseBtnRef.current?.focus();
+  }, []);
 
   const applySettings = useCallback((partial: Partial<PacerSettings>) => {
     setSettings((s) => clampSettings({ ...s, ...partial }));
@@ -357,6 +392,11 @@ export function Pacer() {
           ev.preventDefault();
           skipPose(ev.key === 'ArrowLeft' ? -1 : 1);
         }
+      } else if (ev.key === 'i' || ev.key === 'I') {
+        const c = classRef.current;
+        if (c.phase === 'running' || c.phase === 'paused') {
+          setImmersed((v) => !v);
+        }
       }
     };
     window.addEventListener('keydown', onKey);
@@ -377,6 +417,7 @@ export function Pacer() {
 
   // ---------------------------------------------------------------- class card body
   let classBody: ReactNode;
+  let overlay: ReactNode = null;
   if (classRun.phase === 'idle') {
     classBody = (
       <div className="pc-class-idle">
@@ -429,6 +470,9 @@ export function Pacer() {
       (classOffsetSeconds(pose) + fracDone * pose.approxTotalSeconds) / classTotalSeconds;
     const remainNote =
       classRun.phase === 'paused' ? ' · paused' : !running ? ' · metronome stopped' : '';
+    const seg = trackRef.current
+      ? segmentAtBeat(trackRef.current, classRun.budget - classRun.left)
+      : null;
     classBody = (
       <div className="pc-class-run">
         <div className="pc-class-pose">
@@ -442,6 +486,12 @@ export function Pacer() {
             </h3>
             <p className="pc-class-sanskrit text-soft">{pose.sanskritName}</p>
             <p className="pc-class-timing text-faint">{pose.timing}</p>
+            {seg && (
+              <p className="pc-class-seg" data-kind={seg.kind}>
+                <span className="pc-seg-label">{seg.label}</span>
+                <span className="pc-seg-time">{mss(seg.beatsLeft)}</span>
+              </p>
+            )}
           </div>
           <div className="pc-class-remain">
             <span className="pc-remain-num">{mss(classRun.left)}</span>
@@ -482,12 +532,42 @@ export function Pacer() {
           >
             Next ›
           </button>
+          <button
+            type="button"
+            className="pc-btn"
+            ref={immerseBtnRef}
+            onClick={() => setImmersed(true)}
+          >
+            Immerse
+          </button>
           <button type="button" className="pc-btn pc-btn-quiet" onClick={endClass}>
             End class
           </button>
         </div>
       </div>
     );
+    if (immersed) {
+      overlay = (
+        <PacerClassMode
+          pose={pose}
+          next={next}
+          countdown={seg ? mss(seg.beatsLeft) : mss(classRun.left)}
+          poseCountdown={seg ? mss(classRun.left) : undefined}
+          segmentLabel={seg?.label}
+          segmentKind={seg?.kind}
+          paused={classRun.phase === 'paused'}
+          progress={progress}
+          posture={classRun.idx + 1}
+          postureCount={poses.length}
+          canBack={classRun.idx > 0}
+          canNext={classRun.idx < poses.length - 1}
+          onBack={() => skipPose(-1)}
+          onNext={() => skipPose(1)}
+          onTogglePause={toggleClassPause}
+          onExit={exitImmersion}
+        />
+      );
+    }
   }
 
   // ---------------------------------------------------------------- render
@@ -719,9 +799,12 @@ export function Pacer() {
 
         <p className="pc-kbd text-faint">
           <kbd>Space</kbd> start / pause · <kbd>[</kbd> <kbd>]</kbd> tempo −2 / +2 ·{' '}
-          <kbd>←</kbd> <kbd>→</kbd> change posture while the class runs
+          <kbd>←</kbd> <kbd>→</kbd> change posture · <kbd>i</kbd> immerse while the class runs
         </p>
       </div>
+      {/* portal: the animated .page ancestor would otherwise become the
+          fixed-position containing block and trap the overlay under the nav */}
+      {overlay && createPortal(overlay, document.body)}
     </div>
   );
 }

@@ -9,7 +9,7 @@ export const spineTwisting: Pose = {
   category: 'floor',
   sets: 1,
   timing: '1 set, ~20s each side',
-  approxTotalSeconds: 110,
+  approxTotalSeconds: 90,
   summary:
     'A seated twist taken to each side — the only posture in the sequence that rotates the spine, and it rotates it both ways. The final posture of class wrings the spine out like a towel before the closing breath.',
   setup: [

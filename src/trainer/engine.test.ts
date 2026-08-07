@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { BKT_BY_KIND, bktUpdate, nodeP } from './bkt';
+import { BKT_BY_KIND, bktUpdate, decayedP, decayHalfLifeDays, leafP, nodeP } from './bkt';
 import { AGAIN_MINUTES, gradeCard, newCardState } from './srs';
 import { allCards, ARCS, kcNodes } from './graph';
 import { buildQueue, NEW_PER_SESSION, recordAnswer } from './engine';
@@ -72,6 +72,52 @@ describe('bkt update', () => {
     let p = 0.1;
     for (let i = 0; i < 10; i++) p = bktUpdate(p, true, params);
     expect(p).toBeGreaterThan(0.99);
+  });
+});
+
+describe('forgetting decay', () => {
+  const DAY = 86_400_000;
+
+  it('leaves fresh evidence untouched and skips decay when now is omitted', () => {
+    const state = { p: 0.9, correct: 1, wrong: 0, last: NOW };
+    expect(decayedP(state, 0.1, NOW)).toBe(0.9);
+    const store = emptyStore();
+    store.kcs['id:camel'] = state;
+    expect(leafP(store, 'id:camel')).toBe(0.9);
+  });
+
+  it('halves the excess over prior after one half-life', () => {
+    // one correct answer → half-life 8 days; excess 0.8 → 0.4 → P 0.5
+    const state = { p: 0.9, correct: 1, wrong: 0, last: NOW };
+    expect(decayHalfLifeDays(1)).toBe(8);
+    expect(decayedP(state, 0.1, NOW + 8 * DAY)).toBeCloseTo(0.5, 10);
+  });
+
+  it('fades slower with more practice, capped at 60 days', () => {
+    const fresh = { p: 0.9, correct: 1, wrong: 0, last: NOW };
+    const seasoned = { p: 0.9, correct: 10, wrong: 0, last: NOW };
+    const t = NOW + 20 * DAY;
+    expect(decayedP(seasoned, 0.1, t)).toBeGreaterThan(decayedP(fresh, 0.1, t));
+    expect(decayHalfLifeDays(1000)).toBe(60);
+  });
+
+  it('drifts a below-prior P back up toward the prior', () => {
+    const struggling = { p: 0.03, correct: 0, wrong: 4, last: NOW };
+    const later = decayedP(struggling, 0.1, NOW + 30 * DAY);
+    expect(later).toBeGreaterThan(0.03);
+    expect(later).toBeLessThanOrEqual(0.1);
+  });
+
+  it('decays aggregates through nodeP', () => {
+    const store = emptyStore();
+    for (const node of kcNodes.values()) {
+      if (node.kind === 'identity' || node.kind === 'transition') {
+        store.kcs[node.id] = { p: 0.95, correct: 3, wrong: 0, last: NOW };
+      }
+    }
+    const fresh = nodeP(store, 'root', NOW);
+    const stale = nodeP(store, 'root', NOW + 30 * DAY);
+    expect(stale).toBeLessThan(fresh);
   });
 });
 

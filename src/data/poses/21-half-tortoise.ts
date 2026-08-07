@@ -9,7 +9,7 @@ export const halfTortoise: Pose = {
   category: 'floor',
   sets: 2,
   timing: "2 sets, ~30s",
-  approxTotalSeconds: 140,
+  approxTotalSeconds: 125,
   summary:
     'A kneeling forward fold with the arms stretched overhead, palms together: pinky fingers and forehead brush the floor while the hips stay on the heels. The deep rest of the floor series — traditionally said to refresh the body like sleep.',
   setup: [

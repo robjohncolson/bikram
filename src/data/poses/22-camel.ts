@@ -9,7 +9,7 @@ export const camel: Pose = {
   category: 'floor',
   sets: 2,
   timing: '2 sets, ~30s',
-  approxTotalSeconds: 150,
+  approxTotalSeconds: 135,
   summary:
     'The deepest backbend of the class: kneeling, hips pressed forward, spine arching back until both hands grip the heels. It opens the entire front of the body at once — and it is completely normal for strong emotions to surface here.',
   setup: [

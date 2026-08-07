@@ -247,8 +247,8 @@ function Landing({
   const now = Date.now();
   const due = dueCount(store, now);
   const unseen = unseenCount(store);
-  const solidCount = poses.filter((p) => band(nodeP(store, `id:${p.id}`)) === 'solid').length;
-  const rootP = nodeP(store, 'root');
+  const solidCount = poses.filter((p) => band(nodeP(store, `id:${p.id}`, Date.now())) === 'solid').length;
+  const rootP = nodeP(store, 'root', Date.now());
   const hasAnyProgress =
     store.answers > 0 || store.bestStreak > 0 || Object.keys(store.cards).length > 0;
 
@@ -364,7 +364,7 @@ function Landing({
                 aria-label={`${solidCount} of ${poses.length} postures solid`}
               >
                 {poses.map((p) => {
-                  const state = band(nodeP(store, `id:${p.id}`));
+                  const state = band(nodeP(store, `id:${p.id}`, Date.now()));
                   return (
                     <span
                       key={p.id}
@@ -639,7 +639,7 @@ function ReviewMode({
               </div>
             </dl>
             <p className="tr-done-root text-soft">
-              Whole sequence now at <strong>{pctLabel(nodeP(store, 'root'))}</strong> — the
+              Whole sequence now at <strong>{pctLabel(nodeP(store, 'root', Date.now()))}</strong> — the
               probability you could run the class cold.
             </p>
             {stats.again > 0 && (
@@ -962,7 +962,7 @@ function makeFreeNext(store: TrainerStore, avoidId: string | null): McQuestion |
   if (avoidId && pool.length > 1) pool = pool.filter((p) => p.id !== avoidId);
   if (pool.length === 0) return null;
   // low P(known) transitions come around more often
-  const prompt = weightedPick(pool, (p) => 0.25 + (1 - nodeP(store, `tr:${p.order}`)) * 4);
+  const prompt = weightedPick(pool, (p) => 0.25 + (1 - nodeP(store, `tr:${p.order}`, Date.now())) * 4);
   return makeNextMc(prompt);
 }
 
@@ -1128,7 +1128,7 @@ function buildDeck(store: TrainerStore): DeckCard[] {
   const deck: DeckCard[] = [];
   let key = 0;
   while (remaining.length > 0) {
-    const pose = weightedPick(remaining, (p) => 0.2 + (1 - nodeP(store, `id:${p.id}`)) * 3);
+    const pose = weightedPick(remaining, (p) => 0.2 + (1 - nodeP(store, `id:${p.id}`, Date.now())) * 3);
     remaining = remaining.filter((p) => p !== pose);
     deck.push({
       pose,

@@ -8,8 +8,8 @@ export const standingSeparateLegStretching: Pose = {
   pronunciation: 'dahn-dah-yah-MAH-nah bee-bhahk-tah-PAH-dah pahsh-chee-moh-tah-NAH-sah-nah',
   category: 'standing',
   sets: 2,
-  timing: "2 sets, ~30s",
-  approxTotalSeconds: 140,
+  timing: "2 sets — ~60s first set with setup, ~40s second",
+  approxTotalSeconds: 100,
   summary:
     'A wide-straddle forward fold: legs stretched apart, hands gripping the heels from the outside, forehead reaching for the floor between the feet. It is the first time in class the head drops below the heart — a deep release for the hamstrings and inner thighs, and a recovery breath for the whole system.',
   setup: [

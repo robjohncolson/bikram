@@ -9,7 +9,7 @@ export const cobra: Pose = {
   category: 'floor',
   sets: 2,
   timing: "2 sets, ~10s",
-  approxTotalSeconds: 110,
+  approxTotalSeconds: 105,
   summary:
     'Face down, palms under the shoulders, legs and hips welded to the floor — you curl the chest up like a cobra rearing, lifting with the strength of the back, not the push of the hands. The opening posture of the spine-strengthening series.',
   setup: [

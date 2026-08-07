@@ -8,8 +8,8 @@ export const standingSeparateLegHeadToKnee: Pose = {
   pronunciation: 'dahn-dah-yah-MAH-nah bee-bhahk-tah-PAH-dah jah-noo-shear-AHS-ah-nah',
   category: 'standing',
   sets: 2,
-  timing: "2 sets, ~30s each side",
-  approxTotalSeconds: 170,
+  timing: "2 sets — ~45–55s each side first set, ~30s second",
+  approxTotalSeconds: 160,
   summary:
     'With hips squared to the side and palms pressed overhead, you tuck the chin and round down until the forehead touches the front knee. Unlike most forward folds, the rounding is the point: a deliberate throat and belly compression aimed at the thyroid and the digestive organs.',
   setup: [

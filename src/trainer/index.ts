@@ -4,7 +4,7 @@
  */
 export type * from './types';
 export { ARCS, arcOf, kcNodes, allCards, cardById } from './graph';
-export { BKT_BY_KIND, bktUpdate, leafP, nodeP, applyEvidence, band } from './bkt';
+export { BKT_BY_KIND, bktUpdate, leafP, nodeP, applyEvidence, band, decayedP, decayHalfLifeDays } from './bkt';
 export { AGAIN_MINUTES, newCardState, gradeCard, isDue } from './srs';
 export { STORAGE_KEY, emptyStore, loadStore, saveStore, resetStore } from './store';
 export {

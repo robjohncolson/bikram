@@ -9,7 +9,7 @@ export const situp: Pose = {
   category: 'floor',
   sets: 1,
   timing: "Once here, then between every floor posture",
-  approxTotalSeconds: 60,
+  approxTotalSeconds: 50,
   summary:
     'The recurring engine of the floor series: legs straight, arms overhead, snap up to sitting with a double exhale and dive for the toes. Numbered once at 15, but you will repeat it after every floor posture for the rest of class. (The toe-grab finish shares the name Pada-Hastasana — hands to feet — with the forward-fold half of posture 2; the sit-up itself has no Sanskrit name of its own.)',
   setup: [

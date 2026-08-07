@@ -34,10 +34,23 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   the Pranayama six-count (5 breaths/min; beats land on seconds). Views
   never touch Web Audio directly. Settings persist in `yoga-pacer-v1`.
   `cues.ts` is the class-cue sequencer: compiles each posture into
-  beat-addressed events (announce / guide / set / warn; pure, tested).
+  beat-addressed events (announce / guide / set / segment / warn; pure,
+  tested), with `segmentAtBeat` locating the live segment for the UI.
   `voice.ts` is the spoken sampler over browser speech synthesis
   (guarded — degrades to tones-only); `metronome.cue()` renders the
-  tone events (warn tick, change chime, end bell).
+  tone events (warn tick, change chime, end bell). `wakelock.ts` keeps
+  the screen awake during practice (guarded, visibility-aware).
+- `src/data/segments/` — per-posture class-time structure (sides, sets,
+  the floor series' savasana/sit-up interludes) in four range files,
+  merged onto `Pose.segments` by `poses/index.ts`. Segments partition
+  `approxTotalSeconds` exactly — `segments.test.ts` enforces it.
+- Forgetting decay: `trainer/bkt.ts` decays each leaf's P(known) back
+  toward its prior between practice sessions (half-life stretches with
+  correct answers, capped 60 days). `leafP`/`nodeP` take an optional
+  `now`; omitting it skips decay (pinned-posterior tests rely on that).
+- PWA: hand-rolled (`public/sw.js` runtime caching + offline fallback,
+  `public/manifest.webmanifest`, icons in `public/icons/`), registered
+  from `main.tsx` in prod only. No build-time plugin on purpose.
 - `src/trainer/` — the learning engine (pure TS, unit-tested with vitest,
   `npm test`). Views import ONLY from `src/trainer/index.ts`. Three layers:
   - `graph.ts` — the knowledge DAG: 26 identity KCs + 25 transition KCs

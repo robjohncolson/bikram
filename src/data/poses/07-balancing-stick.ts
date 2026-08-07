@@ -8,8 +8,8 @@ export const balancingStick: Pose = {
   pronunciation: 'too-lah-dahn-DAH-sah-nah',
   category: 'standing',
   sets: 2,
-  timing: "2 sets, 10s each leg",
-  approxTotalSeconds: 100,
+  timing: "2 sets — ~10s hold each leg, plus the step in",
+  approxTotalSeconds: 85,
   summary:
     'Ten seconds of maximum effort: arms, torso, and lifted leg stretched into one horizontal line over a single standing leg — a human capital T. It is a deliberate cardiovascular jolt, traditionally nicknamed the 10-second "heart attack" for the spike it sends through the heart rate.',
   setup: [

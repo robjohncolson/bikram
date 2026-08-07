@@ -79,6 +79,22 @@ export interface MuscleGroup {
 
 export type PoseCategory = 'breathing' | 'standing' | 'floor';
 
+/**
+ * One timed piece of a posture's class time: a side, a set, the
+ * savasana/sit-up interludes of the floor series, or a breathing round.
+ * A posture's segments partition its `approxTotalSeconds` exactly —
+ * enforced by a unit test — so the class pacer, its countdown, and the
+ * spoken cues all ride one clock.
+ */
+export interface PoseSegment {
+  kind: 'side' | 'set' | 'rest' | 'situp' | 'breath';
+  /** short display label, e.g. "First set — right leg" */
+  label: string;
+  /** spoken cue at the segment's start, e.g. "Other side." */
+  cue: string;
+  seconds: number;
+}
+
 /** How a posture engages one muscle group */
 export interface MuscleWork {
   id: MuscleId;
@@ -136,4 +152,10 @@ export interface Pose {
    * Rendered by <PoseFigure/>; omit to fall back to a numbered badge.
    */
   figure?: string;
+  /**
+   * Class-time structure (sides/sets/interludes), authored separately in
+   * `src/data/segments/` and merged by `poses/index.ts`. Segments sum
+   * exactly to approxTotalSeconds.
+   */
+  segments?: PoseSegment[];
 }

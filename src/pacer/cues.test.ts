@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { announceText, buildClassTrack, buildPoseTrack } from './cues';
+import { announceText, buildClassTrack, buildPoseTrack, segmentAtBeat } from './cues';
 import { poses } from '../data';
 
 const camel = poses.find((p) => p.id === 'camel')!;
 const pranayama = poses[0];
 const balancingStick = poses.find((p) => p.id === 'balancing-stick')!;
+/** camel without authored segments — exercises the fallback set-cue path */
+const plainCamel = { ...camel, segments: undefined };
 
 describe('cue sequencer', () => {
   it('announces postures by number and breathing exercises by name', () => {
@@ -22,7 +24,7 @@ describe('cue sequencer', () => {
   });
 
   it('marks the second-set boundary at the midpoint for two-set postures', () => {
-    const track = buildPoseTrack(camel, 60);
+    const track = buildPoseTrack(plainCamel, 60);
     const set = track.events.find((e) => e.kind === 'set');
     expect(set).toMatchObject({
       atBeat: Math.round(track.totalBeats / 2),
@@ -58,6 +60,48 @@ describe('cue sequencer', () => {
     const fromCamel = buildClassTrack(60, 22);
     expect(fromCamel).toHaveLength(5);
     expect(fromCamel[0].pose.id).toBe('camel');
+  });
+
+  it('emits authored segment cues on the scaled beat grid', () => {
+    const segmented = {
+      ...camel,
+      approxTotalSeconds: 120,
+      segments: [
+        { kind: 'set' as const, label: 'First set', cue: 'First set.', seconds: 60 },
+        { kind: 'rest' as const, label: 'Savasana', cue: 'Twenty-second savasana.', seconds: 20 },
+        { kind: 'set' as const, label: 'Second set', cue: 'Second set.', seconds: 40 },
+      ],
+    };
+    const track = buildPoseTrack(segmented, 60);
+    const segCues = track.events.filter((e) => e.kind === 'segment');
+    expect(segCues).toEqual([
+      { atBeat: 60, kind: 'segment', text: 'Twenty-second savasana.' },
+      { atBeat: 80, kind: 'segment', text: 'Second set.' },
+    ]);
+    // no fallback set events when segments are authored
+    expect(track.events.filter((e) => e.kind === 'set')).toHaveLength(0);
+    // at half tempo the boundaries scale with the grid
+    const half = buildPoseTrack(segmented, 30);
+    expect(half.events.filter((e) => e.kind === 'segment').map((e) => e.atBeat)).toEqual([30, 40]);
+  });
+
+  it('locates the segment under any beat with a live countdown', () => {
+    const segmented = {
+      ...camel,
+      approxTotalSeconds: 120,
+      segments: [
+        { kind: 'set' as const, label: 'First set', cue: 'First set.', seconds: 60 },
+        { kind: 'rest' as const, label: 'Savasana', cue: 'Rest.', seconds: 20 },
+        { kind: 'set' as const, label: 'Second set', cue: 'Second set.', seconds: 40 },
+      ],
+    };
+    const track = buildPoseTrack(segmented, 60);
+    expect(segmentAtBeat(track, 0)).toMatchObject({ index: 0, label: 'First set', beatsLeft: 60 });
+    expect(segmentAtBeat(track, 59)).toMatchObject({ index: 0, beatsLeft: 1 });
+    expect(segmentAtBeat(track, 60)).toMatchObject({ index: 1, label: 'Savasana', beatsLeft: 20 });
+    expect(segmentAtBeat(track, 119)).toMatchObject({ index: 2, beatsLeft: 1 });
+    expect(segmentAtBeat(track, 999)).toMatchObject({ index: 2 });
+    expect(segmentAtBeat(buildPoseTrack(plainCamel, 60), 5)).toBeNull();
   });
 
   it('halves beat budgets at half tempo', () => {

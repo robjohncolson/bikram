@@ -24,7 +24,14 @@ posture's technique, benefits, chakra connections, and muscle-group work.
 - **Pace** — a metronome-based breath pacer: 60 BPM in six-beat bars by
   default (six counts in, six out — the Pranayama pace, five breaths a
   minute), adjustable tempo and bar length down to a Kapalbhati pulse,
-  plus a class pacer that walks all 26 postures on the same clock.
+  plus a class pacer that walks all 26 postures on the same clock with
+  spoken instructions at the right moments — sides, sets, the floor
+  series' savasana and sit-up interludes — and an immersive full-screen
+  class mode that keeps the screen awake.
+
+Installable as an app (PWA) and fully offline once visited — everything
+is self-contained. Knowledge estimates decay honestly between sessions:
+what you don't practice, the app slowly stops claiming you know.
 
 ## Run it
 

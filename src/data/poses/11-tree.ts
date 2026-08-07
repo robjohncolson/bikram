@@ -8,7 +8,7 @@ export const tree: Pose = {
   pronunciation: 'tah-DAHS-ah-nah',
   category: 'standing',
   sets: 1,
-  timing: "1 set, ~30s each side",
+  timing: "1 set — ~45s each side, right then left",
   approxTotalSeconds: 90,
   summary:
     'Standing tall on one locked leg, you draw the other foot up toward the opposite hip crease and press the folded knee down, hips open, palms finally meeting in prayer. After the big muscular postures, Tree is about one thing: rooting and stillness.',

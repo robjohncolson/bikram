@@ -424,6 +424,36 @@
   font-size: 12.5px;
 }
 
+/* live segment row: what the class is doing right now inside the posture */
+.pc-class-seg {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 10px;
+  margin-top: 9px;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ember-text);
+  background: var(--ember-soft);
+  border: 1px solid color-mix(in srgb, var(--ember) 25%, transparent);
+}
+
+.pc-class-seg .pc-seg-time {
+  font-variant-numeric: tabular-nums;
+  font-weight: 700;
+}
+
+/* rest and sit-up segments read calmer — the body is resting */
+.pc-class-seg[data-kind='rest'],
+.pc-class-seg[data-kind='situp'] {
+  color: var(--text-soft);
+  background: var(--bg-sunken);
+  border-color: var(--border);
+  font-style: italic;
+  font-weight: 500;
+}
+
 .pc-class-remain {
   display: flex;
   flex-direction: column;

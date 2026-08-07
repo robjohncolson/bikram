@@ -9,7 +9,7 @@ export const headToKneeStretching: Pose = {
   category: 'floor',
   sets: 2,
   timing: '2 sets — head to knee each side, then stretching',
-  approxTotalSeconds: 240,
+  approxTotalSeconds: 225,
   summary:
     'Two postures in one: first a seated head-to-knee fold over each straight leg, forehead to knee with the toes pulled back, then Paschimottanasana — stretching the whole back body over both legs together. The seated echo of the standing head-to-knee work.',
   setup: [

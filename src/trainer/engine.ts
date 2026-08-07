@@ -49,7 +49,7 @@ export function buildQueue(store: TrainerStore, now: number): QueueEntry[] {
   if (queue.length < QUEUE_CAP) {
     const weak = allCards
       .filter((c) => store.cards[c.id] && !taken.has(c.id))
-      .map((c) => ({ c, p: nodeP(store, c.kc) }))
+      .map((c) => ({ c, p: nodeP(store, c.kc, now) }))
       .filter((x) => x.p < 0.85)
       .sort((a, b) => a.p - b.p);
     for (const { c } of weak) {

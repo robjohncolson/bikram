@@ -1,0 +1,183 @@
+/* Class mode is a dim-room surface: deliberately dark in BOTH themes
+   (a hot yoga room is dim; a white screen at arm's length is a floodlight).
+   It therefore uses a fixed warm-dark base + fixed cream text instead of
+   theme tokens — the one sanctioned exception to the tokens-only rule.
+   The ember accent uses the dark-theme value so it reads on the dark base. */
+.cm {
+  --cm-bg: #16110d;
+  --cm-text: #f2e9dc;
+  --cm-soft: rgb(242 233 220 / 0.62);
+  --cm-faint: rgb(242 233 220 / 0.38);
+  --cm-ember: #e8763d;
+
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  padding: max(20px, env(safe-area-inset-top)) 24px max(20px, env(safe-area-inset-bottom));
+  background: radial-gradient(120% 90% at 50% 0%, #201811 0%, var(--cm-bg) 60%);
+  color: var(--cm-text);
+  text-align: center;
+}
+
+.cm:focus-visible {
+  outline: none;
+}
+
+.cm-top {
+  padding-top: 8px;
+}
+
+.cm-posture {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--cm-ember);
+}
+
+.cm-name {
+  font-family: var(--font-display);
+  font-size: clamp(24px, 4.5vw, 40px);
+  font-weight: 600;
+  margin-top: 6px;
+}
+
+.cm-sanskrit {
+  font-style: italic;
+  color: var(--cm-soft);
+  margin-top: 2px;
+}
+
+.cm-mid {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+}
+
+.cm-seg {
+  font-size: clamp(16px, 2.6vw, 22px);
+  font-weight: 600;
+  color: var(--cm-soft);
+}
+
+/* rest and sit-up moments read calmer than working segments */
+.cm-seg[data-kind='rest'],
+.cm-seg[data-kind='situp'] {
+  color: var(--cm-faint);
+  font-style: italic;
+  font-weight: 500;
+}
+
+.cm-count {
+  font-family: var(--font-display);
+  font-size: clamp(96px, 24vw, 240px);
+  font-weight: 600;
+  line-height: 1;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.02em;
+}
+
+.cm-posetime {
+  color: var(--cm-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.cm-paused {
+  color: var(--cm-ember);
+  font-weight: 650;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  font-size: 14px;
+}
+
+.cm-bottom {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  align-items: center;
+}
+
+.cm-bar {
+  width: min(560px, 86vw);
+  height: 3px;
+  border-radius: 999px;
+  background: rgb(242 233 220 / 0.14);
+  overflow: hidden;
+}
+
+.cm-bar span {
+  display: block;
+  height: 100%;
+  background: var(--cm-ember);
+  transition: width 0.9s linear;
+}
+
+.cm-next {
+  color: var(--cm-soft);
+  font-size: 15px;
+}
+
+.cm-controls {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 10px;
+}
+
+.cm-controls button {
+  padding: 10px 18px;
+  border-radius: 999px;
+  border: 1px solid rgb(242 233 220 / 0.22);
+  color: var(--cm-text);
+  font-size: 14.5px;
+  font-weight: 550;
+  transition: background 0.15s, border-color 0.15s, opacity 0.15s;
+}
+
+.cm-controls button:hover:not(:disabled) {
+  background: rgb(242 233 220 / 0.08);
+  border-color: rgb(242 233 220 / 0.4);
+}
+
+.cm-controls button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.cm-controls .cm-primary {
+  background: var(--cm-ember);
+  border-color: var(--cm-ember);
+  color: #1b120b;
+}
+
+.cm-controls .cm-primary:hover {
+  background: color-mix(in srgb, var(--cm-ember) 88%, white);
+}
+
+.cm-controls button:focus-visible {
+  outline: 2px solid var(--cm-ember);
+  outline-offset: 2px;
+}
+
+/* visually hidden live region for segment announcements */
+.cm-live {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+@media (max-width: 560px) {
+  .cm-name {
+    font-size: 22px;
+  }
+  .cm-count {
+    font-size: clamp(80px, 30vw, 140px);
+  }
+}

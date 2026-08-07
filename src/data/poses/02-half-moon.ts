@@ -8,8 +8,8 @@ export const halfMoon: Pose = {
   pronunciation: 'ARD-hah chahn-DRAH-sah-nah with PAH-dah hah-STAHS-ah-nah',
   category: 'standing',
   sets: 2,
-  timing: "2 sets — each side, backbend, and forward fold",
-  approxTotalSeconds: 480,
+  timing: "2 sets — each side, backbend, and forward fold; second set shorter",
+  approxTotalSeconds: 360,
   summary:
     'The first true posture: a four-direction warm-up for the spine — deep side bends right and left, a backbend, and then Pada-Hastasana, folding the body flat against the legs with hands under the heels. The obliques are the star of the show.',
   setup: [

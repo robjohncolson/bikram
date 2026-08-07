@@ -9,7 +9,7 @@ export const standingHeadToKnee: Pose = {
   category: 'standing',
   sets: 2,
   timing: "2 sets — 60s then 30s, each leg",
-  approxTotalSeconds: 260,
+  approxTotalSeconds: 190,
   summary:
     'The opening posture of the balancing series: stand on one leg locked solid as a lamp post, interlace all ten fingers under the flexed foot of the other, kick that leg out straight, and — eventually — curl the forehead to the knee. It is built stage by stage on fierce, patient concentration.',
   setup: [

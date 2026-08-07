@@ -9,7 +9,7 @@ export const locust: Pose = {
   category: 'floor',
   sets: 2,
   timing: "2 sets — each leg, then both legs",
-  approxTotalSeconds: 140,
+  approxTotalSeconds: 115,
   summary:
     'Face down with the chin stretched forward and both arms pinned straight under the body, palms down, you lift one leg, then the other, then both together. The elbows press into the abdomen the whole time — the famous, intense forearm-and-elbow sensation of the sequence.',
   setup: [

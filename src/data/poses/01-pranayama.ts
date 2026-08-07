@@ -9,7 +9,7 @@ export const pranayama: Pose = {
   category: 'breathing',
   sets: 2,
   timing: '2 sets of 10 slow breaths',
-  approxTotalSeconds: 300,
+  approxTotalSeconds: 290,
   summary:
     'The opening breathing exercise: slow, maximal lung-filling breaths with interlaced fingers under the chin. It wakes up the lungs, warms the body from the inside, and sets the meditative pace for the 90 minutes ahead.',
   setup: [

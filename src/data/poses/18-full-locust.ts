@@ -9,7 +9,7 @@ export const fullLocust: Pose = {
   category: 'floor',
   sets: 2,
   timing: "2 sets, ~10s",
-  approxTotalSeconds: 110,
+  approxTotalSeconds: 105,
   summary:
     'The 747 of the sequence: arms stretch out to the sides like wings while chest, arms, and legs all lift off the floor at once. For a few intense seconds the entire body flies, balanced on nothing but the abdomen.',
   setup: [

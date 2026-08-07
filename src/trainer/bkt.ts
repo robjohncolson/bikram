@@ -17,6 +17,28 @@ export const BKT_BY_KIND: Record<CardKind, BktParams> = {
 
 const clamp = (p: number) => Math.min(0.999, Math.max(0.001, p));
 
+/**
+ * Forgetting: with no practice, a leaf's P(known) decays exponentially
+ * back toward its prior. Every correct answer stretches the half-life
+ * (well-practiced knowledge fades slower), capped at two months. Note
+ * the symmetry: a P dragged *below* prior by wrong answers also drifts
+ * back up — regression toward "we no longer know either way".
+ */
+const DECAY_BASE_HALF_LIFE_DAYS = 4;
+const DECAY_MAX_HALF_LIFE_DAYS = 60;
+const DAY_MS = 86_400_000;
+
+export function decayHalfLifeDays(correct: number): number {
+  return Math.min(DECAY_MAX_HALF_LIFE_DAYS, DECAY_BASE_HALF_LIFE_DAYS * (1 + correct));
+}
+
+export function decayedP(state: { p: number; correct: number; last: number }, prior: number, now: number): number {
+  const days = Math.max(0, (now - state.last) / DAY_MS);
+  if (days === 0) return state.p;
+  const keep = Math.pow(0.5, days / decayHalfLifeDays(state.correct));
+  return prior + (state.p - prior) * keep;
+}
+
 /** One BKT step: posterior after an observation, then the learning bump. */
 export function bktUpdate(p: number, correct: boolean, params: BktParams): number {
   const { pLearn, pGuess, pSlip } = params;
@@ -27,12 +49,21 @@ export function bktUpdate(p: number, correct: boolean, params: BktParams): numbe
   return clamp(posterior + (1 - posterior) * pLearn);
 }
 
-/** Current P(known) for a leaf KC (stored state or the kind's prior). */
-export function leafP(store: TrainerStore, kc: KcId): number {
-  const state = store.kcs[kc];
-  if (state) return state.p;
-  // untouched leaves sit at the prior of the card kind that feeds them
+function priorFor(kc: KcId): number {
   return kc.startsWith('tr:') ? BKT_BY_KIND.next.pInit : BKT_BY_KIND.name.pInit;
+}
+
+/**
+ * Current P(known) for a leaf KC: stored posterior decayed toward the
+ * prior by time since the last evidence; untouched leaves sit at the
+ * prior of the card kind that feeds them. Pass `now` (ms) — omitting it
+ * skips decay (used by tests that pin exact posteriors).
+ */
+export function leafP(store: TrainerStore, kc: KcId, now?: number): number {
+  const state = store.kcs[kc];
+  const prior = priorFor(kc);
+  if (!state) return prior;
+  return now === undefined ? state.p : decayedP(state, prior, now);
 }
 
 /**
@@ -40,12 +71,12 @@ export function leafP(store: TrainerStore, kc: KcId): number {
  * children: the probability that EVERY piece is known. Honest and strict —
  * a low root number early on is correct, not a bug.
  */
-export function nodeP(store: TrainerStore, kc: KcId): number {
+export function nodeP(store: TrainerStore, kc: KcId, now?: number): number {
   const node = kcNodes.get(kc);
   if (!node) return 0;
-  if (node.kind === 'identity' || node.kind === 'transition') return leafP(store, kc);
+  if (node.kind === 'identity' || node.kind === 'transition') return leafP(store, kc, now);
   let p = 1;
-  for (const child of node.children) p *= nodeP(store, child);
+  for (const child of node.children) p *= nodeP(store, child, now);
   return p;
 }
 

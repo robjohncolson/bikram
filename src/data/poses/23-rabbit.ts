@@ -9,7 +9,7 @@ export const rabbit: Pose = {
   category: 'floor',
   sets: 2,
   timing: '2 sets, ~20s',
-  approxTotalSeconds: 120,
+  approxTotalSeconds: 125,
   summary:
     'The counterpose to Camel: gripping the heels, chin tucked, you roll forward into the tightest ball of the class until the crown of the head lightly touches the floor at the knees. Maximum forward compression answers maximum backbend.',
   setup: [

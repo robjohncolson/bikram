@@ -9,7 +9,7 @@ export const standingBow: Pose = {
   category: 'standing',
   sets: 2,
   timing: "2 sets — 60s then 30s, each leg",
-  approxTotalSeconds: 260,
+  approxTotalSeconds: 190,
   summary:
     'A one-legged backbend in motion: you grip the inside of one ankle behind you, kick back and up, and reach forward until the body approaches a standing split. It is the great heart opener of the standing series — balance, backbend, and full-body stretch in a single shape.',
   setup: [

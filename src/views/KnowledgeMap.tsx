@@ -146,7 +146,8 @@ export function KnowledgeMap() {
   const store = useMemo(() => loadStore(Date.now()), []);
   const pOf = useMemo(() => {
     const m = new Map<KcId, number>();
-    for (const id of kcNodes.keys()) m.set(id, nodeP(store, id));
+    const now = Date.now();
+    for (const id of kcNodes.keys()) m.set(id, nodeP(store, id, now));
     return m;
   }, [store]);
 

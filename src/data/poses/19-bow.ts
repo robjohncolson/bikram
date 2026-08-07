@@ -9,7 +9,7 @@ export const bow: Pose = {
   category: 'floor',
   sets: 2,
   timing: "2 sets, ~20s",
-  approxTotalSeconds: 130,
+  approxTotalSeconds: 115,
   summary:
     'The finale of the spine-strengthening series: gripping the ankles from the outside and kicking up and back, you curl the body into a drawn bow — thighs and chest both off the floor, the whole spine bending evenly from tailbone to neck.',
   setup: [

@@ -9,7 +9,7 @@ export const kapalbhati: Pose = {
   category: 'breathing',
   sets: 2,
   timing: '2 sets of 60 quick exhalations',
-  approxTotalSeconds: 180,
+  approxTotalSeconds: 165,
   summary:
     'The closing breathing exercise: kneeling in Vajrasana, sixty sharp abdominal exhalations per set with passive inhales in between. The "skull-shining" breath pumps the last stale air out of the lungs and sends you out of class clear and energized.',
   setup: [

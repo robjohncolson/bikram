@@ -8,8 +8,8 @@ export const toeStand: Pose = {
   pronunciation: 'pah-dahn-goos-TAHS-ah-nah',
   category: 'standing',
   sets: 1,
-  timing: "1 set, ~20s each side",
-  approxTotalSeconds: 80,
+  timing: "1 set — ~40s each side, descent to rise",
+  approxTotalSeconds: 85,
   summary:
     'From Tree, you bend the standing knee and sink all the way down to a squat balanced on the ball of one foot, spine upright, hands working toward prayer. The finale of the standing series is equal parts ankle, knee, and undivided attention.',
   setup: [

@@ -9,7 +9,7 @@ export const fixedFirm: Pose = {
   category: 'floor',
   sets: 2,
   timing: "2 sets, ~40s",
-  approxTotalSeconds: 170,
+  approxTotalSeconds: 145,
   summary:
     'A kneeling recline that rebuilds the knees and ankles: sitting between the heels, you lower back in stages — elbow, elbow, shoulders — until the back rests on the floor with arms overhead. Depth is earned, never forced; you go exactly as far as the knees allow.',
   setup: [
