@@ -491,6 +491,19 @@
   transform: translateX(3px);
 }
 
+/* the drill jump is the detail card's primary action */
+.km-poselink.km-drill {
+  padding: 8px 16px;
+  border-radius: 999px;
+  background: var(--ember-soft);
+  border: 1px solid color-mix(in srgb, var(--ember) 30%, transparent);
+  margin-top: 6px;
+}
+
+.km-poselink.km-drill:hover {
+  background: color-mix(in srgb, var(--ember) 22%, var(--bg-raised));
+}
+
 /* ——— legend */
 
 .km-legend {

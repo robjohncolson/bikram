@@ -10,12 +10,17 @@ import {
   breathsPerMinute,
   buildPoseTrack,
   clampSettings,
+  clipFor,
+  clipsAvailable,
   createMetronome,
   createWakeLock,
   phaseSeconds,
+  playClip,
   segmentAtBeat,
+  silenceVoice,
   speak,
   speechSupported,
+  stopClips,
   stopSpeaking,
   watchVoices,
 } from '../pacer';
@@ -158,26 +163,47 @@ export function Pacer() {
     });
   }, []);
 
-  /** Render any cue events due at this 0-based beat of the active hold. */
-  const fireCues = useCallback((beatIdx: number) => {
-    const track = trackRef.current;
-    if (!track) return;
+  /** One spoken cue through the sampler: the studio-voice clip when one
+   *  exists and the voice preference allows it, else speech synthesis.
+   *  Interrupts silence BOTH channels so an announce always cuts through. */
+  const sayCue = useCallback((text: string, interrupt: boolean) => {
     const prefs = cuesRef.current;
     const s = settingsRef.current;
-    const speakable = prefs.enabled && speechSupported() && !s.muted;
-    for (const ev of track.events) {
-      if (ev.atBeat !== beatIdx) continue;
-      if (ev.kind === 'warn') {
-        metRef.current?.cue('warn'); // tone; engine mute already zeroes it
-      } else if (speakable && ev.text) {
-        speak(ev.text, {
-          voiceName: prefs.voiceName ?? undefined,
-          interrupt: ev.kind === 'announce',
-          volume: s.volume,
-        });
-      }
+    const wantClips = prefs.voiceName === null || prefs.voiceName === '~studio';
+    const url = wantClips ? clipFor(text) : undefined;
+    if (url) {
+      if (interrupt) stopSpeaking();
+      playClip(url, { volume: s.volume, interrupt });
+    } else {
+      if (interrupt) stopClips();
+      speak(text, {
+        voiceName: prefs.voiceName && !prefs.voiceName.startsWith('~') ? prefs.voiceName : undefined,
+        interrupt,
+        volume: s.volume,
+      });
     }
   }, []);
+
+  /** Render any cue events due at this 0-based beat of the active hold. */
+  const fireCues = useCallback(
+    (beatIdx: number) => {
+      const track = trackRef.current;
+      if (!track) return;
+      const prefs = cuesRef.current;
+      const s = settingsRef.current;
+      // clips speak even where speech synthesis is unsupported
+      const speakable = prefs.enabled && !s.muted && (speechSupported() || clipsAvailable());
+      for (const ev of track.events) {
+        if (ev.atBeat !== beatIdx) continue;
+        if (ev.kind === 'warn') {
+          metRef.current?.cue('warn'); // tone; engine mute already zeroes it
+        } else if (speakable && ev.text) {
+          sayCue(ev.text, ev.kind === 'announce');
+        }
+      }
+    },
+    [sayCue],
+  );
 
   /** One counted beat of class time: cue, decrement, hand off postures. */
   const tickClass = useCallback(() => {
@@ -193,7 +219,7 @@ export function Pacer() {
       return;
     }
     if (c.idx >= poses.length - 1) {
-      stopSpeaking();
+      silenceVoice();
       metRef.current?.cue('end');
       trackRef.current = null;
       commitClass({ phase: 'done', pacedSeconds: pacedRef.current });
@@ -220,7 +246,7 @@ export function Pacer() {
     m.update(settingsRef.current);
     return () => {
       clearPending();
-      stopSpeaking();
+      silenceVoice();
       m.stop();
       m.dispose();
       if (metRef.current === m) metRef.current = null;
@@ -299,7 +325,7 @@ export function Pacer() {
     if (m.running) {
       m.stop();
       clearPending();
-      stopSpeaking();
+      silenceVoice();
       setRunning(false);
       setBeatView(null);
     } else {
@@ -314,7 +340,7 @@ export function Pacer() {
       if (c.phase !== 'running' && c.phase !== 'paused') return;
       const idx = c.idx + dir;
       if (idx < 0 || idx >= poses.length) return;
-      stopSpeaking();
+      silenceVoice();
       metRef.current?.chime();
       const track = buildTrack(idx);
       trackRef.current = track;
@@ -339,7 +365,7 @@ export function Pacer() {
   const toggleClassPause = useCallback(() => {
     const c = classRef.current;
     if (c.phase === 'running') {
-      stopSpeaking();
+      silenceVoice();
       commitClass({ ...c, phase: 'paused' });
     } else if (c.phase === 'paused') {
       commitClass({ ...c, phase: 'running' });
@@ -347,7 +373,7 @@ export function Pacer() {
   }, [commitClass]);
 
   const endClass = useCallback(() => {
-    stopSpeaking();
+    silenceVoice();
     trackRef.current = null;
     commitClass({ phase: 'idle' });
   }, [commitClass]);
@@ -357,12 +383,8 @@ export function Pacer() {
     const c = classRef.current;
     const idx = c.phase === 'running' || c.phase === 'paused' ? c.idx : startIdx;
     const pose = poses[idx] ?? poses[0];
-    speak(announceText(pose, cuesRef.current.sanskrit), {
-      voiceName: cuesRef.current.voiceName ?? undefined,
-      interrupt: true,
-      volume: settingsRef.current.volume,
-    });
-  }, [startIdx]);
+    sayCue(announceText(pose, cuesRef.current.sanskrit), true);
+  }, [sayCue, startIdx]);
 
   // Keyboard: Space start/pause, [ ] tempo, arrows skip posture in class.
   useEffect(() => {
@@ -725,7 +747,7 @@ export function Pacer() {
           </div>
           {classBody}
           <div className="pc-cues">
-            {speechSupported() ? (
+            {speechSupported() || clipsAvailable() ? (
               <>
                 <div className="pc-cues-row">
                   <span className="pc-cues-label">Instructions</span>
@@ -750,18 +772,21 @@ export function Pacer() {
                         value={cues.voiceName ?? ''}
                         onChange={(e) => applyCues({ voiceName: e.target.value || null })}
                       >
-                        {voices.length === 0 ? (
-                          <option value="">Default voice</option>
-                        ) : (
+                        {clipsAvailable() ? (
                           <>
-                            <option value="">Browser default</option>
-                            {voices.map((v) => (
-                              <option key={`${v.name}|${v.lang}`} value={v.name}>
-                                {v.name} ({v.lang})
-                              </option>
-                            ))}
+                            <option value="">Studio voice — recorded</option>
+                            {speechSupported() && <option value="~tts">Browser default</option>}
                           </>
+                        ) : (
+                          <option value="">
+                            {voices.length === 0 ? 'Default voice' : 'Browser default'}
+                          </option>
                         )}
+                        {voices.map((v) => (
+                          <option key={`${v.name}|${v.lang}`} value={v.name}>
+                            {v.name} ({v.lang})
+                          </option>
+                        ))}
                       </select>
                       <button type="button" className="pc-btn pc-btn-sm" onClick={previewVoice}>
                         Preview voice

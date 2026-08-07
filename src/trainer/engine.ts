@@ -1,4 +1,4 @@
-import type { Card, CardId, Grade, TrainerStore } from './types';
+import type { Card, CardId, Grade, KcId, TrainerStore } from './types';
 import { allCards, cardById, kcNodes } from './graph';
 import { applyEvidence, band, nodeP } from './bkt';
 import { gradeCard, isDue, newCardState } from './srs';
@@ -16,7 +16,7 @@ export const QUEUE_CAP = 20;
 export interface QueueEntry {
   card: Card;
   /** why this card is in the queue */
-  reason: 'due' | 'new' | 'weak';
+  reason: 'due' | 'new' | 'weak' | 'drill';
 }
 
 /**
@@ -59,6 +59,50 @@ export function buildQueue(store: TrainerStore, now: number): QueueEntry[] {
     }
   }
 
+  return queue;
+}
+
+/**
+ * A focused drill on one knowledge node — the knowledge map's "drill
+ * this" jump. Leaves drill their own cards plus immediate context (a
+ * transition brings its two identities; an identity brings the
+ * hand-offs leaning on it). Aggregates drill their weakest leaves.
+ * Direct cards lead; context follows in introduction order.
+ */
+export const DRILL_CAP = 8;
+
+export function buildDrillQueue(store: TrainerStore, kc: KcId, now: number): QueueEntry[] {
+  const node = kcNodes.get(kc);
+  if (!node) return [];
+
+  let targetKcs: KcId[];
+  if (node.kind === 'identity') {
+    const leaningTransitions = [...kcNodes.values()]
+      .filter((n) => n.kind === 'transition' && n.prereqs.includes(kc))
+      .map((n) => n.id);
+    targetKcs = [kc, ...leaningTransitions];
+  } else if (node.kind === 'transition') {
+    targetKcs = [kc, ...node.prereqs];
+  } else {
+    const leafIds =
+      node.kind === 'root'
+        ? node.children.flatMap((a) => kcNodes.get(a)?.children ?? [])
+        : node.children;
+    targetKcs = leafIds
+      .map((id) => ({ id, p: nodeP(store, id, now) }))
+      .sort((a, b) => a.p - b.p)
+      .slice(0, 4)
+      .map((x) => x.id);
+  }
+
+  const queue: QueueEntry[] = [];
+  for (const target of targetKcs) {
+    for (const card of allCards) {
+      if (card.kc !== target) continue;
+      if (queue.length >= DRILL_CAP) return queue;
+      queue.push({ card, reason: 'drill' });
+    }
+  }
   return queue;
 }
 

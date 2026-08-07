@@ -21,3 +21,5 @@ export { speechSupported, watchVoices, speak, stopSpeaking } from './voice';
 export type { VoiceChoice, SpeakOptions } from './voice';
 export { createWakeLock, wakeLockSupported } from './wakelock';
 export type { WakeLock } from './wakelock';
+export { collectCueTexts } from './cue-script';
+export { clipsAvailable, clipFor, playClip, stopClips, silenceVoice } from './clips';

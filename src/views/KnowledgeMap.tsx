@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent } from 'react';
 import { Link } from 'react-router-dom';
 import { ARCS, band, kcNodes, loadStore, nodeP } from '../trainer';
@@ -61,6 +61,53 @@ const arcSpots = ARCS.map((arc) => {
 });
 
 const rootNode = kcNodes.get('root') as KcNode;
+
+/* ————————————————————————————————————————————— keyboard navigation
+   The SVG is one tab stop (roving tabindex): arrows walk the layers —
+   Left/Right within a layer, Up/Down between root ↔ arcs ↔ hand-offs ↔
+   identities, landing on the horizontally nearest node. */
+
+function xForNode(node: KcNode): number {
+  if (node.kind === 'root') return W / 2;
+  if (node.kind === 'arc') return arcSpots.find((a) => a.node.id === node.id)?.cx ?? W / 2;
+  if (node.kind === 'transition') return trSpots.find((s) => s.node.id === node.id)?.x ?? W / 2;
+  return idSpots.find((s) => s.node.id === node.id)?.x ?? W / 2;
+}
+
+function nearestByX<T extends { x?: number; cx?: number; node: KcNode }>(spots: T[], x: number): KcId {
+  let best = spots[0];
+  let bestDist = Infinity;
+  for (const s of spots) {
+    const sx = s.x ?? s.cx ?? 0;
+    const d = Math.abs(sx - x);
+    if (d < bestDist) {
+      bestDist = d;
+      best = s;
+    }
+  }
+  return best.node.id;
+}
+
+function navFrom(id: KcId, key: string): KcId | null {
+  const node = kcNodes.get(id);
+  if (!node) return null;
+  const horiz = key === 'ArrowLeft' ? -1 : key === 'ArrowRight' ? 1 : 0;
+  if (horiz !== 0) {
+    if (node.kind === 'root') return null;
+    if (node.kind === 'arc') {
+      const i = arcSpots.findIndex((a) => a.node.id === id);
+      return arcSpots[i + horiz]?.node.id ?? null;
+    }
+    const spots = node.kind === 'transition' ? trSpots : idSpots;
+    return spots.find((s) => s.node.order === node.order + horiz)?.node.id ?? null;
+  }
+  const up = key === 'ArrowUp';
+  const x = xForNode(node);
+  if (node.kind === 'root') return up ? null : nearestByX(arcSpots, x);
+  if (node.kind === 'arc') return up ? 'root' : nearestByX(trSpots, x);
+  if (node.kind === 'transition') return up ? `arc:${node.arc}` : nearestByX(idSpots, x);
+  return up ? nearestByX(trSpots, x) : null;
+}
 
 /* ————————————————————————————————————————————— probability dressing */
 
@@ -152,6 +199,9 @@ export function KnowledgeMap() {
   }, [store]);
 
   const [selected, setSelected] = useState<KcId>('root');
+  // roving tabindex: the whole map is one tab stop; arrows move focus
+  const [focusedId, setFocusedId] = useState<KcId>('root');
+  const nodeRefs = useRef(new Map<KcId, SVGGElement>());
 
   const leafCounts = useMemo(() => {
     const counts: Record<Band, number> = { unseen: 0, shaky: 0, developing: 0, solid: 0 };
@@ -171,17 +221,33 @@ export function KnowledgeMap() {
   const nodeProps = (node: KcNode, p: number) => ({
     className: 'km-node',
     role: 'button',
-    tabIndex: 0,
+    tabIndex: focusedId === node.id ? 0 : -1,
+    ref: (el: SVGGElement | null) => {
+      if (el) nodeRefs.current.set(node.id, el);
+      else nodeRefs.current.delete(node.id);
+    },
     'aria-label': `${node.kind === 'identity' ? `#${node.order} ` : ''}${node.label} — ${fmtPct(p)}, ${band(p)}`,
     'aria-pressed': selected === node.id,
     'data-band': band(p),
     'data-strong': p >= 0.85 || undefined,
     'data-selected': selected === node.id || undefined,
-    onClick: () => setSelected(node.id),
+    onClick: () => {
+      setSelected(node.id);
+      setFocusedId(node.id);
+    },
     onKeyDown: (e: KeyboardEvent<SVGGElement>) => {
       if (e.key === 'Enter' || e.key === ' ') {
         e.preventDefault();
         setSelected(node.id);
+      } else if (e.key.startsWith('Arrow')) {
+        const target = navFrom(node.id, e.key);
+        if (target) {
+          e.preventDefault();
+          setFocusedId(target);
+          nodeRefs.current.get(target)?.focus();
+        } else if (e.key === 'ArrowUp' || e.key === 'ArrowDown') {
+          e.preventDefault(); // clamp without scrolling the page
+        }
       }
     },
   });
@@ -414,7 +480,8 @@ export function KnowledgeMap() {
             </svg>
           </div>
           <p className="km-map-hint text-faint">
-            Circles are postures, diamonds are hand-offs, bands are arcs — select any node to inspect it.
+            Circles are postures, diamonds are hand-offs, bands are arcs — select any node to
+            inspect it. Keyboard: one Tab into the map, then arrow keys walk the layers.
           </p>
         </section>
 
@@ -502,6 +569,11 @@ export function KnowledgeMap() {
                 </button>
               </div>
             )}
+
+            <Link className="km-poselink km-drill" to={`/train?drill=${selNode.id}`}>
+              {isLeaf ? 'Drill this now' : 'Drill the weakest pieces'}
+              <IconGo />
+            </Link>
 
             {selNode.kind === 'identity' && selPose && (
               <Link className="km-poselink" to={`/pose/${selPose.id}`}>

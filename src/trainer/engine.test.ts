@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BKT_BY_KIND, bktUpdate, decayedP, decayHalfLifeDays, leafP, nodeP } from './bkt';
 import { AGAIN_MINUTES, gradeCard, newCardState } from './srs';
 import { allCards, ARCS, kcNodes } from './graph';
-import { buildQueue, NEW_PER_SESSION, recordAnswer } from './engine';
+import { buildDrillQueue, buildQueue, NEW_PER_SESSION, recordAnswer } from './engine';
 import { emptyStore } from './store';
 import type { TrainerStore } from './types';
 
@@ -182,6 +182,40 @@ describe('review queue', () => {
     const later = buildQueue(store, NOW + 61 * 60 * 1000);
     expect(later[0].card.id).toBe('name:pranayama');
     expect(later[0].reason).toBe('due');
+  });
+
+  it('drills a transition with its card first, then its two identities', () => {
+    const queue = buildDrillQueue(emptyStore(), 'tr:4', NOW);
+    expect(queue[0].card.id).toBe('next:eagle');
+    const kcs = queue.map((q) => q.card.kc);
+    expect(kcs).toContain('id:eagle');
+    expect(kcs).toContain('id:standing-head-to-knee');
+    expect(queue.every((q) => q.reason === 'drill')).toBe(true);
+    expect(queue.length).toBeLessThanOrEqual(8);
+  });
+
+  it('drills an identity with its cards plus the hand-offs leaning on it', () => {
+    const queue = buildDrillQueue(emptyStore(), 'id:eagle', NOW);
+    const ids = queue.map((q) => q.card.id);
+    expect(ids[0]).toBe('name:eagle');
+    expect(ids).toContain('pos:4');
+    expect(ids).toContain('next:awkward'); // tr:3 rests on id:eagle
+    expect(ids).toContain('next:eagle'); // tr:4 rests on id:eagle
+  });
+
+  it('drills an aggregate through its weakest leaves', () => {
+    const store = emptyStore();
+    // make everything in the standing arc strong except one transition
+    for (const node of kcNodes.values()) {
+      if ((node.kind === 'identity' || node.kind === 'transition') && node.arc === 'standing') {
+        store.kcs[node.id] = { p: 0.95, correct: 5, wrong: 0, last: NOW };
+      }
+    }
+    store.kcs['tr:6'] = { p: 0.05, correct: 0, wrong: 3, last: NOW };
+    const queue = buildDrillQueue(store, 'arc:standing', NOW);
+    expect(queue[0].card.kc).toBe('tr:6');
+    expect(buildDrillQueue(store, 'root', NOW).length).toBeGreaterThan(0);
+    expect(buildDrillQueue(store, 'nonsense', NOW)).toEqual([]);
   });
 
   it('feeds BKT evidence on the card’s KC', () => {

@@ -1,14 +1,16 @@
 import { useCallback, useEffect, useState } from 'react';
 import type { ReactNode } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useSearchParams } from 'react-router-dom';
 import type { Pose } from '../data';
 import { getPose, poses } from '../data';
 import { PoseFigure } from '../components/PoseFigure';
-import type { Grade, QueueEntry, TrainerStore } from '../trainer';
+import type { Grade, KcId, QueueEntry, TrainerStore } from '../trainer';
 import {
   band,
+  buildDrillQueue,
   buildQueue,
   dueCount,
+  kcNodes,
   loadStore,
   nodeP,
   recordAnswer,
@@ -202,7 +204,12 @@ type Screen = 'landing' | 'review' | 'next' | 'names';
 type AnswerFn = (cardId: string, grade: Grade, streakAfter?: number) => void;
 
 export function Trainer() {
-  const [screen, setScreen] = useState<Screen>('landing');
+  const [params, setParams] = useSearchParams();
+  // deep link from the knowledge map: /train?drill=<kcId> jumps straight
+  // into a focused drill of that node
+  const drillKc = params.get('drill');
+  const drillNode = drillKc ? kcNodes.get(drillKc as KcId) : undefined;
+  const [screen, setScreen] = useState<Screen>(drillNode ? 'review' : 'landing');
   const [store, setStore] = useState<TrainerStore>(() => loadStore(Date.now()));
   const [, setRev] = useState(0);
 
@@ -217,10 +224,24 @@ export function Trainer() {
   );
 
   const reset = useCallback(() => setStore(resetStore()), []);
-  const exit = useCallback(() => setScreen('landing'), []);
+  const exit = useCallback(() => {
+    setScreen('landing');
+    if (params.has('drill')) {
+      const sp = new URLSearchParams(params);
+      sp.delete('drill');
+      setParams(sp, { replace: true });
+    }
+  }, [params, setParams]);
 
   if (screen === 'review') {
-    return <ReviewMode store={store} answer={answer} onExit={exit} />;
+    return (
+      <ReviewMode
+        store={store}
+        answer={answer}
+        onExit={exit}
+        drill={drillNode ? { kc: drillNode.id, label: drillNode.label } : undefined}
+      />
+    );
   }
   if (screen === 'next') {
     return <NextMode store={store} answer={answer} onExit={exit} />;
@@ -444,6 +465,7 @@ const REASON_LABEL: Record<QueueEntry['reason'], string> = {
   due: 'due now',
   new: 'new',
   weak: 'needs work',
+  drill: 'drilling this',
 };
 
 function WhyTag({ reason }: { reason: QueueEntry['reason'] }) {
@@ -537,12 +559,19 @@ function ReviewMode({
   store,
   answer,
   onExit,
+  drill,
 }: {
   store: TrainerStore;
   answer: AnswerFn;
   onExit: () => void;
+  /** focused-drill target from the knowledge map, else a normal session */
+  drill?: { kc: string; label: string };
 }) {
-  const build = () => buildQueue(store, Date.now()).filter((e) => getPose(e.card.poseId));
+  const build = () =>
+    (drill
+      ? buildDrillQueue(store, drill.kc as KcId, Date.now())
+      : buildQueue(store, Date.now())
+    ).filter((e) => getPose(e.card.poseId));
   const [queue, setQueue] = useState<QueueEntry[]>(build);
   const [index, setIndex] = useState(0);
   const [streak, setStreak] = useState(0);
@@ -568,11 +597,19 @@ function ReviewMode({
   const next = useCallback(() => setIndex((i) => i + 1), []);
 
   const restart = useCallback(() => {
-    setQueue(buildQueue(store, Date.now()).filter((e) => getPose(e.card.poseId)));
+    setQueue(
+      (drill
+        ? buildDrillQueue(store, drill.kc as KcId, Date.now())
+        : buildQueue(store, Date.now())
+      ).filter((e) => getPose(e.card.poseId)),
+    );
     setIndex(0);
     setStreak(0);
     setStats(FRESH_STATS);
-  }, [store]);
+  }, [store, drill]);
+
+  const eyebrow = drill ? 'Focused drill' : 'Smart review';
+  const title = drill ? drill.label : 'Review';
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
@@ -590,7 +627,7 @@ function ReviewMode({
     return (
       <div className="page trainer">
         <div className="container tr-mode-shell">
-          <ModeHeader eyebrow="Smart review" title="Review" onExit={onExit} />
+          <ModeHeader eyebrow={eyebrow} title={title} onExit={onExit} />
           <div className="card tr-done">
             <p className="eyebrow">All caught up</p>
             <h2 className="tr-done-title">Nothing is due right now.</h2>
@@ -616,7 +653,7 @@ function ReviewMode({
     return (
       <div className="page trainer">
         <div className="container tr-mode-shell">
-          <ModeHeader eyebrow="Smart review" title="Review" onExit={onExit} />
+          <ModeHeader eyebrow={eyebrow} title={title} onExit={onExit} />
           <div className="card tr-done">
             <p className="eyebrow">Session complete</p>
             <h2 className="tr-done-title">
@@ -669,8 +706,8 @@ function ReviewMode({
     <div className="page trainer">
       <div className="container tr-mode-shell">
         <ModeHeader
-          eyebrow="Smart review"
-          title="Review"
+          eyebrow={eyebrow}
+          title={title}
           onExit={onExit}
           right={
             <span className="tr-streak-wrap">

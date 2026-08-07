@@ -10,7 +10,9 @@ export { STORAGE_KEY, emptyStore, loadStore, saveStore, resetStore } from './sto
 export {
   NEW_PER_SESSION,
   QUEUE_CAP,
+  DRILL_CAP,
   buildQueue,
+  buildDrillQueue,
   dueCount,
   unseenCount,
   recordAnswer,
