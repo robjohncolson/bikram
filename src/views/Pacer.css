@@ -1,0 +1,769 @@
+/* ————————————————————————————————————————————— pacer: hero */
+
+.pc-hero {
+  padding-bottom: 32px;
+  max-width: 720px;
+}
+
+.pc-title {
+  font-size: clamp(30px, 5.5vw, 44px);
+  margin-top: 10px;
+}
+
+.pc-lede {
+  margin-top: 14px;
+  font-size: 17px;
+  max-width: 60ch;
+}
+
+/* ————————————————————————————————————————————— layout */
+
+.pc-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 18px;
+}
+
+@media (min-width: 920px) {
+  .pc-grid {
+    grid-template-columns: minmax(0, 1fr) 380px;
+    align-items: stretch;
+  }
+}
+
+.pc-card-title {
+  font-size: 21px;
+}
+
+/* ————————————————————————————————————————————— the stage */
+
+.pc-stage {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  padding: 38px 24px 32px;
+  overflow: hidden;
+}
+
+.pc-orb-wrap {
+  position: relative;
+  width: min(56vw, 300px);
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+}
+
+/* Soft radial ember glow. The transition duration equals one breath
+   phase, so the orb crosses each bar in exactly one inhale or exhale. */
+.pc-orb {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle at 50% 44%,
+    color-mix(in srgb, var(--ember) 52%, transparent),
+    color-mix(in srgb, var(--ember) 30%, transparent) 46%,
+    color-mix(in srgb, var(--ember) 12%, transparent) 62%,
+    transparent 74%
+  );
+  transform: scale(0.68);
+  opacity: 0.75;
+  transition:
+    transform var(--phase-dur, 6s) cubic-bezier(0.45, 0.05, 0.35, 1),
+    opacity var(--phase-dur, 6s) cubic-bezier(0.45, 0.05, 0.35, 1);
+}
+
+.pc-orb[data-phase='in'] {
+  transform: scale(1);
+  opacity: 1;
+}
+
+.pc-orb[data-phase='out'] {
+  transform: scale(0.68);
+  opacity: 0.75;
+}
+
+.pc-orb[data-phase='idle'] {
+  transform: scale(0.68);
+  opacity: 0.45;
+}
+
+/* Kapalbhati pulse: one-beat bars alternate parity every beat, so the
+   same in/out toggle reads as a quick, small throb. */
+.pc-stage[data-pulse] .pc-orb[data-phase='in'] {
+  transform: scale(0.88);
+}
+
+.pc-stage[data-pulse] .pc-orb[data-phase='out'] {
+  transform: scale(0.76);
+}
+
+.pc-orb-text {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  text-align: center;
+}
+
+.pc-phase {
+  font-family: var(--font-display);
+  font-size: 23px;
+  font-weight: 600;
+}
+
+.pc-count {
+  font-family: var(--font-display);
+  font-size: 46px;
+  font-weight: 600;
+  line-height: 1.1;
+  color: var(--ember-text);
+  font-variant-numeric: tabular-nums;
+}
+
+/* beat dots — dot 1 (the phase turn) carries a ring */
+.pc-dots {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 14px;
+}
+
+.pc-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--text-faint) 32%, transparent);
+  transition: background 0.15s ease;
+}
+
+.pc-dot[data-first] {
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ember) 40%, transparent);
+}
+
+.pc-dot[data-on] {
+  background: var(--ember);
+}
+
+.pc-rate {
+  font-size: 14px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-start {
+  padding: 12px 34px;
+  font-size: 16px;
+  min-width: 140px;
+}
+
+/* ————————————————————————————————————————————— controls card */
+
+.pc-controls {
+  display: flex;
+  flex-direction: column;
+  gap: 22px;
+  padding: 24px 26px 26px;
+}
+
+.pc-field {
+  display: flex;
+  flex-direction: column;
+  gap: 9px;
+}
+
+.pc-field-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+.pc-field-val {
+  font-weight: 700;
+  color: var(--ember-text);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+.pc-range {
+  width: 100%;
+  margin: 0;
+  accent-color: var(--ember);
+}
+
+.pc-bpm-scale {
+  position: relative;
+  height: 15px;
+  font-size: 11px;
+  color: var(--text-faint);
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-bpm-scale span {
+  position: absolute;
+  top: 0;
+  transform: translateX(-50%);
+  line-height: 1.2;
+}
+
+.pc-bpm-scale span:first-child {
+  transform: none;
+}
+
+.pc-bpm-scale span:last-child {
+  transform: translateX(-100%);
+}
+
+.pc-bpm-scale span[data-mark] {
+  color: var(--ember-text);
+  font-weight: 700;
+}
+
+/* segmented counts-per-breath control */
+.pc-seg {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pc-seg button {
+  padding: 6px 13px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-soft);
+  transition: background 0.15s ease, color 0.15s ease, border-color 0.15s ease;
+}
+
+.pc-seg button:hover {
+  color: var(--text);
+  border-color: var(--text-faint);
+}
+
+.pc-seg button[aria-pressed='true'] {
+  background: var(--ember);
+  border-color: var(--ember);
+  color: var(--bg);
+}
+
+/* volume */
+.pc-vol-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.pc-mute {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex: none;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  color: var(--text-soft);
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.pc-mute:hover {
+  color: var(--text);
+  border-color: var(--text-faint);
+}
+
+.pc-mute[aria-pressed='true'] {
+  color: var(--ember-text);
+  border-color: color-mix(in srgb, var(--ember) 45%, var(--border));
+  background: color-mix(in srgb, var(--ember) 10%, transparent);
+}
+
+/* presets */
+.pc-presets {
+  display: grid;
+  gap: 8px;
+}
+
+.pc-preset {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 3px;
+  text-align: left;
+  padding: 12px 14px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.15s ease, background 0.15s ease;
+}
+
+.pc-preset:hover {
+  border-color: color-mix(in srgb, var(--ember) 40%, var(--border));
+}
+
+.pc-preset[aria-pressed='true'] {
+  border-color: color-mix(in srgb, var(--ember) 55%, var(--border));
+  background: color-mix(in srgb, var(--ember) 8%, var(--bg-raised));
+}
+
+.pc-preset-label {
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.pc-preset[aria-pressed='true'] .pc-preset-label {
+  color: var(--ember-text);
+}
+
+.pc-preset-note {
+  font-size: 12.5px;
+  line-height: 1.45;
+}
+
+/* ————————————————————————————————————————————— class pacer card */
+
+.pc-class {
+  margin-top: 18px;
+  padding: 24px 26px 26px;
+}
+
+.pc-class-head {
+  margin-bottom: 16px;
+}
+
+.pc-class-head .pc-card-title {
+  margin-top: 4px;
+}
+
+.pc-class-idle {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pc-class-lede {
+  font-size: 15px;
+  max-width: 62ch;
+}
+
+.pc-class-total {
+  font-size: 13.5px;
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-class-total strong {
+  color: var(--ember-text);
+  font-weight: 700;
+}
+
+.pc-class-startrow {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+
+.pc-class-from {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+.pc-select {
+  font: inherit;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg-raised);
+  border: 1px solid var(--border-strong);
+  border-radius: var(--radius-sm);
+  padding: 8px 10px;
+  max-width: 100%;
+}
+
+/* running */
+.pc-class-run {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.pc-class-pose {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.pc-class-pose .pose-figure {
+  color: var(--ember-text);
+}
+
+.pc-class-poseinfo {
+  min-width: 0;
+  flex: 1;
+}
+
+.pc-class-posename {
+  font-size: clamp(19px, 3.6vw, 24px);
+  margin-top: 5px;
+}
+
+.pc-class-sanskrit {
+  margin-top: 2px;
+  font-size: 14.5px;
+  font-style: italic;
+}
+
+.pc-class-timing {
+  margin-top: 5px;
+  font-size: 12.5px;
+}
+
+.pc-class-remain {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 2px;
+  flex: none;
+}
+
+.pc-remain-num {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 600;
+  line-height: 1;
+  color: var(--ember-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.pc-remain-cap {
+  font-size: 12px;
+  text-align: right;
+}
+
+.pc-class-bar {
+  height: 4px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--text-faint) 18%, transparent);
+  overflow: hidden;
+}
+
+.pc-class-bar span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--ember);
+  transition: width 0.35s ease;
+}
+
+.pc-class-next {
+  font-size: 13.5px;
+}
+
+.pc-class-controls {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+/* spoken instructions */
+.pc-cues {
+  margin-top: 18px;
+  padding-top: 16px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.pc-cues-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.pc-cues-label,
+.pc-cues-voicelabel {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+/* switch — same pressed treatment as the mute toggle */
+.pc-cue-switch {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-soft);
+  transition: color 0.15s ease, border-color 0.15s ease, background 0.15s ease;
+}
+
+.pc-cue-switch::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: color-mix(in srgb, var(--text-faint) 40%, transparent);
+  transition: background 0.15s ease;
+}
+
+.pc-cue-switch:hover {
+  color: var(--text);
+  border-color: var(--text-faint);
+}
+
+.pc-cue-switch[aria-pressed='true'] {
+  color: var(--ember-text);
+  border-color: color-mix(in srgb, var(--ember) 45%, var(--border));
+  background: color-mix(in srgb, var(--ember) 10%, transparent);
+}
+
+.pc-cue-switch[aria-pressed='true']::before {
+  background: var(--ember);
+}
+
+.pc-cues-body {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.pc-cues-voicerow {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.pc-voice {
+  flex: 1 1 220px;
+  min-width: 0;
+}
+
+.pc-btn-sm {
+  padding: 7px 14px;
+  font-size: 13px;
+}
+
+.pc-cues-checks {
+  display: flex;
+  align-items: center;
+  gap: 8px 18px;
+  flex-wrap: wrap;
+}
+
+.pc-cue-check {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 13.5px;
+  color: var(--text-soft);
+  cursor: pointer;
+}
+
+.pc-cue-check input {
+  width: 15px;
+  height: 15px;
+  margin: 0;
+  accent-color: var(--ember);
+}
+
+.pc-cues-unsupported {
+  font-size: 13px;
+}
+
+/* done */
+.pc-class-done {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  gap: 8px;
+  padding: 18px 0 8px;
+}
+
+.pc-class-done-title {
+  font-size: clamp(20px, 4vw, 26px);
+  max-width: 26ch;
+}
+
+.pc-class-done .pc-btn {
+  margin-top: 8px;
+}
+
+/* ————————————————————————————————————————————— buttons */
+
+.pc-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-soft);
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.pc-btn:hover:not(:disabled) {
+  color: var(--text);
+  border-color: var(--text-faint);
+}
+
+.pc-btn:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.pc-btn-primary {
+  background: var(--ember);
+  border-color: var(--ember);
+  color: var(--bg);
+}
+
+.pc-btn-primary:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--ember) 88%, var(--text));
+  border-color: color-mix(in srgb, var(--ember) 88%, var(--text));
+  color: var(--bg);
+  transform: translateY(-1px);
+}
+
+.pc-btn-quiet {
+  border-color: transparent;
+  color: var(--text-faint);
+}
+
+.pc-btn-quiet:hover:not(:disabled) {
+  border-color: var(--border);
+}
+
+/* ————————————————————————————————————————————— keyboard hints */
+
+.pc-kbd {
+  margin-top: 22px;
+  text-align: center;
+  font-size: 12.5px;
+}
+
+.pc-kbd kbd {
+  font-family: var(--font-body);
+  font-size: 11px;
+  font-weight: 700;
+  padding: 1.5px 6px;
+  border: 1px solid var(--border);
+  border-bottom-width: 2px;
+  border-radius: 5px;
+  background: var(--bg-raised);
+  color: var(--text-soft);
+}
+
+/* ————————————————————————————————————————————— reduced motion
+   The global reset zeroes every transition, so the orb re-asserts a
+   gentle opacity/glow fade — no scaling, no large movement. */
+
+@media (prefers-reduced-motion: reduce) {
+  .pc-orb {
+    transform: none !important;
+    transition-property: opacity !important;
+    transition-duration: 1.2s !important;
+  }
+
+  .pc-orb[data-phase='in'] {
+    opacity: 1;
+  }
+
+  .pc-orb[data-phase='out'] {
+    opacity: 0.55;
+  }
+
+  .pc-orb[data-phase='idle'] {
+    opacity: 0.4;
+  }
+}
+
+/* ————————————————————————————————————————————— responsive */
+
+@media (max-width: 560px) {
+  .pc-stage {
+    padding: 30px 18px 26px;
+  }
+
+  .pc-controls,
+  .pc-class {
+    padding: 20px 18px 22px;
+  }
+
+  .pc-class-pose {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 12px;
+  }
+
+  .pc-class-poseinfo {
+    width: 100%;
+  }
+
+  .pc-class-remain {
+    align-items: center;
+  }
+
+  .pc-remain-cap {
+    text-align: center;
+  }
+
+  .pc-class-next {
+    text-align: center;
+  }
+
+  .pc-class-controls {
+    justify-content: center;
+  }
+
+  .pc-class-startrow .pc-select {
+    flex: 1 1 100%;
+  }
+
+  .pc-cues-voicerow .pc-voice {
+    flex-basis: 100%;
+  }
+}
+
+@media (max-width: 420px) {
+  .pc-phase {
+    font-size: 20px;
+  }
+
+  .pc-count {
+    font-size: 40px;
+  }
+
+  .pc-seg button {
+    padding: 6px 11px;
+    font-size: 13px;
+  }
+
+  .pc-class-controls .pc-btn {
+    padding: 8px 14px;
+    font-size: 13.5px;
+  }
+}

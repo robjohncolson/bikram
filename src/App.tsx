@@ -5,6 +5,7 @@ import { PoseDetail } from './views/PoseDetail';
 import { Explorer } from './views/Explorer';
 import { Trainer } from './views/Trainer';
 import { KnowledgeMap } from './views/KnowledgeMap';
+import { Pacer } from './views/Pacer';
 import './App.css';
 
 function ScrollToTop() {
@@ -29,6 +30,7 @@ export default function App() {
             <NavLink to="/" end>Sequence</NavLink>
             <NavLink to="/explore">Explore</NavLink>
             <NavLink to="/train">Train</NavLink>
+            <NavLink to="/pace">Pace</NavLink>
           </nav>
         </div>
       </header>
@@ -39,6 +41,7 @@ export default function App() {
           <Route path="/explore" element={<Explorer />} />
           <Route path="/train" element={<Trainer />} />
           <Route path="/train/map" element={<KnowledgeMap />} />
+          <Route path="/pace" element={<Pacer />} />
         </Routes>
       </main>
     </>

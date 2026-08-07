@@ -21,6 +21,10 @@ posture's technique, benefits, chakra connections, and muscle-group work.
 - **Knowledge map** — the sequence as a DAG: posture identities feed
   transitions, transitions feed arcs, arcs feed the whole sequence —
   each node tinted by the current estimate that you know it.
+- **Pace** — a metronome-based breath pacer: 60 BPM in six-beat bars by
+  default (six counts in, six out — the Pranayama pace, five breaths a
+  minute), adjustable tempo and bar length down to a Kapalbhati pulse,
+  plus a class pacer that walks all 26 postures on the same clock.
 
 ## Run it
 

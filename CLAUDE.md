@@ -25,7 +25,19 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
     are the contract used by pose data and the BodyMap regions.
 - `src/views/` — one file pair per route: Timeline (`/`), PoseDetail
   (`/pose/:id`), Explorer (`/explore?lens=chakra|muscle&id=…`), Trainer
-  (`/train`), KnowledgeMap (`/train/map`).
+  (`/train`), KnowledgeMap (`/train/map`), Pacer (`/pace`).
+- `src/pacer/` — the breath-pacer engine (views import only from its
+  `index.ts`). `timing.ts` is pure math (settings clamp, phase/beat
+  conversions, presets; unit-tested); `metronome.ts` wraps Web Audio with
+  lookahead scheduling — bars alternate inhale/exhale (even/odd), 1-beat
+  bars are Kapalbhati-style pulse mode. Default 60 BPM × 6-beat bars =
+  the Pranayama six-count (5 breaths/min; beats land on seconds). Views
+  never touch Web Audio directly. Settings persist in `yoga-pacer-v1`.
+  `cues.ts` is the class-cue sequencer: compiles each posture into
+  beat-addressed events (announce / guide / set / warn; pure, tested).
+  `voice.ts` is the spoken sampler over browser speech synthesis
+  (guarded — degrades to tones-only); `metronome.cue()` renders the
+  tone events (warn tick, change chime, end bell).
 - `src/trainer/` — the learning engine (pure TS, unit-tested with vitest,
   `npm test`). Views import ONLY from `src/trainer/index.ts`. Three layers:
   - `graph.ts` — the knowledge DAG: 26 identity KCs + 25 transition KCs
