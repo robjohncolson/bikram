@@ -12,7 +12,11 @@ export function collectCueTexts(): string[] {
   const texts = new Set<string>();
   for (const pose of poses) {
     texts.add(announceText(pose, false));
-    if (pose.setup.length > 0) texts.add(pose.setup[0]);
+    // the full teaching voice: every setup step (walk-in), every
+    // alignment cue and the breath line (mid-hold coaching)
+    for (const step of pose.setup) texts.add(step);
+    for (const cue of pose.cues) texts.add(cue);
+    if (pose.breath) texts.add(pose.breath);
     if (pose.segments) {
       // the first segment's cue is never spoken — the announcement covers it
       for (const seg of pose.segments.slice(1)) texts.add(seg.cue);

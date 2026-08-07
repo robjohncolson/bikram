@@ -44,8 +44,18 @@ export interface CueOptions {
   guides?: boolean;
 }
 
-/** Guides start here so they don't talk over the announcement. */
-const GUIDE_BEAT = 3;
+/** Seconds into the hold where the setup walk-in starts. */
+const WALK_IN_START_S = 4;
+/** Spacing between walk-in steps — say it, then time to do it. */
+const WALK_IN_GAP_S = 8;
+/** Minimum silence between any two spoken lines. */
+const SPEECH_GAP_S = 4;
+/** Working segments shorter than this get no mid-hold coaching. */
+const COACH_MIN_SEGMENT_S = 18;
+/** Segments at least this long get two coaching lines instead of one. */
+const COACH_DOUBLE_SEGMENT_S = 45;
+/** Keep the final approach clear for the warning ticks and hand-off. */
+const TAIL_CLEAR_S = 6;
 /** Warning ticks fire on the last three beats, only for holds this long. */
 const WARN_MIN_BEATS = 12;
 
@@ -54,37 +64,106 @@ export function announceText(pose: Pose, sanskrit: boolean): string {
   return pose.category === 'breathing' ? `${name}.` : `Posture ${pose.order}. ${name}.`;
 }
 
+/** A segment's beat range on the track grid. */
+interface SegSpan {
+  startBeat: number;
+  endBeat: number;
+  kind: string;
+}
+
+/** Nearest free beat to `target` within [lo, hi], ≥ gap from taken beats. */
+function findFreeBeat(
+  target: number,
+  lo: number,
+  hi: number,
+  taken: number[],
+  gap: number,
+): number | null {
+  for (let offset = 0; offset <= hi - lo; offset++) {
+    for (const candidate of offset === 0 ? [target] : [target + offset, target - offset]) {
+      if (candidate < lo || candidate > hi) continue;
+      if (taken.every((t) => Math.abs(t - candidate) >= gap)) return candidate;
+    }
+  }
+  return null;
+}
+
+/**
+ * Compile a posture into its full spoken class: the announcement, a
+ * walk-in through every setup step, segment-boundary cues, mid-hold
+ * coaching (alignment cues then the breath line) rotated through the
+ * later working segments, and warning ticks before the hand-off.
+ * Rests stay silent — that's what they're for.
+ */
 export function buildPoseTrack(pose: Pose, bpm: number, opts: CueOptions = {}): PoseTrack {
   const totalBeats = beatsForSeconds(pose.approxTotalSeconds, bpm);
+  // beats per canonical second on this track's grid
+  const s2b = totalBeats / pose.approxTotalSeconds;
+  const beat = (seconds: number) => Math.round(seconds * s2b);
+
   const events: CueEvent[] = [{ atBeat: 0, kind: 'announce', text: announceText(pose, opts.sanskrit ?? false) }];
+  const spoken: number[] = [0];
 
-  if (opts.guides !== false && pose.setup.length > 0 && totalBeats > GUIDE_BEAT + 4) {
-    events.push({ atBeat: GUIDE_BEAT, kind: 'guide', text: pose.setup[0] });
-  }
-
+  // ——— segment boundaries (spoken) and spans
+  const spans: SegSpan[] = [];
   if (pose.segments && pose.segments.length > 0) {
-    // segment boundaries carry their own authored cues; scale their
-    // second-offsets onto this track's beat grid
     const totalSeconds = pose.segments.reduce((s, seg) => s + seg.seconds, 0);
     let elapsed = 0;
     for (let i = 0; i < pose.segments.length; i++) {
-      if (i > 0) {
-        const atBeat = Math.min(
-          totalBeats - 1,
-          Math.round((elapsed / totalSeconds) * totalBeats),
-        );
-        events.push({ atBeat, kind: 'segment', text: pose.segments[i].cue });
-      }
+      const startBeat = Math.round((elapsed / totalSeconds) * totalBeats);
       elapsed += pose.segments[i].seconds;
+      const endBeat =
+        i === pose.segments.length - 1
+          ? totalBeats
+          : Math.round((elapsed / totalSeconds) * totalBeats);
+      spans.push({ startBeat, endBeat, kind: pose.segments[i].kind });
+      if (i > 0) {
+        const atBeat = Math.min(totalBeats - 1, startBeat);
+        events.push({ atBeat, kind: 'segment', text: pose.segments[i].cue });
+        spoken.push(atBeat);
+      }
     }
   } else {
     for (let set = 1; set < pose.sets; set++) {
       const atBeat = Math.round((totalBeats * set) / pose.sets);
-      events.push({
-        atBeat,
-        kind: 'set',
-        text: set === 1 ? 'Second set.' : `Set ${set + 1}.`,
-      });
+      events.push({ atBeat, kind: 'set', text: set === 1 ? 'Second set.' : `Set ${set + 1}.` });
+      spoken.push(atBeat);
+    }
+    spans.push({ startBeat: 0, endBeat: totalBeats, kind: 'set' });
+  }
+
+  if (opts.guides !== false) {
+    // ——— walk-in: every setup step, confined to the first segment
+    const firstBoundary = spans.length > 1 ? spans[1].startBeat : totalBeats;
+    const walkInLimit = Math.min(firstBoundary - beat(SPEECH_GAP_S), totalBeats - beat(TAIL_CLEAR_S));
+    for (let i = 0; i < pose.setup.length; i++) {
+      const atBeat = beat(WALK_IN_START_S + i * WALK_IN_GAP_S);
+      if (atBeat > walkInLimit) break;
+      events.push({ atBeat, kind: 'guide', text: pose.setup[i] });
+      spoken.push(atBeat);
+    }
+
+    // ——— coaching rotation: alignment cues then breath, mid-segment in
+    // working segments after the walk-in's segment; rests stay silent
+    const material = [...pose.cues, pose.breath].filter((t) => t && t.length > 0);
+    let next = 0;
+    for (let i = 1; i < spans.length && next < material.length; i++) {
+      const span = spans[i];
+      if (span.kind === 'rest' || span.kind === 'situp') continue;
+      const len = span.endBeat - span.startBeat;
+      if (len < beat(COACH_MIN_SEGMENT_S)) continue;
+      const slots = len >= beat(COACH_DOUBLE_SEGMENT_S) ? [0.35, 0.7] : [0.5];
+      for (const frac of slots) {
+        if (next >= material.length) break;
+        const lo = span.startBeat + beat(SPEECH_GAP_S);
+        const hi = Math.min(span.endBeat - beat(SPEECH_GAP_S), totalBeats - beat(TAIL_CLEAR_S));
+        const place = findFreeBeat(span.startBeat + Math.round(len * frac), lo, hi, spoken, beat(SPEECH_GAP_S));
+        if (place !== null) {
+          events.push({ atBeat: place, kind: 'guide', text: material[next] });
+          spoken.push(place);
+          next++;
+        }
+      }
     }
   }
 

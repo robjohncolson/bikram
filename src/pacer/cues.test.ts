@@ -15,12 +15,65 @@ describe('cue sequencer', () => {
     expect(announceText(camel, true)).toBe('Posture 22. Camel Pose — Ustrasana.');
   });
 
-  it('opens with the announce, then the first setup step as a guide', () => {
+  it('opens with the announce, then walks in through every setup step', () => {
     const track = buildPoseTrack(camel, 60);
     expect(track.totalBeats).toBe(camel.approxTotalSeconds); // 60 bpm: beats = seconds
     expect(track.events[0]).toMatchObject({ atBeat: 0, kind: 'announce' });
-    const guide = track.events.find((e) => e.kind === 'guide');
-    expect(guide).toMatchObject({ atBeat: 3, text: camel.setup[0] });
+    const guides = track.events.filter((e) => e.kind === 'guide');
+    // camel's first segment is 40s — room for all five setup steps 8s apart
+    camel.setup.forEach((step, i) => {
+      expect(guides[i]).toMatchObject({ atBeat: 4 + i * 8, text: step });
+    });
+    // the walk-in never crosses the first segment boundary
+    const firstBoundary = track.events.find((e) => e.kind === 'segment')!.atBeat;
+    camel.setup.forEach((_, i) => {
+      expect(guides[i].atBeat).toBeLessThan(firstBoundary);
+    });
+  });
+
+  it('coaches mid-hold in later working segments, never in rests', () => {
+    const track = buildPoseTrack(camel, 60);
+    const guides = track.events.filter((e) => e.kind === 'guide');
+    // at least one alignment cue lands after the walk-in's segment
+    const coached = guides.filter((g) => camel.cues.includes(g.text ?? ''));
+    expect(coached.length).toBeGreaterThan(0);
+    // rest/situp spans stay silent (walk-in lives in segment 0)
+    const segs = camel.segments!;
+    const totalSeconds = segs.reduce((s, x) => s + x.seconds, 0);
+    let elapsed = 0;
+    segs.forEach((seg, i) => {
+      const start = Math.round((elapsed / totalSeconds) * track.totalBeats);
+      elapsed += seg.seconds;
+      const end = i === segs.length - 1 ? track.totalBeats : Math.round((elapsed / totalSeconds) * track.totalBeats);
+      if (i > 0 && (seg.kind === 'rest' || seg.kind === 'situp')) {
+        // boundary cue at `start` is allowed; nothing else speaks inside
+        const inside = guides.filter((g) => g.atBeat > start && g.atBeat < end);
+        expect(inside, `${seg.label} should be silent`).toEqual([]);
+      }
+    });
+  });
+
+  it('keeps at least four seconds between any two spoken lines', () => {
+    for (const track of buildClassTrack(60)) {
+      const spokenBeats = track.events
+        .filter((e) => e.kind !== 'warn')
+        .map((e) => e.atBeat)
+        .sort((a, b) => a - b);
+      for (let i = 1; i < spokenBeats.length; i++) {
+        expect(
+          spokenBeats[i] - spokenBeats[i - 1],
+          `${track.pose.id}: lines at ${spokenBeats[i - 1]} and ${spokenBeats[i]}`,
+        ).toBeGreaterThanOrEqual(4);
+      }
+    }
+  });
+
+  it('silences all guidance when guides are off', () => {
+    const track = buildPoseTrack(camel, 60, { guides: false });
+    expect(track.events.filter((e) => e.kind === 'guide')).toEqual([]);
+    // announce and segment boundaries still speak
+    expect(track.events[0].kind).toBe('announce');
+    expect(track.events.some((e) => e.kind === 'segment')).toBe(true);
   });
 
   it('marks the second-set boundary at the midpoint for two-set postures', () => {
