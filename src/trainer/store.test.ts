@@ -68,4 +68,25 @@ describe('store migration', () => {
     const reloaded = loadStore(NOW);
     expect(reloaded.kcs['id:camel'].p).toBe(0.42);
   });
+
+  it('grandfathers a v2 blob written before the spaced count existed', () => {
+    window.localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify({
+        version: 2,
+        kcs: {
+          'id:camel': { p: 0.7, correct: 3, wrong: 1, last: NOW },
+          'id:tree': { p: 0.9, correct: 40, wrong: 0, last: NOW },
+          'id:bow': { p: 0.5, correct: 2, wrong: 0, spaced: 9, last: NOW },
+        },
+        cards: {},
+        bestStreak: 0,
+        answers: 46,
+      }),
+    );
+    const store = loadStore(NOW);
+    expect(store.kcs['id:camel'].spaced).toBe(3); // = correct when small
+    expect(store.kcs['id:tree'].spaced).toBe(10); // legacy tallies cap at ten
+    expect(store.kcs['id:bow'].spaced).toBe(2); // never above correct
+  });
 });

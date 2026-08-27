@@ -295,7 +295,7 @@ export function KnowledgeMap() {
         <section className="card km-stats" aria-label="Progress summary">
           <div className="km-stat-main">
             <span className="km-stat-num">{fmtPct(rootP)}</span>
-            <span className="km-stat-cap text-faint">whole sequence</span>
+            <span className="km-stat-cap text-faint">all 51 pieces at once</span>
           </div>
           <span className="km-stat-sep" aria-hidden />
           <div className="km-stat-arcs">

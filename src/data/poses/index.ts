@@ -6,6 +6,7 @@
 import type { Pose } from '../types';
 import { figures } from '../figures';
 import { segmentsByPose } from '../segments';
+import { classicalByPose } from '../classical';
 
 import { pranayama } from './01-pranayama';
 import { halfMoon } from './02-half-moon';
@@ -63,9 +64,10 @@ const inOrder: Pose[] = [
   kapalbhati,
 ];
 
-/** The sequence with independently-authored figures and segments merged in. */
+/** The sequence with independently-authored figures, segments, and classical notes merged in. */
 export const poses: Pose[] = inOrder.map((p) => ({
   ...p,
   ...(figures[p.id] ? { figure: figures[p.id] } : {}),
   ...(segmentsByPose[p.id] ? { segments: segmentsByPose[p.id] } : {}),
+  ...(classicalByPose[p.id] ? { classical: classicalByPose[p.id] } : {}),
 }));

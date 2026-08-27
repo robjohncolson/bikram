@@ -1,7 +1,7 @@
 import type { Card, CardId, CardState, Grade, KcId, TrainerStore } from './types';
 import { allCards, cardById, kcNodes } from './graph';
-import { applyEvidence, band, meanLeafP, nodeP } from './bkt';
-import { AGAIN_MINUTES, gradeCard, isDue, newCardState } from './srs';
+import { applyEvidence, band, nodeP } from './bkt';
+import { AGAIN_MINUTES, gradeCard, isDue, newCardState, relearnAgain } from './srs';
 
 /**
  * Session facade the UI talks to. Pure functions over (store, now) —
@@ -40,21 +40,59 @@ export function interleave(entries: QueueEntry[]): QueueEntry[] {
     }
     out.push(rest.splice(pick, 1)[0]);
   }
-  // Repair: the greedy walk can strand a clash at the tail (only same-
-  // posture cards left). Move each stranded card back to the earliest
-  // slot whose neighbours both differ from it; leave it if none exists.
-  for (let i = out.length - 1; i > 0; i--) {
-    if (pose(out[i]) !== pose(out[i - 1])) continue;
-    const item = out[i];
-    for (let j = 1; j < i - 1; j++) {
-      if (pose(out[j - 1]) !== pose(item) && pose(out[j]) !== pose(item)) {
-        out.splice(i, 1);
-        out.splice(j, 0, item);
-        break;
+  // Repair: the greedy walk can strand clashes at the tail (only same-
+  // posture cards left). Move each stranded card to the earliest slot
+  // whose neighbours both differ from it, re-scanning until nothing
+  // moves; a clash with no such slot anywhere is left alone.
+  const fits = (item: QueueEntry, j: number) =>
+    (j === 0 || pose(out[j - 1]) !== pose(item)) && (j >= out.length || pose(out[j]) !== pose(item));
+  const stuck = new Set<QueueEntry>();
+  for (let pass = 0; pass < out.length; pass++) {
+    let moved = false;
+    for (let i = 1; i < out.length; i++) {
+      if (pose(out[i]) !== pose(out[i - 1])) continue;
+      const item = out[i];
+      if (stuck.has(item)) continue;
+      out.splice(i, 1);
+      let placed = false;
+      // slots after the head first — the head is the highest-priority
+      // card and only gives way when nothing else resolves the clash
+      const order = [...Array.from({ length: out.length }, (_, k) => k + 1), 0];
+      for (const j of order) {
+        if (j !== i && fits(item, j)) {
+          out.splice(j, 0, item);
+          placed = true;
+          break;
+        }
+      }
+      if (!placed) {
+        out.splice(i, 0, item);
+        stuck.add(item);
+      } else {
+        moved = true;
+        break; // indices shifted — start the scan over
       }
     }
+    if (!moved) break;
   }
   return out;
+}
+
+/**
+ * Where to re-insert a missed card so it returns `gap` cards later —
+ * nudged forward past any slot whose neighbours are about the same
+ * posture (its sibling card would display the answer). Returns the
+ * index to splice at.
+ */
+export function relearnSlot(queue: QueueEntry[], card: Card, after: number, gap: number): number {
+  const base = Math.min(queue.length, after + 1 + gap);
+  const clashes = (j: number) =>
+    (j > 0 && queue[j - 1].card.poseId === card.poseId) ||
+    (j < queue.length && queue[j].card.poseId === card.poseId);
+  for (let j = base; j <= queue.length; j++) {
+    if (!clashes(j)) return j;
+  }
+  return queue.length;
 }
 
 /**
@@ -151,8 +189,6 @@ export function buildDrillQueue(store: TrainerStore, kc: KcId, now: number): Que
  */
 export const RELEARN_GAP = 4;
 
-/** Mean P(known) over every leaf — the trainer's honest headline number. */
-export { meanLeafP };
 
 /** Cards due right now (for badges on the landing screen). */
 export function dueCount(store: TrainerStore, now: number): number {
@@ -176,7 +212,10 @@ export function schedulesOn(state: CardState | undefined, grade: Grade, now: num
   if (grade === 'again') return true;
   if (!state) return true;
   if (isDue(state, now)) return true;
-  return state.interval === AGAIN_MINUTES; // relearn: answered good after a miss
+  // An early hit on a scheduled card leaves the schedule alone even when
+  // hours have passed: the card is still due when it was due, and BKT has
+  // already taken the evidence. Only relearn (good after a miss) advances.
+  return state.interval === AGAIN_MINUTES;
 }
 
 /**
@@ -192,7 +231,10 @@ export function recordAnswer(
   const card = cardById.get(cardId);
   if (!card) return;
   const prev = store.cards[cardId];
-  if (schedulesOn(prev, grade, now)) {
+  if (grade === 'again' && prev && prev.interval === AGAIN_MINUTES) {
+    // missed again while still relearning: push the step, no second fine
+    store.cards[cardId] = relearnAgain(prev, now);
+  } else if (schedulesOn(prev, grade, now)) {
     store.cards[cardId] = gradeCard(prev ?? newCardState(now), grade, now);
   }
   applyEvidence(store, card.kc, card.kind, grade === 'good', now);

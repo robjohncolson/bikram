@@ -16,6 +16,7 @@ import {
   recordAnswer,
   meanLeafP,
   RELEARN_GAP,
+  relearnSlot,
   resetStore,
   saveStore,
   unseenCount,
@@ -271,6 +272,7 @@ function Landing({
   const due = dueCount(store, now);
   const unseen = unseenCount(store);
   const solidCount = poses.filter((p) => band(nodeP(store, `id:${p.id}`, Date.now())) === 'solid').length;
+  const hasEvidence = Object.keys(store.kcs).length > 0;
   const knownP = meanLeafP(store, Date.now());
   const hasAnyProgress =
     store.answers > 0 || store.bestStreak > 0 || Object.keys(store.cards).length > 0;
@@ -412,10 +414,11 @@ function Landing({
               <div className="tr-progress-foot">
                 <div className="tr-root-stat">
                   <span className="eyebrow">Sequence known</span>
-                  <span className="tr-root-num">{pctLabel(knownP)}</span>
+                  <span className="tr-root-num">{hasEvidence ? pctLabel(knownP) : '—'}</span>
                   <span className="tr-root-cap text-faint">
-                    Average P(known) over all 26 postures and 25 hand-offs — what you don’t
-                    practice slowly stops counting.
+                    {hasEvidence
+                      ? 'Average P(known) over all 26 postures and 25 hand-offs — what you don’t practice slowly stops counting.'
+                      : 'Nothing practiced yet. Every posture and hand-off starts at a 10% prior; answers move it.'}
                   </span>
                 </div>
                 <Link className="tr-map-link" to="/train/map">
@@ -552,12 +555,14 @@ function AnswerReveal({ pose, lead }: { pose: Pose; lead: ReactNode }) {
 /* ————————————————————————————————————————————— review mode */
 
 interface SessionStats {
+  /** cards whose latest grade in this session was a miss */
+  unrecovered: string[];
   answered: number;
   again: number;
   kcs: string[];
 }
 
-const FRESH_STATS: SessionStats = { answered: 0, again: 0, kcs: [] };
+const FRESH_STATS: SessionStats = { answered: 0, again: 0, kcs: [], unrecovered: [] };
 
 function ReviewMode({
   store,
@@ -593,7 +598,7 @@ function ReviewMode({
         // bring the miss back a few cards on, once the answer has left
         // working memory — the relearn step, inside the same session
         setQueue((q) => {
-          const at = Math.min(q.length, index + 1 + RELEARN_GAP);
+          const at = relearnSlot(q, entry.card, index, RELEARN_GAP);
           return [...q.slice(0, at), { card: entry.card, reason: 'relearn' }, ...q.slice(at)];
         });
       }
@@ -601,6 +606,12 @@ function ReviewMode({
         answered: s.answered + 1,
         again: s.again + (g === 'again' ? 1 : 0),
         kcs: s.kcs.includes(entry.card.kc) ? s.kcs : [...s.kcs, entry.card.kc],
+        unrecovered:
+          g === 'again'
+            ? s.unrecovered.includes(entry.card.id)
+              ? s.unrecovered
+              : [...s.unrecovered, entry.card.id]
+            : s.unrecovered.filter((id) => id !== entry.card.id),
       }));
     },
     [entry, index, streak, answer],
@@ -691,10 +702,11 @@ function ReviewMode({
               Sequence known: <strong>{pctLabel(meanLeafP(store, Date.now()))}</strong> — the
               average over every posture and hand-off.
             </p>
-            {stats.again > 0 && (
+            {stats.unrecovered.length > 0 && (
               <p className="tr-done-note text-faint">
-                Anything still missed at the end comes back five minutes later —
-                review again shortly to catch it.
+                {stats.unrecovered.length === 1 ? 'One card' : `${stats.unrecovered.length} cards`} ended
+                the session still missed — {stats.unrecovered.length === 1 ? 'it comes' : 'they come'} back
+                five minutes later. Review again shortly to catch {stats.unrecovered.length === 1 ? 'it' : 'them'}.
               </p>
             )}
             <div className="tr-done-actions">

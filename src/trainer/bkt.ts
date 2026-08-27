@@ -124,7 +124,9 @@ export function applyEvidence(
   // silently restore a month-old certainty by refreshing `last`.
   const current = prev ? decayedP(prev, priorFor(kc), now) : params.pInit;
   const p = bktUpdate(current, correct, params);
-  const isSpaced = correct && (!prev || now - prev.last >= SPACED_GAP_MS);
+  // The first answer on a leaf proves nothing about retention (it might
+  // be a lucky guess); spaced credit begins with a return after a gap.
+  const isSpaced = correct && prev !== undefined && now - prev.last >= SPACED_GAP_MS;
   const next: KcState = {
     p,
     correct: (prev?.correct ?? 0) + (correct ? 1 : 0),

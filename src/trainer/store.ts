@@ -64,8 +64,12 @@ function sanitize(data: unknown): TrainerStore | null {
       p,
       correct,
       wrong: isCount(s.wrong) ? Math.floor(s.wrong) : 0,
-      // stores written before the spaced count existed: grandfather the tally
-      spaced: isCount((s as { spaced?: unknown }).spaced) ? Math.floor((s as { spaced: number }).spaced) : correct,
+      // stores written before the spaced count existed grandfather the
+      // tally (capped: legacy practice was at most one session a day)
+      spaced: Math.min(
+        correct,
+        isCount((s as { spaced?: unknown }).spaced) ? Math.floor((s as { spaced: number }).spaced) : Math.min(correct, 10),
+      ),
       last: isCount(s.last) ? s.last : 0,
     };
   }

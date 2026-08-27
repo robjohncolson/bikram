@@ -2,7 +2,7 @@ import { useEffect } from 'react';
 import type { CSSProperties } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { chakraById, getNeighbors, getPose, muscleById } from '../data';
-import type { MuscleId, Pose } from '../data';
+import type { ClassicalNote, MuscleId, Pose } from '../data';
 import { BodyMap } from '../components/BodyMap';
 import type { MuscleHighlight } from '../components/BodyMap';
 import { PoseFigure } from '../components/PoseFigure';
@@ -41,6 +41,114 @@ function NavCard({ pose, dir }: { pose: Pose; dir: 'prev' | 'next' }) {
         <span className="pd-navcard-name">{pose.englishName}</span>
       </span>
     </Link>
+  );
+}
+
+/**
+ * "Go deeper": the posture read against the classical repertoire as
+ * Iyengar documents it — our own words, his plate numbers.
+ */
+function ClassicalSection({ note, pose }: { note: ClassicalNote; pose: Pose }) {
+  const sameName = note.asana !== null && note.asana.toLowerCase() === pose.sanskritName.toLowerCase();
+  return (
+    <section className="card pd-card pd-classical" aria-labelledby="pd-classical-h">
+      <div className="pd-classical-head">
+        <p className="eyebrow">Go deeper</p>
+        <h2 className="pd-h" id="pd-classical-h">
+          The classical form
+        </h2>
+        <p className="pd-classical-lede text-soft">
+          The same shape as the classical repertoire describes it — read against B.K.S. Iyengar&rsquo;s{' '}
+          <em>Light on Yoga</em>, in our own words, with his plate numbers so you can open your copy.
+        </p>
+      </div>
+
+      <div className="pd-classical-grid">
+        <div className="pd-classical-col">
+          <h3 className="pd-h3">
+            {note.asana === null ? 'No classical entry' : sameName ? 'The classical name' : 'Classical counterpart'}
+          </h3>
+          {note.asana !== null && (
+            <p className="pd-classical-asana">
+              <strong>{note.asana}</strong>
+              {note.asanaEnglish && <span className="text-soft"> · {note.asanaEnglish}</span>}
+            </p>
+          )}
+          {note.reference && (
+            <p className="pd-classical-ref">
+              <span className="pill">
+                Light on Yoga · {note.reference.plates.toLowerCase().startsWith('plate') ? '' : 'plates '}
+                {note.reference.plates}
+              </span>
+              {note.reference.difficulty !== undefined && (
+                <span className="pill" title="Iyengar grades every asana from 1 (easiest) to 60">
+                  grade {note.reference.difficulty} of 60
+                </span>
+              )}
+            </p>
+          )}
+          <p className="pd-classical-etym">{note.etymology}</p>
+
+          <h3 className="pd-h3">Where 26 &amp; 2 differs</h3>
+          <p className="pd-classical-contrast">{note.contrast}</p>
+        </div>
+
+        <div className="pd-classical-col">
+          {note.refinements.length > 0 && (
+            <>
+              <h3 className="pd-h3">Refinements that transfer</h3>
+              <ul className="pd-cues pd-classical-list">
+                {note.refinements.map((r, i) => (
+                  <li key={i}>{r}</li>
+                ))}
+              </ul>
+            </>
+          )}
+          {note.stages.length > 0 && (
+            <>
+              <h3 className="pd-h3">If the full form isn&rsquo;t there yet</h3>
+              <ol className="pd-steps pd-classical-list">
+                {note.stages.map((st, i) => (
+                  <li key={i}>{st}</li>
+                ))}
+              </ol>
+            </>
+          )}
+          {(note.ladder.before.length > 0 || note.ladder.beyond.length > 0) && (
+            <div className="pd-ladder">
+              {note.ladder.before.length > 0 && (
+                <div>
+                  <h3 className="pd-h3">Prepares from</h3>
+                  <ul className="pd-ladder-chips">
+                    {note.ladder.before.map((n) => (
+                      <li key={n} className="pill">
+                        {n}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              {note.ladder.beyond.length > 0 && (
+                <div>
+                  <h3 className="pd-h3">Leads toward</h3>
+                  <ul className="pd-ladder-chips">
+                    {note.ladder.beyond.map((n) => (
+                      <li key={n} className="pill">
+                        {n}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      </div>
+      <p className="pd-classical-foot text-faint">
+        Iyengar and 26 &amp; 2 are different lineages that sometimes disagree; nothing here corrects
+        the class. Traditional effects are described as tradition, not as medical fact.
+      </p>
+    </section>
   );
 }
 
@@ -290,6 +398,8 @@ export function PoseDetail() {
             )}
           </div>
         )}
+
+        {pose.classical && <ClassicalSection note={pose.classical} pose={pose} />}
 
         {(prev || next) && (
           <nav className="pd-navcards" aria-label="Sequence navigation">

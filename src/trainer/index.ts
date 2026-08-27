@@ -5,7 +5,7 @@
 export type * from './types';
 export { ARCS, arcOf, kcNodes, allCards, cardById } from './graph';
 export { BKT_BY_KIND, SPACED_GAP_MS, bktUpdate, leafP, nodeP, meanLeafP, applyEvidence, band, decayedP, decayHalfLifeDays } from './bkt';
-export { AGAIN_MINUTES, newCardState, gradeCard, isDue } from './srs';
+export { AGAIN_MINUTES, newCardState, gradeCard, relearnAgain, isDue } from './srs';
 export { STORAGE_KEY, emptyStore, loadStore, saveStore, resetStore } from './store';
 export {
   NEW_PER_SESSION,
@@ -13,6 +13,7 @@ export {
   DRILL_CAP,
   RELEARN_GAP,
   interleave,
+  relearnSlot,
   schedulesOn,
   buildQueue,
   buildDrillQueue,

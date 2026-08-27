@@ -591,3 +591,83 @@
     gap: 10px;
   }
 }
+
+/* ————————————————————————————————————————————— classical layer */
+.pd-classical {
+  margin-top: 22px;
+}
+
+.pd-classical-head {
+  margin-bottom: 14px;
+}
+
+.pd-classical-lede {
+  margin-top: 6px;
+  max-width: 62ch;
+  font-size: 14.5px;
+  line-height: 1.5;
+}
+
+.pd-classical-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 22px 32px;
+}
+
+.pd-h3 {
+  margin: 14px 0 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+}
+
+.pd-classical-col > .pd-h3:first-child {
+  margin-top: 0;
+}
+
+.pd-classical-asana {
+  font-size: 17px;
+  margin: 0 0 6px;
+}
+
+.pd-classical-ref {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0 0 10px;
+}
+
+.pd-classical-etym,
+.pd-classical-contrast {
+  margin: 0;
+  line-height: 1.55;
+  color: var(--text-soft);
+}
+
+.pd-classical-list {
+  margin-top: 4px;
+}
+
+.pd-ladder {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.pd-ladder-chips {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pd-classical-foot {
+  margin: 18px 0 0;
+  font-size: 12.5px;
+  line-height: 1.5;
+  max-width: 70ch;
+}

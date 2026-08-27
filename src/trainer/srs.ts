@@ -39,6 +39,11 @@ export function gradeCard(state: CardState, grade: Grade, now: number): CardStat
   };
 }
 
+/** A second miss while still in the relearn step: the step restarts, no extra lapse or ease cost. */
+export function relearnAgain(state: CardState, now: number): CardState {
+  return { ...state, due: now + AGAIN_MINUTES * MIN, reps: state.reps + 1 };
+}
+
 export function isDue(state: CardState, now: number): boolean {
   return state.due <= now;
 }

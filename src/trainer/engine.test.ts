@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { BKT_BY_KIND, SPACED_GAP_MS, applyEvidence, bktUpdate, decayedP, decayHalfLifeDays, leafP, meanLeafP, nodeP } from './bkt';
 import { AGAIN_MINUTES, gradeCard, newCardState } from './srs';
 import { allCards, ARCS, kcNodes } from './graph';
-import { buildDrillQueue, buildQueue, interleave, NEW_PER_SESSION, recordAnswer, schedulesOn } from './engine';
+import { buildDrillQueue, buildQueue, interleave, NEW_PER_SESSION, recordAnswer, relearnSlot, schedulesOn } from './engine';
 import { emptyStore } from './store';
 import type { TrainerStore } from './types';
 
@@ -251,7 +251,6 @@ describe('review queue', () => {
 });
 
 describe('honest scheduling', () => {
-  const HOUR = 60 * 60 * 1000;
 
   it('an early re-"good" leaves the schedule unchanged', () => {
     const store = emptyStore();
@@ -294,22 +293,81 @@ describe('honest scheduling', () => {
     const store = emptyStore();
     recordAnswer(store, 'name:eagle', 'good', NOW);
     for (let i = 1; i <= 5; i++) recordAnswer(store, 'name:eagle', 'good', NOW + i * 60_000);
+    // six hits in one sitting: the first proves nothing about retention
+    // and the rest are massed — no spaced credit, base half-life
     expect(store.kcs['id:eagle'].correct).toBe(6);
-    expect(store.kcs['id:eagle'].spaced).toBe(1);
-    expect(decayHalfLifeDays(store.kcs['id:eagle'].spaced)).toBe(8);
+    expect(store.kcs['id:eagle'].spaced).toBe(0);
+    expect(decayHalfLifeDays(store.kcs['id:eagle'].spaced)).toBe(4);
     recordAnswer(store, 'name:eagle', 'good', NOW + 5 * 60_000 + SPACED_GAP_MS);
-    expect(store.kcs['id:eagle'].spaced).toBe(2);
+    expect(store.kcs['id:eagle'].spaced).toBe(1);
+    expect(decayHalfLifeDays(1)).toBe(8);
     // a wrong answer never counts as spaced practice
     recordAnswer(store, 'name:eagle', 'again', NOW + 5 * 60_000 + 3 * SPACED_GAP_MS);
-    expect(store.kcs['id:eagle'].spaced).toBe(2);
+    expect(store.kcs['id:eagle'].spaced).toBe(1);
     expect(store.kcs['id:eagle'].wrong).toBe(1);
-    void HOUR;
+  });
+
+  it('does not fine a card twice for missing it again while relearning', () => {
+    const store = emptyStore();
+    for (let i = 0; i < 3; i++) recordAnswer(store, 'name:eagle', 'good', NOW + i * 2 * 86_400_000);
+    const t = NOW + 6 * 86_400_000 + 1;
+    recordAnswer(store, 'name:eagle', 'again', t);
+    const once = { ...store.cards['name:eagle'] };
+    recordAnswer(store, 'name:eagle', 'again', t + 60_000);
+    const twice = store.cards['name:eagle'];
+    expect(twice.lapses).toBe(once.lapses);
+    expect(twice.ease).toBe(once.ease);
+    expect(twice.interval).toBe(AGAIN_MINUTES);
+    expect(twice.due).toBe(t + 60_000 + AGAIN_MINUTES * 60_000);
+    expect(twice.reps).toBe(once.reps + 1);
+    // and a hit afterwards still climbs out of relearn
+    recordAnswer(store, 'name:eagle', 'good', t + 120_000);
+    expect(store.cards['name:eagle'].interval).toBe(30);
   });
 });
 
 describe('interleaving', () => {
   const noAdjacentPose = (q: { card: { poseId: string } }[]) =>
     q.every((e, i) => i === 0 || e.card.poseId !== q[i - 1].card.poseId);
+
+  it('finds a clash-free order whenever one exists (deterministic shuffles)', () => {
+    // xorshift so the test is repeatable
+    let seed = 7;
+    const rnd = () => {
+      seed ^= seed << 13;
+      seed ^= seed >>> 17;
+      seed ^= seed << 5;
+      return (seed >>> 0) / 4294967296;
+    };
+    for (let trial = 0; trial < 200; trial++) {
+      const n = 4 + Math.floor(rnd() * 20);
+      const kinds = 2 + Math.floor(rnd() * 5);
+      type Lite = { card: { poseId: string; id: string } };
+      const items: Lite[] = Array.from({ length: n }, (_, i) => ({
+        card: { poseId: `p${Math.floor(rnd() * kinds)}`, id: `c${i}` },
+      }));
+      const counts = new Map<string, number>();
+      for (const it of items) counts.set(it.card.poseId, (counts.get(it.card.poseId) ?? 0) + 1);
+      const maxCount = Math.max(...counts.values());
+      const out = interleave(items as never[]) as Lite[];
+      expect(out).toHaveLength(n);
+      expect(new Set(out.map((e) => e.card.id))).toEqual(new Set(items.map((e) => e.card.id)));
+      // a clash-free arrangement exists iff no posture holds more than ceil(n/2) slots
+      if (maxCount <= Math.ceil(n / 2)) expect(noAdjacentPose(out), `trial ${trial}`).toBe(true);
+    }
+  });
+
+  it('re-inserts a miss past its own sibling cards', () => {
+    const q = (ids: string[]) => ids.map((id) => ({ card: { id, poseId: id.split(':')[1] } })) as never[];
+    const card = { id: 'next:eagle', poseId: 'eagle' } as never;
+    // slot 4 would sit right after name:eagle (which shows the answer) → nudged to 5
+    const queue = q(['next:eagle', 'pos:1', 'name:tree', 'name:eagle', 'pos:2', 'name:bow']);
+    expect(relearnSlot(queue, card, 0, 3)).toBe(5);
+    // clean slot: used as is
+    expect(relearnSlot(q(['next:eagle', 'pos:1', 'name:tree', 'pos:2', 'name:bow']), card, 0, 3)).toBe(4);
+    // nothing clean ahead: end of queue
+    expect(relearnSlot(q(['next:eagle', 'pos:1', 'name:eagle', 'pos:4']), card, 0, 2)).toBe(4);
+  });
 
   it('never serves the same posture twice in a row when avoidable', () => {
     expect(noAdjacentPose(buildQueue(emptyStore(), NOW))).toBe(true);

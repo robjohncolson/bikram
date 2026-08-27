@@ -112,6 +112,51 @@ export interface ChakraLink {
   why: string;
 }
 
+/**
+ * The classical view of a posture — an optional "go deeper" layer
+ * authored separately from the 26 & 2 teaching. It reads each posture
+ * against the classical repertoire as B.K.S. Iyengar documents it in
+ * *Light on Yoga* (1966): the name's roots, the nearest classical asana
+ * and how the 26 & 2 execution differs from it, precision actions that
+ * transfer into the hold, hold-here stages, and the ladder of poses the
+ * shape comes from and leads to.
+ *
+ * Everything here is ORIGINAL WORDING. The book is cited by plate number
+ * so a reader can open their own copy; it is never quoted, and neither is
+ * any other source. Traditional or lineage claims keep the app's honesty
+ * rule ("in the Iyengar method…", "traditionally…").
+ */
+export interface ClassicalNote {
+  /**
+   * The nearest classical asana, in its usual transliteration (may equal
+   * the 26 & 2 Sanskrit name). `null` when the 26 & 2 form has no
+   * classical entry — the note then explains what is nearest.
+   */
+  asana: string | null;
+  /** English rendering of the classical name, when it differs from ours */
+  asanaEnglish?: string;
+  /** Word-by-word Sanskrit roots of the name(s), in our own words */
+  etymology: string;
+  /**
+   * Where to look in *Light on Yoga* — plate numbers and Iyengar's 1–60
+   * difficulty grade for the classical form. Include only when verified
+   * against a citable source; omit rather than guess.
+   */
+  reference?: { plates: string; difficulty?: number };
+  /**
+   * How the 26 & 2 execution differs from the classical form (or from the
+   * nearest relative), and why the difference exists. Neither lineage is
+   * "corrected" by the other; the contrast is the teaching.
+   */
+  contrast: string;
+  /** Precision actions from the classical method that transfer into the 26 & 2 hold (2–5) */
+  refinements: string[];
+  /** Hold-here-if-not-yet stages toward the full form, easiest first (1–4) */
+  stages: string[];
+  /** Preparatory classical poses (`before`) and where the shape leads (`beyond`) */
+  ladder: { before: string[]; beyond: string[] };
+}
+
 export interface Pose {
   /** Stable kebab-case id, used in routes: /pose/:id */
   id: string;
@@ -158,4 +203,6 @@ export interface Pose {
    * exactly to approxTotalSeconds.
    */
   segments?: PoseSegment[];
+  /** the classical (Light on Yoga) view of the posture; merged in by poses/index.ts */
+  classical?: ClassicalNote;
 }

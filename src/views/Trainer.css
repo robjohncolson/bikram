@@ -405,6 +405,14 @@
   --pill: color-mix(in srgb, var(--ember) 55%, var(--text));
 }
 
+.tr-why .pill[data-reason='relearn'] {
+  --pill: color-mix(in srgb, var(--ember) 80%, var(--text));
+}
+
+.tr-why .pill[data-reason='drill'] {
+  --pill: var(--strengthens);
+}
+
 /* ————————————————————————————————————————————— quiz: multiple choice */
 
 .tr-prompt {
