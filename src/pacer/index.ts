@@ -22,4 +22,4 @@ export type { VoiceChoice, SpeakOptions } from './voice';
 export { createWakeLock, wakeLockSupported } from './wakelock';
 export type { WakeLock } from './wakelock';
 export { collectCueTexts } from './cue-script';
-export { clipsAvailable, clipFor, playClip, stopClips, silenceVoice } from './clips';
+export { clipsAvailable, clipFor, clipUrls, unlockClips, playClip, stopClips, silenceVoice } from './clips';

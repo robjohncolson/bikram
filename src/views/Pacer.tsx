@@ -22,6 +22,7 @@ import {
   speechSupported,
   stopClips,
   stopSpeaking,
+  unlockClips,
   watchVoices,
 } from '../pacer';
 import type { BeatEvent, Metronome, PacerSettings, PoseTrack, VoiceChoice, WakeLock } from '../pacer';
@@ -128,6 +129,10 @@ export function Pacer() {
   const lockRef = useRef<WakeLock | null>(null);
   const immerseBtnRef = useRef<HTMLButtonElement | null>(null);
   const timeoutsRef = useRef<Set<number>>(new Set());
+  /** A stall (throttled tab, suspended audio) is being caught up silently. */
+  const stalledRef = useRef(false);
+  /** A posture hand-off happened inside a stall — owe one orientation cue. */
+  const stallHandoffRef = useRef(false);
 
   /** setTimeout that gets cleaned up when the pacer stops or unmounts. */
   const later = useCallback((fn: () => void, ms: number) => {
@@ -173,7 +178,13 @@ export function Pacer() {
     const url = wantClips ? clipFor(text) : undefined;
     if (url) {
       if (interrupt) stopSpeaking();
-      playClip(url, { volume: s.volume, interrupt });
+      playClip(url, {
+        volume: s.volume,
+        interrupt,
+        // a clip that will not load or play (offline miss, decoder hiccup,
+        // autoplay refusal) must not leave a hole in the class
+        fallback: () => speak(text, { interrupt: false, volume: s.volume }),
+      });
     } else {
       if (interrupt) stopClips();
       speak(text, {
@@ -205,37 +216,67 @@ export function Pacer() {
     [sayCue],
   );
 
-  /** One counted beat of class time: cue, decrement, hand off postures. */
-  const tickClass = useCallback(() => {
-    const c = classRef.current;
-    if (c.phase !== 'running') return;
-    // Current beat index into the hold — beat 0 is the posture's first
-    // counted beat, so the announce lands the moment a hold begins.
-    fireCues(c.budget - c.left);
-    pacedRef.current += beatSeconds(settingsRef.current.bpm);
-    const left = c.left - 1;
-    if (left > 0) {
-      commitClass({ ...c, left });
-      return;
-    }
-    if (c.idx >= poses.length - 1) {
-      silenceVoice();
-      metRef.current?.cue('end');
-      trackRef.current = null;
-      commitClass({ phase: 'done', pacedSeconds: pacedRef.current });
-    } else {
-      metRef.current?.chime();
-      const idx = c.idx + 1;
-      const track = buildTrack(idx);
-      trackRef.current = track;
-      commitClass({ phase: 'running', idx, left: track.totalBeats, budget: track.totalBeats });
-    }
-  }, [buildTrack, commitClass, fireCues]);
+  /** One counted beat of class time: cue, decrement, hand off postures.
+   *  `late` beats arrive in a burst after a stall (screen lock, background
+   *  tab): they advance the class clock but stay silent, and the first
+   *  live beat afterwards speaks one orientation cue if a hand-off went by. */
+  const tickClass = useCallback(
+    (late = false) => {
+      const c = classRef.current;
+      if (c.phase !== 'running') return;
+      // Current beat index into the hold — beat 0 is the posture's first
+      // counted beat, so the announce lands the moment a hold begins.
+      const beatIdx = c.budget - c.left;
+      if (late) {
+        stalledRef.current = true;
+      } else {
+        if (stalledRef.current) {
+          stalledRef.current = false;
+          // a live beat 0 speaks its own announce; otherwise re-orient once
+          if (stallHandoffRef.current && beatIdx > 0) {
+            metRef.current?.chime();
+            sayCue(announceText(poses[c.idx], cuesRef.current.sanskrit), true);
+          }
+          stallHandoffRef.current = false;
+        }
+        fireCues(beatIdx);
+      }
+      pacedRef.current += beatSeconds(settingsRef.current.bpm);
+      const left = c.left - 1;
+      if (left > 0) {
+        commitClass({ ...c, left });
+        return;
+      }
+      if (c.idx >= poses.length - 1) {
+        // class over: the bell rings, then the metronome falls silent with it
+        silenceVoice();
+        metRef.current?.cue('end');
+        metRef.current?.stop();
+        clearPending();
+        setRunning(false);
+        setBeatView(null);
+        trackRef.current = null;
+        commitClass({ phase: 'done', pacedSeconds: pacedRef.current });
+      } else {
+        if (late) stallHandoffRef.current = true;
+        else metRef.current?.chime();
+        const idx = c.idx + 1;
+        const track = buildTrack(idx);
+        trackRef.current = track;
+        commitClass({ phase: 'running', idx, left: track.totalBeats, budget: track.totalBeats });
+      }
+    },
+    [buildTrack, clearPending, commitClass, fireCues, sayCue],
+  );
 
   // One metronome per mount. Beat events arrive up to ~150ms early on the
   // audio clock; visuals are deferred to the moment the beat sounds.
   useEffect(() => {
     const m = createMetronome((e: BeatEvent) => {
+      if (e.late) {
+        tickClass(true); // catch-up after a stall: clock moves, nothing sounds
+        return;
+      }
       const delay = Math.max(0, (e.time - m.now()) * 1000);
       later(() => {
         setBeatView({ beat: e.beat, bar: e.bar });
@@ -329,6 +370,7 @@ export function Pacer() {
       setRunning(false);
       setBeatView(null);
     } else {
+      unlockClips(); // inside the gesture: mobile browsers need it here
       m.start();
       setRunning(true);
     }
@@ -352,11 +394,14 @@ export function Pacer() {
   const beginClass = useCallback(() => {
     const m = metRef.current;
     if (!m) return;
+    unlockClips(); // inside the gesture: mobile browsers need it here
     if (!m.running) {
       m.start();
       setRunning(true);
     }
     pacedRef.current = 0;
+    stalledRef.current = false;
+    stallHandoffRef.current = false;
     const track = buildTrack(startIdx);
     trackRef.current = track;
     commitClass({ phase: 'running', idx: startIdx, left: track.totalBeats, budget: track.totalBeats });

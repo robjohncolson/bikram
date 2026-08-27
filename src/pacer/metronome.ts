@@ -10,6 +10,13 @@ import { beatSeconds, clampSettings, PACER_DEFAULTS } from './timing';
 
 const LOOKAHEAD_S = 0.15;
 const TICK_MS = 40;
+/**
+ * A beat this far behind the audio clock was missed while the tab was
+ * throttled or the context suspended (screen lock, backgrounding). Such
+ * beats are still delivered — the class clock must stay honest — but
+ * flagged `late` so nothing ticks, speaks, or blinks for them in a burst.
+ */
+const LATE_S = 1.0;
 
 export interface BeatEvent {
   /** absolute audio-clock time this beat sounds at */
@@ -20,6 +27,8 @@ export interface BeatEvent {
   bar: number;
   /** snapshot of settings the beat was scheduled under */
   beatsPerBar: number;
+  /** delivered in a catch-up burst after a stall — silent, no visuals */
+  late?: boolean;
 }
 
 export interface Metronome {
@@ -50,6 +59,12 @@ export function createMetronome(onBeat: (e: BeatEvent) => void): Metronome {
   let beat = 0;
   let bar = 0;
 
+  /** Bring a suspended/interrupted context back while we are meant to run
+   *  (screen unlock, return from another app, end of a phone call). */
+  function keepAlive() {
+    if (running && ctx && ctx.state !== 'running') void ctx.resume();
+  }
+
   function ensureAudio(): boolean {
     if (ctx) return true;
     if (typeof AudioContext === 'undefined') return false;
@@ -57,6 +72,8 @@ export function createMetronome(onBeat: (e: BeatEvent) => void): Metronome {
     master = ctx.createGain();
     master.gain.value = settings.muted ? 0 : settings.volume;
     master.connect(ctx.destination);
+    ctx.addEventListener('statechange', keepAlive);
+    if (typeof document !== 'undefined') document.addEventListener('visibilitychange', keepAlive);
     return true;
   }
 
@@ -92,9 +109,11 @@ export function createMetronome(onBeat: (e: BeatEvent) => void): Metronome {
 
   function schedule() {
     if (!ctx) return;
-    while (nextTime < ctx.currentTime + LOOKAHEAD_S) {
-      tickSound(nextTime, beat, bar);
-      onBeat({ time: nextTime, beat, bar, beatsPerBar: settings.beatsPerBar });
+    const now = ctx.currentTime;
+    while (nextTime < now + LOOKAHEAD_S) {
+      const late = now - nextTime > LATE_S;
+      if (!late) tickSound(nextTime, beat, bar);
+      onBeat({ time: late ? now : nextTime, beat, bar, beatsPerBar: settings.beatsPerBar, late });
       nextTime += beatSeconds(settings.bpm);
       beat += 1;
       if (beat >= settings.beatsPerBar) {
@@ -158,7 +177,9 @@ export function createMetronome(onBeat: (e: BeatEvent) => void): Metronome {
     },
     dispose() {
       this.stop();
+      if (typeof document !== 'undefined') document.removeEventListener('visibilitychange', keepAlive);
       if (ctx) {
+        ctx.removeEventListener('statechange', keepAlive);
         void ctx.close();
         ctx = null;
         master = null;
