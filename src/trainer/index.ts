@@ -8,6 +8,21 @@ export { BKT_BY_KIND, SPACED_GAP_MS, bktUpdate, leafP, nodeP, meanLeafP, applyEv
 export { AGAIN_MINUTES, newCardState, gradeCard, relearnAgain, isDue } from './srs';
 export { STORAGE_KEY, emptyStore, loadStore, saveStore, resetStore } from './store';
 export {
+  JOURNAL_KEY,
+  emptyJournal,
+  dayKey,
+  loadJournal,
+  saveJournal,
+  touchPracticeDay,
+  recordClass,
+  amendLastClass,
+  lastClass,
+  daysSince,
+  practiceStreak,
+  classesInLast,
+} from './journal';
+export type { Journal, ClassRecord } from './journal';
+export {
   NEW_PER_SESSION,
   QUEUE_CAP,
   DRILL_CAP,

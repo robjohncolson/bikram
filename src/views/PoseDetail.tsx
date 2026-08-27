@@ -1,7 +1,8 @@
-import { useEffect } from 'react';
+import { useEffect, useMemo } from 'react';
 import type { CSSProperties } from 'react';
 import { Link, useParams } from 'react-router-dom';
 import { chakraById, getNeighbors, getPose, muscleById } from '../data';
+import { band, loadStore, nodeP } from '../trainer';
 import type { ClassicalNote, MuscleId, Pose } from '../data';
 import { BodyMap } from '../components/BodyMap';
 import type { MuscleHighlight } from '../components/BodyMap';
@@ -41,6 +42,48 @@ function NavCard({ pose, dir }: { pose: Pose; dir: 'prev' | 'next' }) {
         <span className="pd-navcard-name">{pose.englishName}</span>
       </span>
     </Link>
+  );
+}
+
+const BAND_WORD = { unseen: 'not yet practiced', shaky: 'shaky', developing: 'developing', solid: 'solid' } as const;
+
+/**
+ * Where this posture stands in memory, and the two doors out of the page
+ * into practice: a focused drill and a class started from here.
+ */
+function PracticeRow({ pose, next }: { pose: Pose; next?: Pose }) {
+  const bands = useMemo(() => {
+    const now = Date.now();
+    const store = loadStore(now);
+    return {
+      identity: band(nodeP(store, `id:${pose.id}`, now)),
+      handoff: next ? band(nodeP(store, `tr:${pose.order}`, now)) : null,
+    };
+  }, [pose, next]);
+  return (
+    <div className="pd-practice" aria-label="Practice">
+      <span className="pill" data-band={bands.identity}>
+        memory · {BAND_WORD[bands.identity]}
+      </span>
+      {bands.handoff && (
+        <span className="pill" data-band={bands.handoff}>
+          hand-off · {BAND_WORD[bands.handoff]}
+        </span>
+      )}
+      <span className="pd-practice-links">
+        <Link className="pd-practice-link" to={`/train?drill=id:${pose.id}`}>
+          Drill this posture →
+        </Link>
+        {next && (
+          <Link className="pd-practice-link" to={`/train?drill=tr:${pose.order}`}>
+            Drill the hand-off →
+          </Link>
+        )}
+        <Link className="pd-practice-link" to={`/pace?from=${pose.order}`}>
+          Practice the class from here →
+        </Link>
+      </span>
+    </div>
   );
 }
 
@@ -237,6 +280,8 @@ export function PoseDetail() {
         </header>
 
         {pose.summary && <p className="pd-summary">{pose.summary}</p>}
+
+        <PracticeRow pose={pose} next={next} />
 
         {(hasLeft || hasRight) && (
           <div className={`pd-grid${hasLeft && hasRight ? '' : ' pd-grid--single'}`}>

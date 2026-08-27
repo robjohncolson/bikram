@@ -671,3 +671,42 @@
   line-height: 1.5;
   max-width: 70ch;
 }
+
+/* ————————————————————————————————————————————— practice row */
+.pd-practice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 10px;
+  margin: 14px 0 6px;
+}
+
+.pd-practice .pill[data-band='solid'] {
+  --pill: var(--strengthens);
+}
+
+.pd-practice .pill[data-band='developing'] {
+  --pill: var(--ember);
+}
+
+.pd-practice .pill[data-band='shaky'] {
+  --pill: color-mix(in srgb, var(--ember) 60%, var(--text));
+}
+
+.pd-practice-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 16px;
+  margin-left: auto;
+}
+
+.pd-practice-link {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ember-text);
+  text-decoration: none;
+}
+
+.pd-practice-link:hover {
+  text-decoration: underline;
+}

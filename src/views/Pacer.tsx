@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import type { CSSProperties, ReactNode } from 'react';
 import {
@@ -27,7 +27,20 @@ import {
 } from '../pacer';
 import type { BeatEvent, Metronome, PacerSettings, PoseTrack, VoiceChoice, WakeLock } from '../pacer';
 import { classOffsetSeconds, classTotalSeconds, poses } from '../data';
-import { applyEvidence, loadStore, saveStore } from '../trainer';
+import {
+  amendLastClass,
+  applyEvidence,
+  band,
+  daysSince,
+  lastClass,
+  loadJournal,
+  loadStore,
+  nodeP,
+  practiceStreak,
+  recordClass,
+  saveJournal,
+  saveStore,
+} from '../trainer';
 import { PoseFigure } from '../components/PoseFigure';
 import { PacerClassMode } from './PacerClassMode';
 import './Pacer.css';
@@ -143,7 +156,11 @@ export function Pacer() {
   const [running, setRunning] = useState(false);
   const [beatView, setBeatView] = useState<{ beat: number; bar: number } | null>(null);
   const [classRun, setClassRun] = useState<ClassRun>({ phase: 'idle' });
-  const [startIdx, setStartIdx] = useState(0);
+  // /pace?from=<order> — a posture page's "practice from here"
+  const [startIdx, setStartIdx] = useState(() => {
+    const from = Number(new URLSearchParams(window.location.search).get('from'));
+    return Number.isInteger(from) && from >= 1 && from <= poses.length ? from - 1 : 0;
+  });
   const [immersed, setImmersed] = useState(false);
 
   const settingsRef = useRef(settings);
@@ -161,6 +178,7 @@ export function Pacer() {
   const stallHandoffRef = useRef(false);
   /** Where this class started — the rehearsal debrief lists hand-offs from here. */
   const classFromRef = useRef(0);
+  const classStartedAtRef = useRef(0);
 
   /** setTimeout that gets cleaned up when the pacer stops or unmounts. */
   const later = useCallback((fn: () => void, ms: number) => {
@@ -289,6 +307,19 @@ export function Pacer() {
         setRunning(false);
         setBeatView(null);
         trackRef.current = null;
+        // the journal remembers the class; the debrief amends it later
+        const journal = loadJournal();
+        const endedAt = Date.now();
+        recordClass(journal, {
+          startedAt: classStartedAtRef.current || endedAt,
+          endedAt,
+          fromOrder: poses[classFromRef.current]?.order ?? 1,
+          toOrder: poses[c.idx].order,
+          pacedSeconds: Math.round(pacedRef.current),
+          bpm: settingsRef.current.bpm,
+          rehearsed: cuesRef.current.rehearse,
+        });
+        saveJournal(journal);
         commitClass({
           phase: 'done',
           pacedSeconds: pacedRef.current,
@@ -456,6 +487,7 @@ export function Pacer() {
     stalledRef.current = false;
     stallHandoffRef.current = false;
     classFromRef.current = startIdx;
+    classStartedAtRef.current = Date.now();
     const track = buildTrack(startIdx);
     trackRef.current = track;
     // the first posture was chosen by hand — nothing to recall yet
@@ -537,6 +569,29 @@ export function Pacer() {
   const rateLine = `${fmtRate(rate)} ${isPulse ? 'pulses' : 'breaths'} / min`;
   const classMinutes = Math.round((classTotalSeconds * (60 / settings.bpm)) / 60);
 
+  // What the idle card says about last time: computed once per idle spell,
+  // not per beat. "Listen for" names the two shakiest hand-offs the trainer
+  // knows about — the class is where they get rehearsed.
+  const idleInfo = useMemo(() => {
+    if (classRun.phase !== 'idle') return null;
+    const now = Date.now();
+    const journal = loadJournal();
+    const last = lastClass(journal);
+    const streak = practiceStreak(journal, now);
+    const tstore = loadStore(now);
+    const shaky =
+      Object.keys(tstore.kcs).length === 0
+        ? []
+        : poses
+            .slice(0, -1)
+            .map((p) => ({ p, prob: nodeP(tstore, `tr:${p.order}`, now) }))
+            .filter((x) => band(x.prob) !== 'solid')
+            .sort((a, b) => a.prob - b.prob)
+            .slice(0, 2)
+            .map((x) => poses[x.p.order]); // the posture the hand-off leads INTO
+    return { last, streak, shaky, ago: last ? daysSince(last.endedAt, now) : null };
+  }, [classRun.phase]);
+
   // ---------------------------------------------------------------- class card body
   let classBody: ReactNode;
   let overlay: ReactNode = null;
@@ -550,6 +605,45 @@ export function Pacer() {
         <p className="pc-class-total text-faint">
           Whole class ≈ <strong>{classMinutes} min</strong> at {settings.bpm} BPM.
         </p>
+        {idleInfo && (idleInfo.last || idleInfo.shaky.length > 0) && (
+          <p className="pc-class-last text-soft">
+            {idleInfo.last && idleInfo.ago !== null && (
+              <>
+                Last class{' '}
+                {idleInfo.ago === 0 ? 'today' : idleInfo.ago === 1 ? 'yesterday' : `${idleInfo.ago} days ago`}
+                {' — '}
+                {idleInfo.last.fromOrder === 1 && idleInfo.last.toOrder === poses.length
+                  ? 'the whole class'
+                  : `postures ${idleInfo.last.fromOrder}–${idleInfo.last.toOrder}`}
+                , ≈{Math.max(1, Math.round(idleInfo.last.pacedSeconds / 60))} min
+                {idleInfo.last.rehearsed &&
+                  idleInfo.last.handoffs !== undefined &&
+                  idleInfo.last.recalled !== undefined && (
+                    <>
+                      , {idleInfo.last.recalled} of {idleInfo.last.handoffs} hand-offs recalled
+                    </>
+                  )}
+                .{' '}
+                {idleInfo.streak > 1 && <>{idleInfo.streak} days of practice running. </>}
+              </>
+            )}
+            {idleInfo.shaky.length > 0 && (
+              <>
+                Listen for the hand-off{idleInfo.shaky.length > 1 ? 's' : ''} into{' '}
+                {idleInfo.shaky.map((p, i) => (
+                  <span key={p.id}>
+                    {i > 0 && ' and '}
+                    <strong>
+                      #{p.order} {p.englishName}
+                    </strong>
+                  </span>
+                ))}
+                {' — '}
+                {idleInfo.shaky.length > 1 ? 'your shakiest' : 'your shakiest one'}.
+              </>
+            )}
+          </p>
+        )}
         <div className="pc-class-startrow">
           <label className="pc-class-from" htmlFor="pc-from">
             Start from
@@ -983,7 +1077,10 @@ function RehearsalDebrief({ from }: { from: number }) {
       applyEvidence(store, `tr:${p.order - 1}`, 'recall', !missed.has(p.id), now);
     }
     saveStore(store);
-    setSaved(handoffs.length - missed.size);
+    const recalled = handoffs.length - missed.size;
+    const journal = loadJournal();
+    if (amendLastClass(journal, { handoffs: handoffs.length, recalled })) saveJournal(journal);
+    setSaved(recalled);
   };
 
   if (handoffs.length === 0) return null;

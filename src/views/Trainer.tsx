@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
 import type { Pose } from '../data';
@@ -17,6 +17,11 @@ import {
   meanLeafP,
   RELEARN_GAP,
   relearnSlot,
+  loadJournal,
+  saveJournal,
+  touchPracticeDay,
+  practiceStreak,
+  dayKey,
   resetStore,
   saveStore,
   unseenCount,
@@ -215,12 +220,20 @@ export function Trainer() {
   const [screen, setScreen] = useState<Screen>(drillNode ? 'review' : 'landing');
   const [store, setStore] = useState<TrainerStore>(() => loadStore(Date.now()));
   const [, setRev] = useState(0);
+  const touchedDayRef = useRef<string | null>(null);
 
   const answer = useCallback<AnswerFn>(
     (cardId, grade, streakAfter = 0) => {
-      recordAnswer(store, cardId, grade, Date.now());
+      const now = Date.now();
+      recordAnswer(store, cardId, grade, now);
       if (streakAfter > store.bestStreak) store.bestStreak = streakAfter;
       saveStore(store);
+      // the journal counts the day — once per day, not per answer
+      if (touchedDayRef.current !== dayKey(now)) {
+        touchedDayRef.current = dayKey(now);
+        const journal = loadJournal();
+        if (touchPracticeDay(journal, now)) saveJournal(journal);
+      }
       setRev((r) => r + 1); // store is mutated in place — nudge React
     },
     [store],
@@ -274,6 +287,7 @@ function Landing({
   const solidCount = poses.filter((p) => band(nodeP(store, `id:${p.id}`, Date.now())) === 'solid').length;
   const hasEvidence = Object.keys(store.kcs).length > 0;
   const knownP = meanLeafP(store, Date.now());
+  const practiceDays = practiceStreak(loadJournal(), now);
   const hasAnyProgress =
     store.answers > 0 || store.bestStreak > 0 || Object.keys(store.cards).length > 0;
 
@@ -409,6 +423,14 @@ function Landing({
                   <IconFlame />
                   best streak <strong>{store.bestStreak}</strong>
                 </span>
+                {practiceDays > 0 && (
+                  <>
+                    <span className="tr-stat-sep" aria-hidden />
+                    <span>
+                      practiced <strong>{practiceDays}</strong> {practiceDays === 1 ? 'day' : 'days'} running
+                    </span>
+                  </>
+                )}
               </div>
 
               <div className="tr-progress-foot">
@@ -540,16 +562,22 @@ function OptionList({
   );
 }
 
-function AnswerReveal({ pose, lead }: { pose: Pose; lead: ReactNode }) {
+function AnswerReveal({ pose, lead, hook }: { pose: Pose; lead: ReactNode; hook?: string }) {
+  const text = hook || memoryHook(pose);
   return (
     <div className="tr-answer">
       <PoseFigure pose={pose} size={64} />
       <div>
         <p className="tr-answer-lead">{lead}</p>
-        {memoryHook(pose) && <p className="tr-mnemonic">“{memoryHook(pose)}”</p>}
+        {text && <p className="tr-mnemonic">“{text}”</p>}
       </div>
     </div>
   );
+}
+
+/** For a missed hand-off, the reason this posture follows beats a name mnemonic. */
+function handoffHook(pose: Pose): string {
+  return pose.sequenceNote || memoryHook(pose);
 }
 
 /* ————————————————————————————————————————————— review mode */
@@ -1027,6 +1055,19 @@ function makeFreeNext(store: TrainerStore, avoidId: string | null): McQuestion |
   return makeNextMc(prompt);
 }
 
+/**
+ * Production recall walks the sequence: the posture just answered becomes
+ * the next prompt, so a run of right answers is the class recited in
+ * order. The chain restarts from a weak hand-off when it reaches the end.
+ */
+function chainNext(store: TrainerStore, prev: McQuestion | null): McQuestion | null {
+  if (prev) {
+    const chained = makeNextMc(prev.answer);
+    if (chained) return chained;
+  }
+  return makeFreeNext(store, prev ? prev.prompt.id : null);
+}
+
 function NextMode({
   store,
   answer,
@@ -1052,7 +1093,7 @@ function NextMode({
   };
 
   const advance = () => {
-    setQuestion(makeFreeNext(store, question ? question.prompt.id : null));
+    setQuestion(chainNext(store, question));
     setPicked(null);
   };
 
@@ -1129,6 +1170,7 @@ function NextMode({
           </div>
 
           <p className="tr-ask">Which posture comes next?</p>
+          <p className="tr-ask-sub text-faint">Each answer becomes the next question — walk the class in order.</p>
 
           <OptionList
             options={options}
@@ -1145,6 +1187,7 @@ function NextMode({
                     <p className="tr-verdict">Not quite.</p>
                     <AnswerReveal
                       pose={correctPose}
+                      hook={handoffHook(correctPose)}
                       lead={
                         <>
                           Next is{' '}
