@@ -180,6 +180,9 @@ export function Timeline() {
             <p className="tl-end-note text-faint">
               class complete — rest in final savasana
             </p>
+            <p className="tl-end-note text-faint">
+              <Link to="/today">Moon days — an optional lens for today’s practice →</Link>
+            </p>
           </div>
         </div>
       </div>

@@ -44,6 +44,11 @@ posture's technique, benefits, chakra connections, and muscle-group work.
   roots, the nearest classical asana and where 26 & 2 differs, refinements
   that transfer, hold-here stages, and the ladder of poses before and
   beyond — in our own words, with plate numbers so you can open your copy.
+- **Moon days** — an optional lens, off by default: tonight's moon phase
+  and the planetary day, a posture of the day (every posture once per
+  lunar month), and two short notes naming what the day traditionally
+  leans toward plus one thing to notice. Computed offline; described as
+  tradition, never as prescription; changes nothing about the class.
 - **Journal** — every paced class is remembered: when, how long, what was
   rehearsed and recalled; the pacer tells you when you last practiced and
   which hand-offs to listen for, and posture pages link straight into a

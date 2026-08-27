@@ -25,7 +25,8 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
     are the contract used by pose data and the BodyMap regions.
 - `src/views/` — one file pair per route: Timeline (`/`), PoseDetail
   (`/pose/:id`), Explorer (`/explore?lens=chakra|muscle&id=…`), Trainer
-  (`/train`), KnowledgeMap (`/train/map`), Pacer (`/pace`).
+  (`/train`), KnowledgeMap (`/train/map`), Pacer (`/pace`), Today
+  (`/today`, the opt-in Moon-days lens).
 - `src/pacer/` — the breath-pacer engine (views import only from its
   `index.ts`). `timing.ts` is pure math (settings clamp, phase/beat
   conversions, presets; unit-tested); `metronome.ts` wraps Web Audio with
@@ -126,6 +127,17 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
     3d → ×ease, lapses cost ease), versioned localStorage
     (`yoga-trainer-v2`, auto-migrates v1 tallies), and the session facade
     (`buildQueue`/`recordAnswer`/`dueCount`).
+- `src/sky/` — the OPT-IN "Moon days" lens (`/today`, off by default,
+  `yoga-sky-v1`). `ephemeris.ts` is a dependency-free Meeus low-precision
+  Sun/Moon (the same formula Moon Chorus uses — `ephemeris.test.ts` pins
+  parity), eight moon-phase buckets, tropical signs, the planetary week.
+  `notes.ts` holds hand-written phase and weekday notes (each names 2–4
+  postures and one thing to notice; every association is described as
+  tradition, never as effect — `lens.test.ts` enforces it). `index.ts`
+  builds `todayLens`: a posture of the day walking the sequence in order
+  (every posture once per 26 days) plus the two notes. Nothing here
+  changes the class, the trainer, or a posture's cautions. Views import
+  only from `src/sky/index.ts`.
 - `src/components/` — shared `PoseFigure` (figure or numbered-badge fallback)
   and `BodyMap` (front/back silhouettes, tintable muscle regions; its props
   contract is load-bearing for PoseDetail and Explorer).

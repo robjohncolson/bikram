@@ -6,6 +6,7 @@ import { Explorer } from './views/Explorer';
 import { Trainer } from './views/Trainer';
 import { KnowledgeMap } from './views/KnowledgeMap';
 import { Pacer } from './views/Pacer';
+import { Today } from './views/Today';
 import './App.css';
 
 function ScrollToTop() {
@@ -42,6 +43,7 @@ export default function App() {
           <Route path="/train" element={<Trainer />} />
           <Route path="/train/map" element={<KnowledgeMap />} />
           <Route path="/pace" element={<Pacer />} />
+          <Route path="/today" element={<Today />} />
         </Routes>
       </main>
     </>
