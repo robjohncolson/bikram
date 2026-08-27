@@ -27,15 +27,23 @@ const clamp = (p: number) => Math.min(0.999, Math.max(0.001, p));
 const DECAY_BASE_HALF_LIFE_DAYS = 4;
 const DECAY_MAX_HALF_LIFE_DAYS = 60;
 const DAY_MS = 86_400_000;
+/**
+ * Evidence counts as *spaced* — and stretches the half-life — only when it
+ * lands this long after the leaf's previous evidence. Ten right answers
+ * in one sitting prove you knew it that afternoon, not that it will
+ * survive a fortnight; only returning to it later shows that.
+ */
+export const SPACED_GAP_MS = 6 * 60 * 60 * 1000;
 
-export function decayHalfLifeDays(correct: number): number {
-  return Math.min(DECAY_MAX_HALF_LIFE_DAYS, DECAY_BASE_HALF_LIFE_DAYS * (1 + correct));
+/** Half-life in days as a function of the *spaced* correct count. */
+export function decayHalfLifeDays(spaced: number): number {
+  return Math.min(DECAY_MAX_HALF_LIFE_DAYS, DECAY_BASE_HALF_LIFE_DAYS * (1 + spaced));
 }
 
-export function decayedP(state: { p: number; correct: number; last: number }, prior: number, now: number): number {
+export function decayedP(state: { p: number; spaced: number; last: number }, prior: number, now: number): number {
   const days = Math.max(0, (now - state.last) / DAY_MS);
   if (days === 0) return state.p;
-  const keep = Math.pow(0.5, days / decayHalfLifeDays(state.correct));
+  const keep = Math.pow(0.5, days / decayHalfLifeDays(state.spaced));
   return prior + (state.p - prior) * keep;
 }
 
@@ -80,6 +88,24 @@ export function nodeP(store: TrainerStore, kc: KcId, now?: number): number {
   return p;
 }
 
+/**
+ * Average P(known) over every leaf (26 identities + 25 transitions) — the
+ * honest headline. The root's noisy-AND is the probability that *all*
+ * fifty-one pieces are known at once, which stays near zero long after
+ * every piece individually reads solid; the mean says how much of the
+ * sequence you know, which is the question people actually ask.
+ */
+export function meanLeafP(store: TrainerStore, now?: number): number {
+  let sum = 0;
+  let n = 0;
+  for (const node of kcNodes.values()) {
+    if (node.kind !== 'identity' && node.kind !== 'transition') continue;
+    sum += leafP(store, node.id, now);
+    n++;
+  }
+  return n === 0 ? 0 : sum / n;
+}
+
 /** Record one answer's evidence on a leaf KC. */
 export function applyEvidence(
   store: TrainerStore,
@@ -90,11 +116,17 @@ export function applyEvidence(
 ): KcState {
   const params = BKT_BY_KIND[kind];
   const prev = store.kcs[kc];
-  const p = bktUpdate(prev ? prev.p : params.pInit, correct, params);
+  // Start from what we believe *now* — the stored posterior decayed by the
+  // time since its evidence — otherwise one answer after a long gap would
+  // silently restore a month-old certainty by refreshing `last`.
+  const current = prev ? decayedP(prev, priorFor(kc), now) : params.pInit;
+  const p = bktUpdate(current, correct, params);
+  const isSpaced = correct && (!prev || now - prev.last >= SPACED_GAP_MS);
   const next: KcState = {
     p,
     correct: (prev?.correct ?? 0) + (correct ? 1 : 0),
     wrong: (prev?.wrong ?? 0) + (correct ? 0 : 1),
+    spaced: (prev?.spaced ?? 0) + (isSpaced ? 1 : 0),
     last: now,
   };
   store.kcs[kc] = next;

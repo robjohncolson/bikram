@@ -1,7 +1,7 @@
-import type { Card, CardId, Grade, KcId, TrainerStore } from './types';
+import type { Card, CardId, CardState, Grade, KcId, TrainerStore } from './types';
 import { allCards, cardById, kcNodes } from './graph';
-import { applyEvidence, band, nodeP } from './bkt';
-import { gradeCard, isDue, newCardState } from './srs';
+import { applyEvidence, band, meanLeafP, nodeP } from './bkt';
+import { AGAIN_MINUTES, gradeCard, isDue, newCardState } from './srs';
 
 /**
  * Session facade the UI talks to. Pure functions over (store, now) —
@@ -16,7 +16,45 @@ export const QUEUE_CAP = 20;
 export interface QueueEntry {
   card: Card;
   /** why this card is in the queue */
-  reason: 'due' | 'new' | 'weak' | 'drill';
+  reason: 'due' | 'new' | 'weak' | 'drill' | 'relearn';
+}
+
+/**
+ * Interleave: reorder so no two adjacent entries are about the same
+ * posture, keeping the original priority order otherwise (greedy — at
+ * each step take the first remaining entry that differs from the last
+ * one placed; when only same-posture entries remain, take them as is).
+ * Blocking a posture's three cards back to back lets each answer prime
+ * the next; spreading them makes every retrieval a real one.
+ */
+export function interleave(entries: QueueEntry[]): QueueEntry[] {
+  const rest = entries.slice();
+  const out: QueueEntry[] = [];
+  const pose = (e: QueueEntry) => e.card.poseId;
+  while (rest.length > 0) {
+    const last = out[out.length - 1];
+    let pick = 0;
+    if (last) {
+      const i = rest.findIndex((e) => pose(e) !== pose(last));
+      if (i >= 0) pick = i;
+    }
+    out.push(rest.splice(pick, 1)[0]);
+  }
+  // Repair: the greedy walk can strand a clash at the tail (only same-
+  // posture cards left). Move each stranded card back to the earliest
+  // slot whose neighbours both differ from it; leave it if none exists.
+  for (let i = out.length - 1; i > 0; i--) {
+    if (pose(out[i]) !== pose(out[i - 1])) continue;
+    const item = out[i];
+    for (let j = 1; j < i - 1; j++) {
+      if (pose(out[j - 1]) !== pose(item) && pose(out[j]) !== pose(item)) {
+        out.splice(i, 1);
+        out.splice(j, 0, item);
+        break;
+      }
+    }
+  }
+  return out;
 }
 
 /**
@@ -59,7 +97,7 @@ export function buildQueue(store: TrainerStore, now: number): QueueEntry[] {
     }
   }
 
-  return queue;
+  return interleave(queue);
 }
 
 /**
@@ -99,12 +137,22 @@ export function buildDrillQueue(store: TrainerStore, kc: KcId, now: number): Que
   for (const target of targetKcs) {
     for (const card of allCards) {
       if (card.kc !== target) continue;
-      if (queue.length >= DRILL_CAP) return queue;
+      if (queue.length >= DRILL_CAP) return interleave(queue);
       queue.push({ card, reason: 'drill' });
     }
   }
-  return queue;
+  return interleave(queue);
 }
+
+/**
+ * Where a missed card re-enters the live queue: this many cards after the
+ * miss (clamped to the end), so it comes back once the answer has left
+ * working memory but before the session ends.
+ */
+export const RELEARN_GAP = 4;
+
+/** Mean P(known) over every leaf — the trainer's honest headline number. */
+export { meanLeafP };
 
 /** Cards due right now (for badges on the landing screen). */
 export function dueCount(store: TrainerStore, now: number): number {
@@ -117,8 +165,23 @@ export function unseenCount(store: TrainerStore): number {
 }
 
 /**
- * Record one graded answer: SRS reschedule + BKT evidence, in place.
- * Callers persist with saveStore afterwards.
+ * Does this grade move the card's spaced-repetition schedule? A miss
+ * always lapses. A hit steps the interval only when the card is new,
+ * due, or in the relearn step — never when it was answered early. That
+ * is what keeps a free-practice blitz from marching a card up the
+ * ladder to week-long intervals in one afternoon: the schedule advances
+ * on *spaced* retrieval, while every answer still counts as BKT evidence.
+ */
+export function schedulesOn(state: CardState | undefined, grade: Grade, now: number): boolean {
+  if (grade === 'again') return true;
+  if (!state) return true;
+  if (isDue(state, now)) return true;
+  return state.interval === AGAIN_MINUTES; // relearn: answered good after a miss
+}
+
+/**
+ * Record one graded answer: SRS reschedule (when it counts) + BKT
+ * evidence, in place. Callers persist with saveStore afterwards.
  */
 export function recordAnswer(
   store: TrainerStore,
@@ -128,8 +191,10 @@ export function recordAnswer(
 ): void {
   const card = cardById.get(cardId);
   if (!card) return;
-  const prev = store.cards[cardId] ?? newCardState(now);
-  store.cards[cardId] = gradeCard(prev, grade, now);
+  const prev = store.cards[cardId];
+  if (schedulesOn(prev, grade, now)) {
+    store.cards[cardId] = gradeCard(prev ?? newCardState(now), grade, now);
+  }
   applyEvidence(store, card.kc, card.kind, grade === 'good', now);
   store.answers += 1;
 }

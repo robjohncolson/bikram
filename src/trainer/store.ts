@@ -38,7 +38,8 @@ function migrateV1(raw: string, now: number): TrainerStore {
       let p = params.pInit;
       for (let i = 0; i < wrong; i++) p = bktUpdate(p, false, params);
       for (let i = 0; i < correct; i++) p = bktUpdate(p, true, params);
-      store.kcs[`id:${pose.id}`] = { p, correct, wrong, last: now };
+      // v1 tallies were spread over real days; treat them as spaced.
+      store.kcs[`id:${pose.id}`] = { p, correct, wrong, spaced: correct, last: now };
       store.answers += correct + wrong;
     }
   } catch {
@@ -58,10 +59,13 @@ function sanitize(data: unknown): TrainerStore | null {
     if (!s || typeof s !== 'object') continue;
     const p = (s as { p?: unknown }).p;
     if (typeof p !== 'number' || !Number.isFinite(p) || p <= 0 || p >= 1) continue;
+    const correct = isCount(s.correct) ? Math.floor(s.correct) : 0;
     store.kcs[id] = {
       p,
-      correct: isCount(s.correct) ? Math.floor(s.correct) : 0,
+      correct,
       wrong: isCount(s.wrong) ? Math.floor(s.wrong) : 0,
+      // stores written before the spaced count existed: grandfather the tally
+      spaced: isCount((s as { spaced?: unknown }).spaced) ? Math.floor((s as { spaced: number }).spaced) : correct,
       last: isCount(s.last) ? s.last : 0,
     };
   }

@@ -48,7 +48,7 @@ describe('store migration', () => {
       STORAGE_KEY,
       JSON.stringify({
         version: 2,
-        kcs: { 'id:camel': { p: 1.7, correct: 1, wrong: 0, last: NOW }, 'id:tree': { p: 0.6, correct: 2, wrong: 1, last: NOW } },
+        kcs: { 'id:camel': { p: 1.7, correct: 1, wrong: 0, spaced: 1, last: NOW }, 'id:tree': { p: 0.6, correct: 2, wrong: 1, spaced: 2, last: NOW } },
         cards: { 'name:tree': { interval: 30, ease: 2.5, due: NOW, reps: 1, lapses: 0 }, broken: { due: 'soon' } },
         bestStreak: 2,
         answers: 4,
@@ -63,7 +63,7 @@ describe('store migration', () => {
 
   it('round-trips through save/load', () => {
     const store = loadStore(NOW);
-    store.kcs['id:camel'] = { p: 0.42, correct: 1, wrong: 1, last: NOW };
+    store.kcs['id:camel'] = { p: 0.42, correct: 1, wrong: 1, spaced: 1, last: NOW };
     saveStore(store);
     const reloaded = loadStore(NOW);
     expect(reloaded.kcs['id:camel'].p).toBe(0.42);

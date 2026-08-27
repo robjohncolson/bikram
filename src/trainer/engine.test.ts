@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { BKT_BY_KIND, bktUpdate, decayedP, decayHalfLifeDays, leafP, nodeP } from './bkt';
+import { BKT_BY_KIND, SPACED_GAP_MS, applyEvidence, bktUpdate, decayedP, decayHalfLifeDays, leafP, meanLeafP, nodeP } from './bkt';
 import { AGAIN_MINUTES, gradeCard, newCardState } from './srs';
 import { allCards, ARCS, kcNodes } from './graph';
-import { buildDrillQueue, buildQueue, NEW_PER_SESSION, recordAnswer } from './engine';
+import { buildDrillQueue, buildQueue, interleave, NEW_PER_SESSION, recordAnswer, schedulesOn } from './engine';
 import { emptyStore } from './store';
 import type { TrainerStore } from './types';
 
@@ -79,7 +79,7 @@ describe('forgetting decay', () => {
   const DAY = 86_400_000;
 
   it('leaves fresh evidence untouched and skips decay when now is omitted', () => {
-    const state = { p: 0.9, correct: 1, wrong: 0, last: NOW };
+    const state = { p: 0.9, correct: 1, wrong: 0, spaced: 1, last: NOW };
     expect(decayedP(state, 0.1, NOW)).toBe(0.9);
     const store = emptyStore();
     store.kcs['id:camel'] = state;
@@ -88,31 +88,42 @@ describe('forgetting decay', () => {
 
   it('halves the excess over prior after one half-life', () => {
     // one correct answer → half-life 8 days; excess 0.8 → 0.4 → P 0.5
-    const state = { p: 0.9, correct: 1, wrong: 0, last: NOW };
+    const state = { p: 0.9, correct: 1, wrong: 0, spaced: 1, last: NOW };
     expect(decayHalfLifeDays(1)).toBe(8);
     expect(decayedP(state, 0.1, NOW + 8 * DAY)).toBeCloseTo(0.5, 10);
   });
 
   it('fades slower with more practice, capped at 60 days', () => {
-    const fresh = { p: 0.9, correct: 1, wrong: 0, last: NOW };
-    const seasoned = { p: 0.9, correct: 10, wrong: 0, last: NOW };
+    const fresh = { p: 0.9, correct: 1, wrong: 0, spaced: 1, last: NOW };
+    const seasoned = { p: 0.9, correct: 10, wrong: 0, spaced: 10, last: NOW };
     const t = NOW + 20 * DAY;
     expect(decayedP(seasoned, 0.1, t)).toBeGreaterThan(decayedP(fresh, 0.1, t));
     expect(decayHalfLifeDays(1000)).toBe(60);
   });
 
   it('drifts a below-prior P back up toward the prior', () => {
-    const struggling = { p: 0.03, correct: 0, wrong: 4, last: NOW };
+    const struggling = { p: 0.03, correct: 0, wrong: 4, spaced: 0, last: NOW };
     const later = decayedP(struggling, 0.1, NOW + 30 * DAY);
     expect(later).toBeGreaterThan(0.03);
     expect(later).toBeLessThanOrEqual(0.1);
+  });
+
+  it('applies new evidence to the decayed posterior, not the stale stored one', () => {
+    const store = emptyStore();
+    store.kcs['id:eagle'] = { p: 0.95, correct: 3, wrong: 0, spaced: 1, last: NOW };
+    const later = NOW + 60 * DAY; // faded most of the way back to the prior
+    const faded = leafP(store, 'id:eagle', later);
+    expect(faded).toBeLessThan(0.2);
+    applyEvidence(store, 'id:eagle', 'name', true, later);
+    expect(store.kcs['id:eagle'].p).toBeCloseTo(bktUpdate(faded, true, BKT_BY_KIND.name), 10);
+    expect(store.kcs['id:eagle'].p).toBeLessThan(0.95);
   });
 
   it('decays aggregates through nodeP', () => {
     const store = emptyStore();
     for (const node of kcNodes.values()) {
       if (node.kind === 'identity' || node.kind === 'transition') {
-        store.kcs[node.id] = { p: 0.95, correct: 3, wrong: 0, last: NOW };
+        store.kcs[node.id] = { p: 0.95, correct: 3, wrong: 0, spaced: 3, last: NOW };
       }
     }
     const fresh = nodeP(store, 'root', NOW);
@@ -127,7 +138,7 @@ describe('noisy-AND aggregation', () => {
     // drive every leaf near certainty
     for (const node of kcNodes.values()) {
       if (node.kind === 'identity' || node.kind === 'transition') {
-        store.kcs[node.id] = { p: 0.9, correct: 5, wrong: 0, last: NOW };
+        store.kcs[node.id] = { p: 0.9, correct: 5, wrong: 0, spaced: 5, last: NOW };
       }
     }
     const arcs = ARCS.map((a) => nodeP(store, `arc:${a.key}`));
@@ -208,10 +219,10 @@ describe('review queue', () => {
     // make everything in the standing arc strong except one transition
     for (const node of kcNodes.values()) {
       if ((node.kind === 'identity' || node.kind === 'transition') && node.arc === 'standing') {
-        store.kcs[node.id] = { p: 0.95, correct: 5, wrong: 0, last: NOW };
+        store.kcs[node.id] = { p: 0.95, correct: 5, wrong: 0, spaced: 5, last: NOW };
       }
     }
-    store.kcs['tr:6'] = { p: 0.05, correct: 0, wrong: 3, last: NOW };
+    store.kcs['tr:6'] = { p: 0.05, correct: 0, wrong: 3, spaced: 0, last: NOW };
     const queue = buildDrillQueue(store, 'arc:standing', NOW);
     expect(queue[0].card.kc).toBe('tr:6');
     expect(buildDrillQueue(store, 'root', NOW).length).toBeGreaterThan(0);
@@ -224,5 +235,105 @@ describe('review queue', () => {
     expect(store.kcs['tr:1'].p).toBeCloseTo(0.428571, 5);
     expect(store.kcs['tr:1'].correct).toBe(1);
     expect(store.answers).toBe(1);
+  });
+});
+
+describe('honest scheduling', () => {
+  const HOUR = 60 * 60 * 1000;
+
+  it('an early re-"good" leaves the schedule unchanged', () => {
+    const store = emptyStore();
+    recordAnswer(store, 'name:eagle', 'good', NOW); // new → 30m step
+    const scheduled = { ...store.cards['name:eagle'] };
+    // blitzed again a minute later, three times: BKT moves, the ladder does not
+    for (let i = 1; i <= 3; i++) recordAnswer(store, 'name:eagle', 'good', NOW + i * 60_000);
+    expect(store.cards['name:eagle']).toEqual(scheduled);
+    expect(store.kcs['id:eagle'].correct).toBe(4);
+    expect(store.answers).toBe(4);
+  });
+
+  it('an early "again" still lapses', () => {
+    const store = emptyStore();
+    for (let i = 0; i < 3; i++) recordAnswer(store, 'name:eagle', 'good', NOW + i * 2 * 86_400_000);
+    expect(store.cards['name:eagle'].interval).toBeGreaterThan(AGAIN_MINUTES);
+    recordAnswer(store, 'name:eagle', 'again', NOW + 6 * 86_400_000 + 1);
+    expect(store.cards['name:eagle'].interval).toBe(AGAIN_MINUTES);
+    expect(store.cards['name:eagle'].lapses).toBe(1);
+  });
+
+  it('"good" right after a miss advances from the relearn step', () => {
+    const store = emptyStore();
+    recordAnswer(store, 'name:eagle', 'again', NOW);
+    expect(schedulesOn(store.cards['name:eagle'], 'good', NOW + 60_000)).toBe(true);
+    recordAnswer(store, 'name:eagle', 'good', NOW + 60_000);
+    expect(store.cards['name:eagle'].interval).toBe(30);
+  });
+
+  it('a due card advances; the same card answered early does not', () => {
+    const store = emptyStore();
+    recordAnswer(store, 'pos:4', 'good', NOW);
+    const due = store.cards['pos:4'].due;
+    expect(schedulesOn(store.cards['pos:4'], 'good', due - 1)).toBe(false);
+    expect(schedulesOn(store.cards['pos:4'], 'good', due)).toBe(true);
+    expect(schedulesOn(undefined, 'good', NOW)).toBe(true);
+  });
+
+  it('stretches the half-life only on spaced correct answers', () => {
+    const store = emptyStore();
+    recordAnswer(store, 'name:eagle', 'good', NOW);
+    for (let i = 1; i <= 5; i++) recordAnswer(store, 'name:eagle', 'good', NOW + i * 60_000);
+    expect(store.kcs['id:eagle'].correct).toBe(6);
+    expect(store.kcs['id:eagle'].spaced).toBe(1);
+    expect(decayHalfLifeDays(store.kcs['id:eagle'].spaced)).toBe(8);
+    recordAnswer(store, 'name:eagle', 'good', NOW + 5 * 60_000 + SPACED_GAP_MS);
+    expect(store.kcs['id:eagle'].spaced).toBe(2);
+    // a wrong answer never counts as spaced practice
+    recordAnswer(store, 'name:eagle', 'again', NOW + 5 * 60_000 + 3 * SPACED_GAP_MS);
+    expect(store.kcs['id:eagle'].spaced).toBe(2);
+    expect(store.kcs['id:eagle'].wrong).toBe(1);
+    void HOUR;
+  });
+});
+
+describe('interleaving', () => {
+  const noAdjacentPose = (q: { card: { poseId: string } }[]) =>
+    q.every((e, i) => i === 0 || e.card.poseId !== q[i - 1].card.poseId);
+
+  it('never serves the same posture twice in a row when avoidable', () => {
+    expect(noAdjacentPose(buildQueue(emptyStore(), NOW))).toBe(true);
+    expect(noAdjacentPose(buildDrillQueue(emptyStore(), 'tr:4', NOW))).toBe(true);
+    // an identity drill is three Eagle cards plus one hand-off: one clash is unavoidable
+    const eagle = buildDrillQueue(emptyStore(), 'id:eagle', NOW);
+    const clashes = eagle.filter((e, i) => i > 0 && e.card.poseId === eagle[i - 1].card.poseId).length;
+    expect(clashes).toBe(1);
+    // a busy store: everything seen, plenty due
+    const store = emptyStore();
+    for (const c of allCards) recordAnswer(store, c.id, 'good', NOW - 86_400_000);
+    expect(noAdjacentPose(buildQueue(store, NOW))).toBe(true);
+  });
+
+  it('keeps priority order otherwise and drops nothing', () => {
+    const a = { card: { poseId: 'x' } }, b = { card: { poseId: 'x' } }, c = { card: { poseId: 'y' } };
+    const out = interleave([a, b, c] as never[]);
+    expect(out).toEqual([a, c, b]);
+    const only = [a, b];
+    expect(interleave(only as never[])).toEqual([a, b]); // unavoidable: taken as is
+    expect(interleave([])).toEqual([]);
+  });
+});
+
+describe('mean leaf P', () => {
+  it('sits at the priors for an empty store and averages leaves otherwise', () => {
+    const empty = meanLeafP(emptyStore());
+    expect(empty).toBeCloseTo(0.1, 10); // every kind's prior is 0.1
+    const store = emptyStore();
+    for (const node of kcNodes.values()) {
+      if (node.kind === 'identity' || node.kind === 'transition') {
+        store.kcs[node.id] = { p: 0.9, correct: 5, wrong: 0, spaced: 5, last: NOW };
+      }
+    }
+    expect(meanLeafP(store)).toBeCloseTo(0.9, 10);
+    // the root, by contrast, is tiny — the headline uses the mean on purpose
+    expect(nodeP(store, 'root')).toBeLessThan(0.01);
   });
 });

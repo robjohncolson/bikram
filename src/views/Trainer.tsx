@@ -14,6 +14,8 @@ import {
   loadStore,
   nodeP,
   recordAnswer,
+  meanLeafP,
+  RELEARN_GAP,
   resetStore,
   saveStore,
   unseenCount,
@@ -269,7 +271,7 @@ function Landing({
   const due = dueCount(store, now);
   const unseen = unseenCount(store);
   const solidCount = poses.filter((p) => band(nodeP(store, `id:${p.id}`, Date.now())) === 'solid').length;
-  const rootP = nodeP(store, 'root', Date.now());
+  const knownP = meanLeafP(store, Date.now());
   const hasAnyProgress =
     store.answers > 0 || store.bestStreak > 0 || Object.keys(store.cards).length > 0;
 
@@ -409,10 +411,11 @@ function Landing({
 
               <div className="tr-progress-foot">
                 <div className="tr-root-stat">
-                  <span className="eyebrow">P(whole sequence)</span>
-                  <span className="tr-root-num">{pctLabel(rootP)}</span>
+                  <span className="eyebrow">Sequence known</span>
+                  <span className="tr-root-num">{pctLabel(knownP)}</span>
                   <span className="tr-root-cap text-faint">
-                    Probability you could run the class cold — strict by design.
+                    Average P(known) over all 26 postures and 25 hand-offs — what you don’t
+                    practice slowly stops counting.
                   </span>
                 </div>
                 <Link className="tr-map-link" to="/train/map">
@@ -466,6 +469,7 @@ const REASON_LABEL: Record<QueueEntry['reason'], string> = {
   new: 'new',
   weak: 'needs work',
   drill: 'drilling this',
+  relearn: 'missed a moment ago',
 };
 
 function WhyTag({ reason }: { reason: QueueEntry['reason'] }) {
@@ -585,13 +589,21 @@ function ReviewMode({
       const nextStreak = g === 'good' ? streak + 1 : 0;
       setStreak(nextStreak);
       answer(entry.card.id, g, nextStreak);
+      if (g === 'again') {
+        // bring the miss back a few cards on, once the answer has left
+        // working memory — the relearn step, inside the same session
+        setQueue((q) => {
+          const at = Math.min(q.length, index + 1 + RELEARN_GAP);
+          return [...q.slice(0, at), { card: entry.card, reason: 'relearn' }, ...q.slice(at)];
+        });
+      }
       setStats((s) => ({
         answered: s.answered + 1,
         again: s.again + (g === 'again' ? 1 : 0),
         kcs: s.kcs.includes(entry.card.kc) ? s.kcs : [...s.kcs, entry.card.kc],
       }));
     },
-    [entry, streak, answer],
+    [entry, index, streak, answer],
   );
 
   const next = useCallback(() => setIndex((i) => i + 1), []);
@@ -676,13 +688,13 @@ function ReviewMode({
               </div>
             </dl>
             <p className="tr-done-root text-soft">
-              Whole sequence now at <strong>{pctLabel(nodeP(store, 'root', Date.now()))}</strong> — the
-              probability you could run the class cold.
+              Sequence known: <strong>{pctLabel(meanLeafP(store, Date.now()))}</strong> — the
+              average over every posture and hand-off.
             </p>
             {stats.again > 0 && (
               <p className="tr-done-note text-faint">
-                Missed cards come back five minutes after the miss — review again
-                shortly to catch them.
+                Anything still missed at the end comes back five minutes later —
+                review again shortly to catch it.
               </p>
             )}
             <div className="tr-done-actions">

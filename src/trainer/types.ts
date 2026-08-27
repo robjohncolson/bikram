@@ -67,6 +67,12 @@ export interface KcState {
   p: number;
   correct: number;
   wrong: number;
+  /**
+   * Correct answers that arrived after a real gap (see SPACED_GAP_MS) —
+   * the count that stretches the forgetting half-life. Massed repeats
+   * within one sitting count toward `correct` but not here.
+   */
+  spaced: number;
   /** ms timestamp of last evidence */
   last: number;
 }
