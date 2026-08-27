@@ -120,8 +120,7 @@ function ClassicalSection({ note, pose }: { note: ClassicalNote; pose: Pose }) {
           {note.reference && (
             <p className="pd-classical-ref">
               <span className="pill">
-                Light on Yoga · {note.reference.plates.toLowerCase().startsWith('plate') ? '' : 'plates '}
-                {note.reference.plates}
+                Light on Yoga · {/[–,-]/.test(note.reference.plates) ? 'plates' : 'plate'} {note.reference.plates}
               </span>
               {note.reference.difficulty !== undefined && (
                 <span className="pill" title="Iyengar grades every asana from 1 (easiest) to 60">
