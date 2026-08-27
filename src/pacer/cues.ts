@@ -97,6 +97,12 @@ export function coachingMaterial(pose: Pose, rotation = 0): string[] {
   return [...ordered.slice(r), ...ordered.slice(0, r)];
 }
 
+/** Seconds of final savasana after the last posture, at the 60 BPM reference. */
+export const CLOSING_SECONDS = 120;
+/** The one line spoken as the class ends and the final savasana begins. */
+export const CLOSING_LINE =
+  'The class is complete. Lie back into savasana, let the breath go, and stay for two minutes.';
+
 export function announceText(pose: Pose, sanskrit: boolean): string {
   const name = sanskrit ? `${pose.englishName} — ${pose.sanskritName}` : pose.englishName;
   return pose.category === 'breathing' ? `${name}.` : `Posture ${pose.order}. ${name}.`;

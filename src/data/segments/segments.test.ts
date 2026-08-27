@@ -43,3 +43,20 @@ describe('class-time segments', () => {
     expect(total).toBeLessThan(95 * 60);
   });
 });
+
+describe('segment metronome overrides', () => {
+  it('only breathing segments override the count, and only within the pacer range', () => {
+    for (const pose of poses) {
+      for (const seg of pose.segments ?? []) {
+        if (!seg.pacer) continue;
+        expect(seg.kind, `${pose.id}: ${seg.label}`).toBe('breath');
+        expect(seg.pacer.beatsPerBar).toBeGreaterThanOrEqual(1);
+        expect(seg.pacer.beatsPerBar).toBeLessThanOrEqual(8);
+      }
+    }
+    const kapalbhati = poses.find((p) => p.id === 'kapalbhati')!;
+    expect(kapalbhati.segments!.every((s) => s.pacer?.beatsPerBar === 1)).toBe(true);
+    const pranayama = poses.find((p) => p.id === 'pranayama')!;
+    expect(pranayama.segments!.every((s) => s.pacer?.beatsPerBar === 6)).toBe(true);
+  });
+});

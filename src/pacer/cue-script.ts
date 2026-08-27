@@ -1,5 +1,5 @@
 import { poses } from '../data';
-import { announceText } from './cues';
+import { CLOSING_LINE, announceText } from './cues';
 
 /**
  * The complete spoken script of a class — every string the sampler can
@@ -10,6 +10,7 @@ import { announceText } from './cues';
  */
 export function collectCueTexts(): string[] {
   const texts = new Set<string>();
+  texts.add(CLOSING_LINE);
   for (const pose of poses) {
     texts.add(announceText(pose, false));
     // the full teaching voice: every setup step (walk-in), every

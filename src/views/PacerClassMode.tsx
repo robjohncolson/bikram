@@ -16,6 +16,12 @@ export interface PacerClassModeProps {
   hidden?: boolean;
   /** rehearsal is on: never show what comes next */
   rehearse?: boolean;
+  /** replaces the "Next:" line entirely (final savasana) */
+  nextLine?: string;
+  /** replaces the "Posture N of M" eyebrow */
+  eyebrow?: string;
+  /** false disables the pause control (final savasana just runs) */
+  canPause?: boolean;
   /** whole-class progress, 0–1 */
   progress: number;
   posture: number;
@@ -87,7 +93,7 @@ export function PacerClassMode(props: PacerClassModeProps) {
     >
       <header className="cm-top">
         <p className="cm-posture">
-          Posture {props.posture} of {props.postureCount}
+          {props.eyebrow ?? `Posture ${props.posture} of ${props.postureCount}`}
         </p>
         <h2 className="cm-name">{props.hidden ? 'What comes next?' : props.pose.englishName}</h2>
         <p className="cm-sanskrit">{props.hidden ? 'say it before the voice does' : props.pose.sanskritName}</p>
@@ -111,7 +117,9 @@ export function PacerClassMode(props: PacerClassModeProps) {
           <span style={{ width: `${(Math.min(1, Math.max(0, props.progress)) * 100).toFixed(2)}%` }} />
         </div>
         <p className="cm-next">
-          {props.rehearse
+          {props.nextLine
+            ? props.nextLine
+            : props.rehearse
             ? 'Rehearsal — the next posture stays hidden.'
             : props.next
               ? `Next: #${props.next.order} ${props.next.englishName}`
@@ -121,7 +129,12 @@ export function PacerClassMode(props: PacerClassModeProps) {
           <button type="button" onClick={props.onBack} disabled={!props.canBack} aria-label="Skip back one posture">
             ‹ Back
           </button>
-          <button type="button" className="cm-primary" onClick={props.onTogglePause}>
+          <button
+            type="button"
+            className="cm-primary"
+            onClick={props.onTogglePause}
+            disabled={props.canPause === false}
+          >
             {props.paused ? 'Resume' : 'Pause'}
           </button>
           <button type="button" onClick={props.onNext} disabled={!props.canNext} aria-label="Skip forward one posture">

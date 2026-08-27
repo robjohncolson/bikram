@@ -4,9 +4,12 @@ import type { CSSProperties, ReactNode } from 'react';
 import {
   BPM_MAX,
   BPM_MIN,
+  CLOSING_LINE,
+  CLOSING_SECONDS,
   PACER_PRESETS,
   announceText,
   beatSeconds,
+  beatsForSeconds,
   breathsPerMinute,
   buildPoseTrack,
   clampSettings,
@@ -59,7 +62,11 @@ type ClassRun =
       /** false while a rehearsal withholds the posture's identity */
       revealed: boolean;
     }
+  | { phase: 'closing'; left: number; budget: number }
   | { phase: 'done'; pacedSeconds: number; rehearsedFrom?: number };
+
+/** The posture whose figure and name stand for the final savasana. */
+const SAVASANA_IDX = poses.findIndex((p) => p.id === 'savasana');
 
 /** Rehearsal: beats between the hand-off chime and the announce. */
 const REHEARSAL_DELAY_BEATS = 4;
@@ -154,7 +161,7 @@ export function Pacer() {
   const [cues, setCues] = useState<CuePrefs>(restoreCues);
   const [voices, setVoices] = useState<VoiceChoice[]>([]);
   const [running, setRunning] = useState(false);
-  const [beatView, setBeatView] = useState<{ beat: number; bar: number } | null>(null);
+  const [beatView, setBeatView] = useState<{ beat: number; bar: number; beatsPerBar: number } | null>(null);
   const [classRun, setClassRun] = useState<ClassRun>({ phase: 'idle' });
   // /pace?from=<order> — a posture page's "practice from here"
   const [startIdx, setStartIdx] = useState(() => {
@@ -179,6 +186,8 @@ export function Pacer() {
   /** Where this class started — the rehearsal debrief lists hand-offs from here. */
   const classFromRef = useRef(0);
   const classStartedAtRef = useRef(0);
+  /** Segment whose metronome override is currently applied ("idx:segIndex"). */
+  const segAppliedRef = useRef<string | null>(null);
 
   /** setTimeout that gets cleaned up when the pacer stops or unmounts. */
   const later = useCallback((fn: () => void, ms: number) => {
@@ -264,6 +273,44 @@ export function Pacer() {
     [sayCue],
   );
 
+  /** Apply a segment's metronome override (or restore the user's setting). */
+  const applySegmentPacer = useCallback((key: string | null, beatsPerBar?: number) => {
+    if (segAppliedRef.current === key) return;
+    segAppliedRef.current = key;
+    metRef.current?.update({ beatsPerBar: beatsPerBar ?? settingsRef.current.beatsPerBar });
+  }, []);
+
+  /** The class is over: bell, silence, journal, done screen. */
+  const finishClass = useCallback(() => {
+    const m = metRef.current;
+    silenceVoice();
+    m?.cue('end');
+    m?.stop();
+    m?.setQuiet(false);
+    applySegmentPacer(null);
+    clearPending();
+    setRunning(false);
+    setBeatView(null);
+    trackRef.current = null;
+    const journal = loadJournal();
+    const endedAt = Date.now();
+    recordClass(journal, {
+      startedAt: classStartedAtRef.current || endedAt,
+      endedAt,
+      fromOrder: poses[classFromRef.current]?.order ?? 1,
+      toOrder: poses[poses.length - 1].order,
+      pacedSeconds: Math.round(pacedRef.current),
+      bpm: settingsRef.current.bpm,
+      rehearsed: cuesRef.current.rehearse,
+    });
+    saveJournal(journal);
+    commitClass({
+      phase: 'done',
+      pacedSeconds: pacedRef.current,
+      rehearsedFrom: cuesRef.current.rehearse ? classFromRef.current : undefined,
+    });
+  }, [applySegmentPacer, clearPending, commitClass]);
+
   /** One counted beat of class time: cue, decrement, hand off postures.
    *  `late` beats arrive in a burst after a stall (screen lock, background
    *  tab): they advance the class clock but stay silent, and the first
@@ -271,10 +318,22 @@ export function Pacer() {
   const tickClass = useCallback(
     (late = false) => {
       const c = classRef.current;
+      if (c.phase === 'closing') {
+        pacedRef.current += beatSeconds(settingsRef.current.bpm);
+        const left = c.left - 1;
+        if (left > 0) commitClass({ ...c, left });
+        else finishClass();
+        return;
+      }
       if (c.phase !== 'running') return;
       // Current beat index into the hold — beat 0 is the posture's first
       // counted beat, so the announce lands the moment a hold begins.
       const beatIdx = c.budget - c.left;
+      // a segment may ask the metronome for its own count (never its own tempo)
+      const track = trackRef.current;
+      const segNow = track ? segmentAtBeat(track, beatIdx) : null;
+      const segData = segNow ? track?.pose.segments?.[segNow.index] : undefined;
+      applySegmentPacer(segNow ? `${c.idx}:${segNow.index}` : `${c.idx}:-`, segData?.pacer?.beatsPerBar);
       if (late) {
         stalledRef.current = true;
       } else {
@@ -299,32 +358,15 @@ export function Pacer() {
         return;
       }
       if (c.idx >= poses.length - 1) {
-        // class over: the bell rings, then the metronome falls silent with it
+        // the last posture is done: a quiet final savasana, then the bell
         silenceVoice();
-        metRef.current?.cue('end');
-        metRef.current?.stop();
-        clearPending();
-        setRunning(false);
-        setBeatView(null);
+        metRef.current?.chime();
+        metRef.current?.setQuiet(true);
+        applySegmentPacer('closing');
         trackRef.current = null;
-        // the journal remembers the class; the debrief amends it later
-        const journal = loadJournal();
-        const endedAt = Date.now();
-        recordClass(journal, {
-          startedAt: classStartedAtRef.current || endedAt,
-          endedAt,
-          fromOrder: poses[classFromRef.current]?.order ?? 1,
-          toOrder: poses[c.idx].order,
-          pacedSeconds: Math.round(pacedRef.current),
-          bpm: settingsRef.current.bpm,
-          rehearsed: cuesRef.current.rehearse,
-        });
-        saveJournal(journal);
-        commitClass({
-          phase: 'done',
-          pacedSeconds: pacedRef.current,
-          rehearsedFrom: cuesRef.current.rehearse ? classFromRef.current : undefined,
-        });
+        const budget = beatsForSeconds(CLOSING_SECONDS, 60);
+        if (!late) sayCue(CLOSING_LINE, true);
+        commitClass({ phase: 'closing', left: budget, budget });
       } else {
         if (late) stallHandoffRef.current = true;
         else metRef.current?.chime();
@@ -340,7 +382,7 @@ export function Pacer() {
         });
       }
     },
-    [buildTrack, clearPending, commitClass, fireCues, sayCue],
+    [applySegmentPacer, buildTrack, commitClass, finishClass, fireCues, sayCue],
   );
 
   // One metronome per mount. Beat events arrive up to ~150ms early on the
@@ -353,7 +395,7 @@ export function Pacer() {
       }
       const delay = Math.max(0, (e.time - m.now()) * 1000);
       later(() => {
-        setBeatView({ beat: e.beat, bar: e.bar });
+        setBeatView({ beat: e.beat, bar: e.bar, beatsPerBar: e.beatsPerBar });
         tickClass();
       }, delay);
     });
@@ -421,7 +463,7 @@ export function Pacer() {
 
   // Immersion only exists while a class is running or paused.
   useEffect(() => {
-    if (classRun.phase !== 'running' && classRun.phase !== 'paused') setImmersed(false);
+    if (classRun.phase !== 'running' && classRun.phase !== 'paused' && classRun.phase !== 'closing') setImmersed(false);
   }, [classRun.phase]);
 
   const exitImmersion = useCallback(() => {
@@ -506,9 +548,11 @@ export function Pacer() {
 
   const endClass = useCallback(() => {
     silenceVoice();
+    metRef.current?.setQuiet(false);
+    applySegmentPacer(null);
     trackRef.current = null;
     commitClass({ phase: 'idle' });
-  }, [commitClass]);
+  }, [applySegmentPacer, commitClass]);
 
   /** Test-drive the chosen voice on the posture currently in view. */
   const previewVoice = useCallback(() => {
@@ -548,7 +592,7 @@ export function Pacer() {
         }
       } else if (ev.key === 'i' || ev.key === 'I') {
         const c = classRef.current;
-        if (c.phase === 'running' || c.phase === 'paused') {
+        if (c.phase === 'running' || c.phase === 'paused' || c.phase === 'closing') {
           setImmersed((v) => !v);
         }
       }
@@ -558,13 +602,15 @@ export function Pacer() {
   }, [applySettings, skipPose, toggleMetronome]);
 
   // ---------------------------------------------------------------- derived
-  const isPulse = settings.beatsPerBar === 1;
+  // while a segment overrides the count, the orb follows the metronome
+  const liveBeats = running && beatView ? beatView.beatsPerBar : settings.beatsPerBar;
+  const isPulse = liveBeats === 1;
   const activeBar = running && beatView ? beatView.bar : null;
   const phaseWord =
     activeBar === null ? 'Ready' : isPulse ? 'Exhale · pulse' : activeBar % 2 === 0 ? 'Inhale' : 'Exhale';
   const orbPhase = activeBar === null ? 'idle' : activeBar % 2 === 0 ? 'in' : 'out';
   const curBeat = running && beatView ? beatView.beat : -1;
-  const count = curBeat >= 0 ? Math.min(curBeat + 1, settings.beatsPerBar) : null;
+  const count = curBeat >= 0 ? Math.min(curBeat + 1, liveBeats) : null;
   const rate = breathsPerMinute(settings);
   const rateLine = `${fmtRate(rate)} ${isPulse ? 'pulses' : 'breaths'} / min`;
   const classMinutes = Math.round((classTotalSeconds * (60 / settings.bpm)) / 60);
@@ -679,6 +725,58 @@ export function Pacer() {
         </button>
       </div>
     );
+  } else if (classRun.phase === 'closing') {
+    const savasana = poses[SAVASANA_IDX];
+    classBody = (
+      <div className="pc-class-run">
+        <div className="pc-class-pose">
+          <PoseFigure pose={savasana} size={110} />
+          <div className="pc-class-poseinfo">
+            <p className="eyebrow">Class complete</p>
+            <h3 className="pc-class-posename">Final savasana</h3>
+            <p className="pc-class-sanskrit text-soft">Lie back. The ticks are silent; the bell rings at two minutes.</p>
+          </div>
+          <div className="pc-class-remain">
+            <span className="pc-remain-num">{mss(classRun.left)}</span>
+            <span className="pc-remain-cap text-faint">counts left</span>
+          </div>
+        </div>
+        <div className="pc-class-bar" aria-hidden="true">
+          <span style={{ width: '100%' }} />
+        </div>
+        <div className="pc-class-controls">
+          <button type="button" className="pc-btn" ref={immerseBtnRef} onClick={() => setImmersed(true)}>
+            Immerse
+          </button>
+          <button type="button" className="pc-btn pc-btn-quiet" onClick={finishClass}>
+            Skip the rest
+          </button>
+        </div>
+      </div>
+    );
+    if (immersed) {
+      overlay = (
+        <PacerClassMode
+          pose={savasana}
+          countdown={mss(classRun.left)}
+          segmentLabel="Final savasana"
+          segmentKind="rest"
+          paused={false}
+          progress={1}
+          posture={poses.length}
+          postureCount={poses.length}
+          nextLine="Lie back and let the breath go — the bell rings at two minutes."
+          eyebrow="Class complete"
+          canPause={false}
+          canBack={false}
+          canNext={false}
+          onBack={() => {}}
+          onNext={() => {}}
+          onTogglePause={() => {}}
+          onExit={exitImmersion}
+        />
+      );
+    }
   } else {
     const pose = poses[classRun.idx];
     const next = poses[classRun.idx + 1];
@@ -829,7 +927,7 @@ export function Pacer() {
               </div>
             </div>
             <div className="pc-dots" aria-hidden="true">
-              {Array.from({ length: settings.beatsPerBar }, (_, i) => (
+              {Array.from({ length: liveBeats }, (_, i) => (
                 <span
                   key={i}
                   className="pc-dot"

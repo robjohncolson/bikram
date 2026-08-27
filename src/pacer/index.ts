@@ -15,7 +15,7 @@ export {
 export type { PacerSettings, PacerPreset } from './timing';
 export { createMetronome } from './metronome';
 export type { BeatEvent, Metronome } from './metronome';
-export { announceText, buildPoseTrack, buildClassTrack, coachingMaterial, walkInSteps, segmentAtBeat } from './cues';
+export { CLOSING_LINE, CLOSING_SECONDS, announceText, buildPoseTrack, buildClassTrack, coachingMaterial, walkInSteps, segmentAtBeat } from './cues';
 export type { CueKind, CueEvent, CueOptions, PoseTrack, SegmentPosition } from './cues';
 export { speechSupported, watchVoices, speak, stopSpeaking } from './voice';
 export type { VoiceChoice, SpeakOptions } from './voice';

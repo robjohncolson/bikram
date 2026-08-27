@@ -346,6 +346,7 @@ export const voiceClips: Record<string, string> = {
   "The chest and belly are compressed, so breathe into the back of the ribs — slow, deliberate breaths. Use each exhale to curl a fraction deeper into the ball.": "/voice/8c970020082a.ogg",
   "The chin stays glued to the chest so the head rides the movement instead of whipping it.": "/voice/4997e64a71b2.ogg",
   "The chin stays on the floor, stretching forward — a long neck keeps the work in the spine, not the shoulders.": "/voice/98570cead279.ogg",
+  "The class is complete. Lie back into savasana, let the breath go, and stay for two minutes.": "/voice/e06201547bf5.ogg",
   "The extended leg works too: keep it actively straight, calf reaching for the floor, toes toward your face.": "/voice/0bcd610e80f0.ogg",
   "The feet stay glued alongside the hips, toes pointing straight back, soles facing the ceiling.": "/voice/5c18a221183e.ogg",
   "The fingertip only touches the floor — no weight in the hand; the legs carry everything.": "/voice/f322e3aa6a86.ogg",

@@ -17,12 +17,14 @@ export const segments0107: Record<string, PoseSegment[]> = {
       label: 'First set — 10 breaths',
       cue: 'Ten slow breaths — six counts in through the nose, six counts out through the mouth.',
       seconds: 150,
+      pacer: { beatsPerBar: 6 },
     },
     {
       kind: 'breath',
       label: 'Second set — 10 breaths',
       cue: 'Second set — ten more full breaths. Elbows high on the inhale, head back on the exhale.',
       seconds: 140,
+      pacer: { beatsPerBar: 6 },
     },
   ],
 

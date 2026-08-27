@@ -45,21 +45,75 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   renders the tone events (warn tick, change chime, end bell).
   `wakelock.ts` keeps the screen awake during practice (guarded,
   visibility-aware).
+  Phone-proofing: `clips.ts` reuses ONE `<audio>` element primed inside
+  the start gesture (`unlockClips`) and reports load/play failures via
+  `fallback` so `sayCue` speaks the line with TTS instead of going silent;
+  `metronome.ts` resumes a suspended context on visibility/state changes
+  and delivers beats missed during a stall flagged `late` (the class clock
+  catches up silently; the first live beat speaks one orientation cue).
+  `cues.ts` rotates the coaching material by a day index (`rotation`) so a
+  different subset of the authored lines leads each class, coaches in the
+  room the walk-in leaves in segment 0, trims over-long walk-ins from the
+  middle (`walkInSteps`), and breathes first in floor postures
+  (`coachingMaterial`). `announceDelayBeats` implements REHEARSAL: the
+  announce (and walk-in) lands N beats after the hand-off and the views
+  withhold every identity surface until then; the post-class debrief
+  saves unrecalled hand-offs as `recall` evidence through
+  `trainer.applyEvidence` (BKT only — never the SRS schedule). After the
+  last posture the pacer runs a quiet two-minute final savasana
+  (`CLOSING_SECONDS`, one spoken `CLOSING_LINE`, `metronome.setQuiet`),
+  then the bell, then stops. `PoseSegment.pacer` lets a breathing
+  segment override the metronome's count (Kapalbhati pulses at 1,
+  Pranayama at 6) — never the tempo.
 - `src/data/segments/` — per-posture class-time structure (sides, sets,
   the floor series' savasana/sit-up interludes) in four range files,
   merged onto `Pose.segments` by `poses/index.ts`. Segments partition
   `approxTotalSeconds` exactly — `segments.test.ts` enforces it.
+- `src/data/classical/` — the "Go deeper — the classical form" layer:
+  one `ClassicalNote` per posture (`NN-<id>.ts`, keyed by pose id in its
+  `index.ts`), merged onto `Pose.classical`. It reads each posture against
+  the classical repertoire as B.K.S. Iyengar documents it in *Light on
+  Yoga*: name roots, nearest classical asana and how the 26 & 2 execution
+  differs, refinements that transfer, hold-here stages, a before/beyond
+  ladder, and an optional plate/grade `reference` (only when verified —
+  omit rather than guess). ORIGINAL WORDING ONLY: the book is cited, never
+  quoted; Wikipedia supplies facts, never sentences. Neither lineage
+  "corrects" the other. Rendered by PoseDetail's `ClassicalSection`.
 - Forgetting decay: `trainer/bkt.ts` decays each leaf's P(known) back
-  toward its prior between practice sessions (half-life stretches with
-  correct answers, capped 60 days). `leafP`/`nodeP` take an optional
-  `now`; omitting it skips decay (pinned-posterior tests rely on that).
+  toward its prior between practice sessions. The half-life stretches
+  only with SPACED correct answers (`KcState.spaced`: a hit ≥ 6 h after
+  the leaf's previous evidence — the first answer never counts), capped
+  60 days. `applyEvidence` updates from the DECAYED posterior. `leafP`/
+  `nodeP` take an optional `now`; omitting it skips decay
+  (pinned-posterior tests rely on that). `meanLeafP` is the honest
+  headline (average over the 51 leaves); the root noisy-AND is the
+  all-at-once probability and only the map shows it.
+- Honest scheduling: `engine.recordAnswer` advances the SM-2 ladder only
+  when `schedulesOn` — the card is new, due, or in the 5-minute relearn
+  step; a miss always lapses (a second miss while relearning restarts the
+  step without another fine). Every answer is still BKT evidence. Queues
+  pass through `interleave` (no adjacent cards about the same posture);
+  in-session misses re-enter `RELEARN_GAP` cards later via `relearnSlot`
+  (nudged past sibling cards, which would show the answer).
+- `trainer/journal.ts` — the practice journal (`yoga-journal-v1`):
+  every paced class (`ClassRecord`: span, length, tempo, rehearsed,
+  debrief counts) plus the local days anything was practiced
+  (`touchPracticeDay` from the trainer, `recordClass` from the pacer,
+  `amendLastClass` from the debrief). `practiceStreak`, `lastClass`,
+  `daysSince` feed the pacer's idle card and the trainer landing.
+  PoseDetail's `PracticeRow` links `/train?drill=id:<pose>`,
+  `/train?drill=tr:<order>` and `/pace?from=<order>`.
 - Focused drills: `/train?drill=<kcId>` (linked from every knowledge-map
   detail card) runs `engine.buildDrillQueue` — the node's cards plus
   immediate context; aggregates drill their weakest leaves. The map SVG
   is one tab stop with arrow-key roving tabindex between layers.
 - PWA: hand-rolled (`public/sw.js` runtime caching + offline fallback,
   `public/manifest.webmanifest`, icons in `public/icons/`), registered
-  from `main.tsx` in prod only. No build-time plugin on purpose.
+  from `main.tsx` in prod only. No build-time plugin on purpose. The
+  studio voice lives in its own cache (`yoga-voice-v1`): after
+  registration `main.tsx` posts `{type:'precache-voice', urls}` (from
+  `clipUrls()`) and the worker fills it in small batches with a
+  content-type guard, so a class never fetches a line mid-hold.
 - `src/trainer/` — the learning engine (pure TS, unit-tested with vitest,
   `npm test`). Views import ONLY from `src/trainer/index.ts`. Three layers:
   - `graph.ts` — the knowledge DAG: 26 identity KCs + 25 transition KCs

@@ -45,6 +45,8 @@ export interface Metronome {
   chime(): void;
   /** sampler tones: 'warn' pre-change tick, 'change' hand-off chime, 'end' closing bell */
   cue(kind: 'warn' | 'change' | 'end'): void;
+  /** silence the beat ticks (chimes, bells and cues still sound) — final savasana */
+  setQuiet(quiet: boolean): void;
   /** release audio resources */
   dispose(): void;
 }
@@ -55,6 +57,7 @@ export function createMetronome(onBeat: (e: BeatEvent) => void): Metronome {
   let timer: ReturnType<typeof setInterval> | null = null;
   let settings: PacerSettings = { ...PACER_DEFAULTS };
   let running = false;
+  let quiet = false;
   let nextTime = 0;
   let beat = 0;
   let bar = 0;
@@ -112,7 +115,7 @@ export function createMetronome(onBeat: (e: BeatEvent) => void): Metronome {
     const now = ctx.currentTime;
     while (nextTime < now + LOOKAHEAD_S) {
       const late = now - nextTime > LATE_S;
-      if (!late) tickSound(nextTime, beat, bar);
+      if (!late && !quiet) tickSound(nextTime, beat, bar);
       onBeat({ time: late ? now : nextTime, beat, bar, beatsPerBar: settings.beatsPerBar, late });
       nextTime += beatSeconds(settings.bpm);
       beat += 1;
@@ -157,6 +160,9 @@ export function createMetronome(onBeat: (e: BeatEvent) => void): Metronome {
     },
     now() {
       return ctx ? ctx.currentTime : 0;
+    },
+    setQuiet(q) {
+      quiet = q;
     },
     chime() {
       this.cue('change');

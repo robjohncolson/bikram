@@ -307,6 +307,16 @@ describe('honest scheduling', () => {
     expect(store.kcs['id:eagle'].wrong).toBe(1);
   });
 
+  it('a miss on first exposure enters the relearn step without a lapse', () => {
+    const store = emptyStore();
+    recordAnswer(store, 'name:eagle', 'again', NOW);
+    expect(store.cards['name:eagle']).toMatchObject({ interval: AGAIN_MINUTES, lapses: 0, ease: 2.5, reps: 1 });
+    expect(store.cards['name:eagle'].due).toBe(NOW + AGAIN_MINUTES * 60_000);
+    recordAnswer(store, 'name:eagle', 'good', NOW + 60_000);
+    expect(store.cards['name:eagle'].interval).toBe(30);
+    expect(store.cards['name:eagle'].lapses).toBe(0);
+  });
+
   it('does not fine a card twice for missing it again while relearning', () => {
     const store = emptyStore();
     for (let i = 0; i < 3; i++) recordAnswer(store, 'name:eagle', 'good', NOW + i * 2 * 86_400_000);

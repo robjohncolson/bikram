@@ -39,9 +39,13 @@ export function gradeCard(state: CardState, grade: Grade, now: number): CardStat
   };
 }
 
-/** A second miss while still in the relearn step: the step restarts, no extra lapse or ease cost. */
+/**
+ * A miss that is not a lapse — first exposure, or again while still in
+ * the relearn step: the five-minute step (re)starts; ease and the lapse
+ * count are untouched. Lapses are for forgetting something once learned.
+ */
 export function relearnAgain(state: CardState, now: number): CardState {
-  return { ...state, due: now + AGAIN_MINUTES * MIN, reps: state.reps + 1 };
+  return { ...state, interval: AGAIN_MINUTES, due: now + AGAIN_MINUTES * MIN, reps: state.reps + 1 };
 }
 
 export function isDue(state: CardState, now: number): boolean {

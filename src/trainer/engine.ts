@@ -231,9 +231,11 @@ export function recordAnswer(
   const card = cardById.get(cardId);
   if (!card) return;
   const prev = store.cards[cardId];
-  if (grade === 'again' && prev && prev.interval === AGAIN_MINUTES) {
-    // missed again while still relearning: push the step, no second fine
-    store.cards[cardId] = relearnAgain(prev, now);
+  if (grade === 'again' && (!prev || prev.interval === AGAIN_MINUTES)) {
+    // a miss on first exposure, or again while still relearning: the card
+    // enters (or restarts) the five-minute step — no lapse, no ease cost;
+    // those are for forgetting something once learned
+    store.cards[cardId] = relearnAgain(prev ?? newCardState(now), now);
   } else if (schedulesOn(prev, grade, now)) {
     store.cards[cardId] = gradeCard(prev ?? newCardState(now), grade, now);
   }

@@ -93,6 +93,13 @@ export interface PoseSegment {
   /** spoken cue at the segment's start, e.g. "Other side." */
   cue: string;
   seconds: number;
+  /**
+   * Metronome override while this segment runs — Kapalbhati pulses one
+   * count per bar, Pranayama keeps its six-count whatever the user set.
+   * The tempo (BPM) is never overridden, so the class clock is unchanged;
+   * the user's setting returns when the segment ends.
+   */
+  pacer?: { beatsPerBar: number };
 }
 
 /** How a posture engages one muscle group */
