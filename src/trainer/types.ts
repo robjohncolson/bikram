@@ -23,6 +23,13 @@ export type KcId = string; // 'id:eagle' | 'tr:4' | 'arc:standing' | 'root'
 export type CardId = string; // 'next:eagle' | 'name:eagle' | 'pos:4'
 
 export type CardKind = 'next' | 'name' | 'pos';
+/**
+ * Everything that can be evidence about a leaf KC: the three card kinds,
+ * plus `recall` — a hand-off recalled (or not) during a rehearsal class,
+ * self-reported at the debrief. Class evidence feeds BKT only; it never
+ * touches a card's review schedule.
+ */
+export type EvidenceKind = CardKind | 'recall';
 
 export interface KcNode {
   id: KcId;

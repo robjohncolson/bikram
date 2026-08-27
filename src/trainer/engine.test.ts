@@ -132,6 +132,18 @@ describe('forgetting decay', () => {
   });
 });
 
+describe('class recall evidence', () => {
+  it('moves a transition leaf without touching any card schedule', () => {
+    const store = emptyStore();
+    applyEvidence(store, 'tr:4', 'recall', true, NOW);
+    expect(store.kcs['tr:4'].p).toBeCloseTo(bktUpdate(0.1, true, BKT_BY_KIND.recall), 10);
+    expect(Object.keys(store.cards)).toHaveLength(0);
+    applyEvidence(store, 'tr:5', 'recall', false, NOW);
+    expect(store.kcs['tr:5'].p).toBeLessThan(0.1 + BKT_BY_KIND.recall.pLearn);
+    expect(store.kcs['tr:5'].wrong).toBe(1);
+  });
+});
+
 describe('noisy-AND aggregation', () => {
   it('root is the product of arc probabilities', () => {
     const store: TrainerStore = emptyStore();

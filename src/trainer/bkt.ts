@@ -1,4 +1,4 @@
-import type { BktParams, CardKind, KcId, KcState, TrainerStore } from './types';
+import type { BktParams, EvidenceKind, KcId, KcState, TrainerStore } from './types';
 import { kcNodes } from './graph';
 
 /**
@@ -7,12 +7,15 @@ import { kcNodes } from './graph';
  * transition (practice itself teaches).
  */
 
-export const BKT_BY_KIND: Record<CardKind, BktParams> = {
+export const BKT_BY_KIND: Record<EvidenceKind, BktParams> = {
   // 4-choice multiple choice → guessing gets you 1-in-4
   next: { pInit: 0.1, pLearn: 0.2, pGuess: 0.25, pSlip: 0.1 },
   pos: { pInit: 0.1, pLearn: 0.2, pGuess: 0.25, pSlip: 0.1 },
   // self-graded flashcard → little room to "guess", slips are honest lapses
   name: { pInit: 0.1, pLearn: 0.25, pGuess: 0.08, pSlip: 0.08 },
+  // in-class recall at a hand-off, self-reported afterwards: nothing to
+  // guess from, but heat, fatigue and a wandering mind make slips common
+  recall: { pInit: 0.1, pLearn: 0.2, pGuess: 0.05, pSlip: 0.15 },
 };
 
 const clamp = (p: number) => Math.min(0.999, Math.max(0.001, p));
@@ -110,7 +113,7 @@ export function meanLeafP(store: TrainerStore, now?: number): number {
 export function applyEvidence(
   store: TrainerStore,
   kc: KcId,
-  kind: CardKind,
+  kind: EvidenceKind,
   correct: boolean,
   now: number,
 ): KcState {

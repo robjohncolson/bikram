@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { announceText, buildClassTrack, buildPoseTrack, segmentAtBeat } from './cues';
+import { announceText, buildClassTrack, buildPoseTrack, coachingMaterial, segmentAtBeat, walkInSteps } from './cues';
 import { poses } from '../data';
 
 const camel = poses.find((p) => p.id === 'camel')!;
@@ -34,8 +34,10 @@ describe('cue sequencer', () => {
   it('coaches mid-hold in later working segments, never in rests', () => {
     const track = buildPoseTrack(camel, 60);
     const guides = track.events.filter((e) => e.kind === 'guide');
-    // at least one alignment cue lands after the walk-in's segment
-    const coached = guides.filter((g) => camel.cues.includes(g.text ?? ''));
+    // at least one coaching line lands after the walk-in's segment
+    const material = coachingMaterial(camel);
+    const firstBoundary = track.events.find((e) => e.kind === 'segment')!.atBeat;
+    const coached = guides.filter((g) => g.atBeat > firstBoundary && material.includes(g.text ?? ''));
     expect(coached.length).toBeGreaterThan(0);
     // rest/situp spans stay silent (walk-in lives in segment 0)
     const segs = camel.segments!;
@@ -167,6 +169,81 @@ describe('cue sequencer', () => {
     for (const track of buildClassTrack(120)) {
       const guide = track.events.find((e) => e.kind === 'guide');
       if (guide) expect(track.totalBeats).toBeGreaterThan(7);
+    }
+  });
+
+  it('rotates which coaching lines lead, and rotation 0 is the default', () => {
+    const base = buildPoseTrack(camel, 60);
+    const zero = buildPoseTrack(camel, 60, { rotation: 0 });
+    expect(zero.events).toEqual(base.events);
+    const material = coachingMaterial(camel);
+    expect(material.length).toBeGreaterThan(2);
+    const firstLine = (rotation: number) =>
+      buildPoseTrack(camel, 60, { rotation }).events.find((e) => e.kind === 'guide' && material.includes(e.text ?? ''))!.text;
+    expect(firstLine(0)).toBe(material[0]);
+    expect(firstLine(1)).toBe(material[1]);
+    expect(firstLine(material.length)).toBe(material[0]); // wraps
+    expect(coachingMaterial(camel, -1)[0]).toBe(material[material.length - 1]);
+  });
+
+  it('breathes first in floor postures', () => {
+    const cobra = poses.find((p) => p.id === 'cobra')!;
+    expect(coachingMaterial(cobra)[0]).toBe(cobra.breath);
+    expect(coachingMaterial(camel)[0]).toBe(camel.breath); // camel is floor series
+    const eagle = poses.find((p) => p.id === 'eagle')!;
+    expect(coachingMaterial(eagle)[0]).toBe(eagle.cues[0]);
+    expect(coachingMaterial(eagle).at(-1)).toBe(eagle.breath);
+  });
+
+  it('uses the room the walk-in leaves in the first segment', () => {
+    // Pranayama's first set is long and has only a short walk-in: the
+    // silence after it now carries coaching instead of nothing
+    const track = buildPoseTrack(pranayama, 60);
+    const firstBoundary = track.events.find((e) => e.kind === 'segment')!.atBeat;
+    const walkInEnd = 4 + (pranayama.setup.length - 1) * 8;
+    const coached = track.events.filter(
+      (e) => e.kind === 'guide' && e.atBeat > walkInEnd && e.atBeat < firstBoundary,
+    );
+    expect(coached.length).toBeGreaterThan(0);
+    expect(coachingMaterial(pranayama)).toContain(coached[0].text);
+  });
+
+  it('drops walk-in steps from the middle, never the last one', () => {
+    expect(walkInSteps(6, 3)).toEqual([0, 1, 5]);
+    expect(walkInSteps(6, 1)).toEqual([5]);
+    expect(walkInSteps(6, 0)).toEqual([]);
+    expect(walkInSteps(3, 5)).toEqual([0, 1, 2]);
+    const cramped = {
+      ...camel,
+      approxTotalSeconds: 60,
+      setup: ['one', 'two', 'three', 'four', 'five', 'six'],
+      segments: [
+        { kind: 'set' as const, label: 'First set', cue: 'First set.', seconds: 30 },
+        { kind: 'set' as const, label: 'Second set', cue: 'Second set.', seconds: 30 },
+      ],
+    };
+    const guides = buildPoseTrack(cramped, 60).events.filter((e) => e.kind === 'guide' && cramped.setup.includes(e.text ?? ''));
+    expect(guides.map((g) => g.text)).toEqual(['one', 'two', 'six']);
+    expect(guides.map((g) => g.atBeat)).toEqual([4, 12, 20]);
+  });
+
+  it('holds the announce back for rehearsal and moves the walk-in with it', () => {
+    const track = buildPoseTrack(camel, 60, { announceDelayBeats: 4 });
+    expect(track.events.find((e) => e.kind === 'announce')!.atBeat).toBe(4);
+    const guides = track.events.filter((e) => e.kind === 'guide');
+    expect(guides[0]).toMatchObject({ atBeat: 8, text: camel.setup[0] });
+    // clamped on a tiny hold: the announce still lands before the tail
+    const tiny = { ...plainCamel, approxTotalSeconds: 10, sets: 1 };
+    const t = buildPoseTrack(tiny, 60, { announceDelayBeats: 40 });
+    const announce = t.events.find((e) => e.kind === 'announce')!.atBeat;
+    expect(announce).toBeLessThanOrEqual(3);
+    // every spacing/tail invariant survives across the whole class
+    for (const tr of buildClassTrack(60, 1, { announceDelayBeats: 4 })) {
+      const spokenBeats = tr.events.filter((e) => e.kind !== 'warn').map((e) => e.atBeat).sort((a, b) => a - b);
+      for (let i = 1; i < spokenBeats.length; i++) {
+        expect(spokenBeats[i] - spokenBeats[i - 1], tr.pose.id).toBeGreaterThanOrEqual(4);
+      }
+      expect(tr.events.find((e) => e.kind === 'announce')!.atBeat).toBeLessThan(tr.totalBeats - 5);
     }
   });
 });

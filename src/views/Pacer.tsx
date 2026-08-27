@@ -27,6 +27,7 @@ import {
 } from '../pacer';
 import type { BeatEvent, Metronome, PacerSettings, PoseTrack, VoiceChoice, WakeLock } from '../pacer';
 import { classOffsetSeconds, classTotalSeconds, poses } from '../data';
+import { applyEvidence, loadStore, saveStore } from '../trainer';
 import { PoseFigure } from '../components/PoseFigure';
 import { PacerClassMode } from './PacerClassMode';
 import './Pacer.css';
@@ -37,8 +38,24 @@ const BEAT_CHOICES = [1, 2, 3, 4, 6, 8];
 /** The class pacer walks the 26 postures on the metronome clock. */
 type ClassRun =
   | { phase: 'idle' }
-  | { phase: 'running' | 'paused'; idx: number; left: number; budget: number }
-  | { phase: 'done'; pacedSeconds: number };
+  | {
+      phase: 'running' | 'paused';
+      idx: number;
+      left: number;
+      budget: number;
+      /** false while a rehearsal withholds the posture's identity */
+      revealed: boolean;
+    }
+  | { phase: 'done'; pacedSeconds: number; rehearsedFrom?: number };
+
+/** Rehearsal: beats between the hand-off chime and the announce. */
+const REHEARSAL_DELAY_BEATS = 4;
+
+/** Local day index — rotates the coaching material once a day. */
+function dayIndex(): number {
+  const d = new Date();
+  return Math.floor((d.getTime() - d.getTimezoneOffset() * 60_000) / 86_400_000);
+}
 
 /** Spoken-instruction preferences, persisted alongside the engine settings. */
 interface CuePrefs {
@@ -46,9 +63,17 @@ interface CuePrefs {
   voiceName: string | null;
   sanskrit: boolean;
   guides: boolean;
+  /** rehearsal: recall each posture before the voice announces it */
+  rehearse: boolean;
 }
 
-const CUE_DEFAULTS: CuePrefs = { enabled: true, voiceName: null, sanskrit: false, guides: true };
+const CUE_DEFAULTS: CuePrefs = {
+  enabled: true,
+  voiceName: null,
+  sanskrit: false,
+  guides: true,
+  rehearse: false,
+};
 
 function restoreSettings(): PacerSettings {
   try {
@@ -74,6 +99,7 @@ function restoreCues(): CuePrefs {
       voiceName: typeof c.voiceName === 'string' ? c.voiceName : CUE_DEFAULTS.voiceName,
       sanskrit: typeof c.sanskrit === 'boolean' ? c.sanskrit : CUE_DEFAULTS.sanskrit,
       guides: typeof c.guides === 'boolean' ? c.guides : CUE_DEFAULTS.guides,
+      rehearse: typeof c.rehearse === 'boolean' ? c.rehearse : CUE_DEFAULTS.rehearse,
     };
   } catch {
     return { ...CUE_DEFAULTS };
@@ -133,6 +159,8 @@ export function Pacer() {
   const stalledRef = useRef(false);
   /** A posture hand-off happened inside a stall — owe one orientation cue. */
   const stallHandoffRef = useRef(false);
+  /** Where this class started — the rehearsal debrief lists hand-offs from here. */
+  const classFromRef = useRef(0);
 
   /** setTimeout that gets cleaned up when the pacer stops or unmounts. */
   const later = useCallback((fn: () => void, ms: number) => {
@@ -165,6 +193,8 @@ export function Pacer() {
     return buildPoseTrack(poses[idx], 60, {
       sanskrit: p.sanskrit,
       guides: p.guides,
+      rotation: dayIndex(),
+      announceDelayBeats: p.rehearse ? REHEARSAL_DELAY_BEATS : 0,
     });
   }, []);
 
@@ -242,9 +272,12 @@ export function Pacer() {
         fireCues(beatIdx);
       }
       pacedRef.current += beatSeconds(settingsRef.current.bpm);
+      // a rehearsal reveals the posture the moment its announce beat arrives
+      const announceAt = trackRef.current?.events.find((e) => e.kind === 'announce')?.atBeat ?? 0;
+      const revealed = c.revealed || beatIdx >= announceAt;
       const left = c.left - 1;
       if (left > 0) {
-        commitClass({ ...c, left });
+        commitClass({ ...c, left, revealed });
         return;
       }
       if (c.idx >= poses.length - 1) {
@@ -256,14 +289,24 @@ export function Pacer() {
         setRunning(false);
         setBeatView(null);
         trackRef.current = null;
-        commitClass({ phase: 'done', pacedSeconds: pacedRef.current });
+        commitClass({
+          phase: 'done',
+          pacedSeconds: pacedRef.current,
+          rehearsedFrom: cuesRef.current.rehearse ? classFromRef.current : undefined,
+        });
       } else {
         if (late) stallHandoffRef.current = true;
         else metRef.current?.chime();
         const idx = c.idx + 1;
         const track = buildTrack(idx);
         trackRef.current = track;
-        commitClass({ phase: 'running', idx, left: track.totalBeats, budget: track.totalBeats });
+        commitClass({
+          phase: 'running',
+          idx,
+          left: track.totalBeats,
+          budget: track.totalBeats,
+          revealed: !cuesRef.current.rehearse,
+        });
       }
     },
     [buildTrack, clearPending, commitClass, fireCues, sayCue],
@@ -318,9 +361,13 @@ export function Pacer() {
       trackRef.current = buildPoseTrack(poses[c.idx], 60, {
         sanskrit: cues.sanskrit,
         guides: cues.guides,
+        rotation: dayIndex(),
+        announceDelayBeats: cues.rehearse ? REHEARSAL_DELAY_BEATS : 0,
       });
+      // switching rehearsal off mid-class shows the posture at once
+      if (!cues.rehearse && !c.revealed) commitClass({ ...c, revealed: true });
     }
-  }, [cues]);
+  }, [cues, commitClass]);
 
   // Voices load asynchronously; watchVoices calls back now and on changes.
   useEffect(() => watchVoices(setVoices), []);
@@ -386,7 +433,13 @@ export function Pacer() {
       metRef.current?.chime();
       const track = buildTrack(idx);
       trackRef.current = track;
-      commitClass({ phase: c.phase, idx, left: track.totalBeats, budget: track.totalBeats });
+      commitClass({
+        phase: c.phase,
+        idx,
+        left: track.totalBeats,
+        budget: track.totalBeats,
+        revealed: !cuesRef.current.rehearse,
+      });
     },
     [buildTrack, commitClass],
   );
@@ -402,9 +455,11 @@ export function Pacer() {
     pacedRef.current = 0;
     stalledRef.current = false;
     stallHandoffRef.current = false;
+    classFromRef.current = startIdx;
     const track = buildTrack(startIdx);
     trackRef.current = track;
-    commitClass({ phase: 'running', idx: startIdx, left: track.totalBeats, budget: track.totalBeats });
+    // the first posture was chosen by hand — nothing to recall yet
+    commitClass({ phase: 'running', idx: startIdx, left: track.totalBeats, budget: track.totalBeats, revealed: true });
   }, [buildTrack, commitClass, startIdx]);
 
   const toggleClassPause = useCallback(() => {
@@ -524,6 +579,7 @@ export function Pacer() {
         <p className="text-soft">
           ≈ {Math.max(1, Math.round(classRun.pacedSeconds / 60))} minutes of paced breathing.
         </p>
+        {classRun.rehearsedFrom !== undefined && <RehearsalDebrief from={classRun.rehearsedFrom} />}
         <button type="button" className="pc-btn" onClick={endClass}>
           Back to the pacer
         </button>
@@ -532,6 +588,7 @@ export function Pacer() {
   } else {
     const pose = poses[classRun.idx];
     const next = poses[classRun.idx + 1];
+    const hidden = cues.rehearse && !classRun.revealed;
     const fracDone = 1 - classRun.left / classRun.budget;
     const progress =
       (classOffsetSeconds(pose) + fracDone * pose.approxTotalSeconds) / classTotalSeconds;
@@ -543,16 +600,24 @@ export function Pacer() {
     classBody = (
       <div className="pc-class-run">
         <div className="pc-class-pose">
-          <PoseFigure pose={pose} size={110} />
+          {hidden ? (
+            <div className="pc-class-figure-hidden" aria-hidden="true">
+              ?
+            </div>
+          ) : (
+            <PoseFigure pose={pose} size={110} />
+          )}
           <div className="pc-class-poseinfo">
             <p className="eyebrow">
               Posture {classRun.idx + 1} of {poses.length}
             </p>
             <h3 className="pc-class-posename">
-              {pose.order} · {pose.englishName}
+              {hidden ? 'What comes next?' : `${pose.order} · ${pose.englishName}`}
             </h3>
-            <p className="pc-class-sanskrit text-soft">{pose.sanskritName}</p>
-            <p className="pc-class-timing text-faint">{pose.timing}</p>
+            <p className="pc-class-sanskrit text-soft">
+              {hidden ? 'Say it before the voice does.' : pose.sanskritName}
+            </p>
+            {!hidden && <p className="pc-class-timing text-faint">{pose.timing}</p>}
             {seg && (
               <p className="pc-class-seg" data-kind={seg.kind}>
                 <span className="pc-seg-label">{seg.label}</span>
@@ -569,7 +634,9 @@ export function Pacer() {
           <span style={{ width: `${(Math.min(1, Math.max(0, progress)) * 100).toFixed(2)}%` }} />
         </div>
         <p className="pc-class-next text-soft">
-          {next ? (
+          {cues.rehearse ? (
+            'Rehearsal — the next posture stays hidden until four counts after the chime.'
+          ) : next ? (
             <>
               Next: #{next.order} {next.englishName}
             </>
@@ -623,6 +690,8 @@ export function Pacer() {
           segmentLabel={seg?.label}
           segmentKind={seg?.kind}
           paused={classRun.phase === 'paused'}
+          hidden={hidden}
+          rehearse={cues.rehearse}
           progress={progress}
           posture={classRun.idx + 1}
           postureCount={poses.length}
@@ -854,6 +923,14 @@ export function Pacer() {
                         />
                         Technique cue at the start
                       </label>
+                      <label className="pc-cue-check">
+                        <input
+                          type="checkbox"
+                          checked={cues.rehearse}
+                          onChange={(e) => applyCues({ rehearse: e.target.checked })}
+                        />
+                        Rehearsal — recall each posture before it&rsquo;s announced
+                      </label>
                     </div>
                   </div>
                 )}
@@ -875,6 +952,78 @@ export function Pacer() {
       {/* portal: the animated .page ancestor would otherwise become the
           fixed-position containing block and trap the overlay under the nav */}
       {overlay && createPortal(overlay, document.body)}
+    </div>
+  );
+}
+
+/**
+ * After a rehearsal class: which hand-offs came to mind before the voice
+ * confirmed them? Self-reported, saved as in-class evidence on the
+ * transition KCs — the knowledge map moves from classes, not just
+ * quizzes. Never touches the review schedule.
+ */
+function RehearsalDebrief({ from }: { from: number }) {
+  // every posture after the first was announced late — a recall each
+  const handoffs = poses.slice(from + 1);
+  const [missed, setMissed] = useState<Set<string>>(() => new Set());
+  const [saved, setSaved] = useState<number | null>(null);
+
+  const toggle = (id: string) =>
+    setMissed((m) => {
+      const next = new Set(m);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+
+  const save = () => {
+    const now = Date.now();
+    const store = loadStore(now);
+    for (const p of handoffs) {
+      applyEvidence(store, `tr:${p.order - 1}`, 'recall', !missed.has(p.id), now);
+    }
+    saveStore(store);
+    setSaved(handoffs.length - missed.size);
+  };
+
+  if (handoffs.length === 0) return null;
+  return (
+    <div className="pc-debrief">
+      <p className="eyebrow">Rehearsal debrief</p>
+      {saved === null ? (
+        <>
+          <p className="text-soft">
+            Tap any hand-off you did <em>not</em> recall before the voice said it, then save. This
+            feeds the knowledge map as class evidence — it never changes your review schedule.
+          </p>
+          <ul className="pc-debrief-list">
+            {handoffs.map((p) => {
+              const miss = missed.has(p.id);
+              return (
+                <li key={p.id}>
+                  <button
+                    type="button"
+                    className="pc-debrief-item"
+                    aria-pressed={miss}
+                    onClick={() => toggle(p.id)}
+                  >
+                    <span className="pc-debrief-num">{p.order}</span>
+                    <span className="pc-debrief-name">{p.englishName}</span>
+                    <span className="pc-debrief-mark">{miss ? 'missed' : 'recalled'}</span>
+                  </button>
+                </li>
+              );
+            })}
+          </ul>
+          <button type="button" className="pc-btn pc-btn-primary" onClick={save}>
+            Save {handoffs.length - missed.size} of {handoffs.length} recalled
+          </button>
+        </>
+      ) : (
+        <p className="text-soft">
+          Saved — <strong>{saved}</strong> of {handoffs.length} hand-offs recalled in class.
+        </p>
+      )}
     </div>
   );
 }

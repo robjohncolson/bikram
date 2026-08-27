@@ -12,6 +12,10 @@ export interface PacerClassModeProps {
   segmentLabel?: string;
   segmentKind?: string;
   paused: boolean;
+  /** rehearsal: the posture's identity is withheld until it is announced */
+  hidden?: boolean;
+  /** rehearsal is on: never show what comes next */
+  rehearse?: boolean;
   /** whole-class progress, 0–1 */
   progress: number;
   posture: number;
@@ -74,15 +78,19 @@ export function PacerClassMode(props: PacerClassModeProps) {
       className="cm"
       role="dialog"
       aria-modal="true"
-      aria-label={`Class mode — posture ${props.posture} of ${props.postureCount}, ${props.pose.englishName}`}
+      aria-label={
+        props.hidden
+          ? `Class mode — posture ${props.posture} of ${props.postureCount}`
+          : `Class mode — posture ${props.posture} of ${props.postureCount}, ${props.pose.englishName}`
+      }
       tabIndex={-1}
     >
       <header className="cm-top">
         <p className="cm-posture">
           Posture {props.posture} of {props.postureCount}
         </p>
-        <h2 className="cm-name">{props.pose.englishName}</h2>
-        <p className="cm-sanskrit">{props.pose.sanskritName}</p>
+        <h2 className="cm-name">{props.hidden ? 'What comes next?' : props.pose.englishName}</h2>
+        <p className="cm-sanskrit">{props.hidden ? 'say it before the voice does' : props.pose.sanskritName}</p>
       </header>
 
       <main className="cm-mid">
@@ -103,7 +111,11 @@ export function PacerClassMode(props: PacerClassModeProps) {
           <span style={{ width: `${(Math.min(1, Math.max(0, props.progress)) * 100).toFixed(2)}%` }} />
         </div>
         <p className="cm-next">
-          {props.next ? `Next: #${props.next.order} ${props.next.englishName}` : 'Last posture — Kapalbhati closes the class.'}
+          {props.rehearse
+            ? 'Rehearsal — the next posture stays hidden.'
+            : props.next
+              ? `Next: #${props.next.order} ${props.next.englishName}`
+              : 'Last posture — Kapalbhati closes the class.'}
         </p>
         <div className="cm-controls">
           <button type="button" onClick={props.onBack} disabled={!props.canBack} aria-label="Skip back one posture">
