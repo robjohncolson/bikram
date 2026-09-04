@@ -14,10 +14,8 @@ import type { ClassicalNote } from '../types';
 //   forward — in all five; Paschimottanasana is #6, seated, in all five;
 //   #13–17 are Baddha-Padmasana, Matsyasana, Chakrasana, Halasana,
 //   Sarvangasana)
-// - https://en.wikipedia.org/wiki/Sit-up (an abdominal endurance exercise;
-//   fuller range than a crunch; the standard form bends the knees to reduce
-//   stress on the back and spine; concerns about compressive lumbar load;
-//   from 2015 the US armed forces began replacing sit-ups with planks)
+// - https://en.wikipedia.org/wiki/Sit-up (a floor-based abdominal exercise;
+//   a fuller range of movement than a crunch)
 // - https://en.wikipedia.org/wiki/Paschimottanasana (paschima = west / the
 //   back of the body, uttana = intense stretch, asana = seat/posture; Hatha
 //   Yoga Pradipika 1.28–29; illustrated in the 1830 Jogapradipika; entered
@@ -31,10 +29,6 @@ import type { ClassicalNote } from '../types';
 //   palms up; the modern standing fold is 20th-century — Krishnamacharya
 //   1934, Light on Yoga pp. 91–93; the Sritattvanidhi's "Uttanasana" is a
 //   different, supine shape)
-// - https://en.wikipedia.org/wiki/Supta_Padangusthasana (supta = reclined,
-//   pada = foot, angustha = big toe; from Savasana one leg is raised and the
-//   big toe held; belt if the hamstrings are tight; 20th-century; Light on
-//   Yoga pp. 244–246)
 // - https://en.wikipedia.org/wiki/Navasana (paripurna = full, nava = boat;
 //   the 19th-c. Sritattvanidhi's Naukasana; balanced on the sitting bones,
 //   not rolled back onto the tailbone; Ardha Navasana easier; Ubhaya
@@ -106,11 +100,6 @@ import type { ClassicalNote } from '../types';
 //   the buttocks alone, feet higher than the head, arms forward at shoulder
 //   height, breath never restrained — release when it is; beginners hold a
 //   couple of breaths; belt round the feet for a flat back and straight legs)
-// - https://www.fitsri.com/poses/urdhva-mukha-paschimottanasana (urdhva =
-//   upward, mukha = face; a seated balance with the legs raised and the trunk
-//   drawn to them, forehead toward the knees; a supine version lifting the
-//   legs and clasping the soles; Light on Yoga plate 170; related to Ubhaya
-//   Padangusthasana and Navasana)
 // - https://www.griffinshill.com.au/blog/savasana-a-much-misunderstood-yoga-pose
 //   (Iyengar-lineage: legs straightened one at a time lying down; to come
 //   out, roll to the right side, wait there a little, then sit up)
@@ -123,22 +112,22 @@ import type { ClassicalNote } from '../types';
 export const situp: ClassicalNote = {
   asana: null,
   etymology:
-    'Pada is the foot, hasta the hand, and asana a seat or posture — so Pada-Hastasana names only the finish, hands to feet, and the sit-up that gets you there carries no Sanskrit at all: it is a gymnasium word, and the collated repertoire of Bishnu Ghosh’s own school lists no sit-up either. In Light on Yoga the name belongs to a standing pose — Padahastasana, plates 45–46, palms slid under the soles from a forward bend, the very shape posture 2 ends in — while the grip you actually take here, fingers hooked round the big toes, is what Iyengar’s naming calls padangustha, from angustha, the big toe (or thumb): Padangusthasana standing, Supta Padangusthasana lying down, Ubhaya Padangusthasana sitting up and holding both. The fold the sit-up dives into has an older name of its own, Paschimottanasana: paschima is the west, which on the body’s own compass — facing the sunrise — means the back, and uttana an intense stretch, so the seated forward bend is the intense stretch of the west side, the whole back of you from heels to skull, a pose the fifteenth-century Hatha Yoga Pradipika already describes.',
+    'Pada is the foot, hasta the hand, and asana a seat or posture, so Pada-Hastasana names the hands-to-feet finish rather than the movement that gets you there. A published table of the 26 & 2 sequence calls this item a sit-up and maps its nearest classical shape to Paschimottanasana; a Ghosh-lineage index of five early manuals contains standing Padahastasana and seated Paschimottanasana, but no sit-up entry. In Light on Yoga, Padahastasana is the standing fold at plates 45–46, with the palms beneath the feet. A grip on the big toes instead belongs to the padangustha family: pada, foot, with angustha, big toe or thumb. The seated fold has its own older name: paschima is west or the back of the body, uttana is an intense stretch, and the fifteenth-century Hatha Yoga Pradipika already describes Paschimottanasana.',
   reference: { plates: '153–162, as Paschimottanasana' },
   contrast:
-    'There is no sit-up anywhere in Light on Yoga, and the way the Iyengar method leaves the floor is the opposite of a snap: you come out of Savasana by bending the knees, rolling to one side, waiting there a moment and pressing up with the hands — exactly the roll-up this posture’s own cautions prescribe when the back or neck object — because that method does not spend momentum on a transition, it spends attention. What the sit-up snaps into is Paschimottanasana, plates 153–162 and grade 6 of 60, which the published posture table for this sequence names as the sit-up’s nearest classical relative: Iyengar enters it from Dandasana (plate 77), the tall staff seat with the legs pressing down, folds from the hips with the back concave and the front of the trunk long before the head is allowed to descend, uses the hands at the feet as levers for length rather than depth, and rests in the finished fold for minutes as one of the quietest poses in the book, whereas 26 & 2 takes the same shape as a two-exhale flick — grab, pull, elbows down, forehead toward the knees — and is gone. The abdominal work is where the two lineages part most clearly: Iyengar’s core poses are held isometrics — Urdhva Prasarita Padasana (plates 276–279, grade 1), the legs raised and lowered by stages with the back ribs and pelvis nailed to the floor and never a swing; Paripurna and Ardha Navasana (plates 78–79, grade 2), balanced on the buttocks with the feet higher than the head and the breath left free; Jathara Parivartanasana (plates 272–275) — while 26 & 2 chooses dozens of fast, straight-legged repetitions with heat and momentum on its side. Both choices are deliberate: a held leg-raise teaches the abdomen to steady a still spine, the sit-up teaches it to launch the whole trunk off the floor and re-fire the body after every twenty-second savasana, and the double exhale gives the floor series a pulse no held pose could. And Iyengar does keep the sit-up’s finish as a posture in its own right — Ubhaya Padangusthasana (plate 167, grade 3) and Urdhva Mukha Paschimottanasana (plates 168–170, grade 10) hold both feet with the legs raised and the trunk drawn to them, one balanced on the seat, one lying back — so if you ever wonder where the toe-grab leads once it stops being a transition, that is the answer.',
+    'Light on Yoga has no sit-up entry. The nearest classical counterpart is only the finish: Paschimottanasana, plates 153–162 and grade 6 of 60. Iyengar-method teachers enter that pose from Dandasana, keep the legs grounded, lengthen the front of the trunk and hinge at the hips before lowering the head; 26 & 2 passes through the fold in a quick, double-exhale transition, with the chin tucked, big toes held and elbows reaching down. The methods also choose different abdominal work. Iyengar-method sources teach Urdhva Prasarita Padasana with the back ribs and pelvis grounded while the legs move by stages, and Paripurna Navasana as a balance with the breath left free; the sit-up moves the whole trunk with momentum between floor postures. Neither approach is a correction of the other. If you hold the toe-grip instead of passing through it, the classical ladder continues to Ubhaya Padangusthasana at plate 167 and Urdhva Mukha Paschimottanasana at plates 168–170.',
   refinements: [
-    'Set the back before you swing. Iyengar’s supine leg work keeps the back ribs and the back of the pelvis pressed into the floor so the low back never arches as the legs load; borrow that in the second before the sit-up — as the arms sweep overhead and the chin tucks, lengthen the low back into the mat and press the back ribs down, so the lift begins from a trunk already gathered rather than from an arched spine yanked upright. It is the same protection your low-back caution is after, applied a moment earlier.',
-    'Arrive on the sitting bones. The seat you pass through at the top is Dandasana, and in the Iyengar method it is built on the sitting bones — drawn back and spread — with the legs pressing down through their inner edges and the heels reaching away; his Navasana rule is the same, balance on the buttocks, never rolled back onto the tailbone. Land on that seat on the way through and the dive for the toes starts from the hips, which is where a forward bend is supposed to start.',
-    'Keep the legs the way Iyengar keeps them in every forward bend: kneecaps drawn up, backs of the thighs and calves pressing the floor, heels extending away from the pelvis, tops of the thighs turning a touch inward so the legs do not splay. Your cues already ask for straight legs, heels down and feet flexed; this is what turns those into a lengthening of the whole back body rather than a tug on the knees.',
-    'Fold from the hips and lengthen before you lower. Iyengar’s first phase of Paschimottanasana is the concave back — front of the trunk lifted from pubic bone to breastbone, back ribs moving forward, navel and sternum aimed at the toes — and the head goes down only once the belly and ribs have arrived on the legs. In the sit-up you have one exhale for this: use it to send the breastbone toward the feet first, and let forehead-toward-the-knees be where the length ends up rather than what leads it.',
-    'Pull to lengthen, not to drag. In the Iyengar method the hands at the feet are levers: the pull from the grip runs along the spine to open the trunk, the elbows bend out and down rather than the shoulders hunching up, and the chest stays broad. In the toe-grab let the pull travel from the big toes to the elbows — which are on their way to the floor anyway — while the chin stays exactly where this posture keeps it, on the chest, so the neck rides the length instead of making it.',
+    'Set the back before you swing. Iyengar-method supine leg work keeps the back ribs and the back of the pelvis grounded while the legs load. As the arms reach overhead and the chin tucks, lengthen the low back into the mat so the lift begins from a gathered trunk rather than an exaggerated arch.',
+    'Arrive on the sitting bones. The seat you pass through is Dandasana; Iyengar-method instructions draw the sitting bones back, press the legs down and reach the heels away. Land there before you dive for the toes so the fold can begin at the hips.',
+    'Keep the legs active: draw the kneecaps up, press the backs of the legs toward the floor, reach through the heels and keep the thighs from rolling apart. This carries the posture’s straight-leg, heels-down cue through the whole transition.',
+    'Lengthen before you lower. In the concave stage of Paschimottanasana, the front of the trunk reaches forward and the back stays unrounded. Use the second exhale to send the breastbone toward the feet first; let the forehead follow rather than lead.',
+    'Use the grip for length, not to drag the head down. Let the pull travel from the big toes through elbows that reach down and slightly out, keep the chest broad, and retain this posture’s chin-to-chest position without hunching the shoulders.',
   ],
   stages: [
-    'The Iyengar way off the floor — the same one this posture’s cautions give: bend the knees, roll to your side, pause for a breath, press up to sitting with the hands, then reach for the shins with the knees soft. Every sit-up in class can be this one; nothing in the floor series depends on the snap.',
-    'Sit up with the knees softened, as the low-back cue allows, then straighten the legs once you are seated and hold the shins, the ankles, or a strap looped over the feet — Iyengar’s belt — with the back concave and the chest open. No head down yet; the fold is a hinge at the hips and nothing more.',
-    'Straight legs the whole way up, heels on the floor, chin tucked, hands to the toes — but stop with the back concave, breastbone reaching for the feet, elbows bending outward, and let the second exhale decide how far the forehead travels. Depth is not asked for here; length is.',
-    'The full form: legs straight and heels down throughout, big toes held, elbows toward the floor, forehead toward the knees, the double exhale emptying the lungs — quick and light, gone in two breaths. Held longer outside class the same shape is Paschimottanasana; held with the legs in the air it is Ubhaya Padangusthasana.',
+    'Use the alternative already given in this posture’s Take care list: bend the knees, roll to your side and press up with the hands. Once seated, stay tall or reach gently toward the shins.',
+    'Soften the knees for the sit-up, then hold the shins, ankles or a belt around the feet with the chest open. Keep the head up; for now the forward movement is only a hinge at the hips.',
+    'Keep the legs straight and heels grounded as you rise, then take the toes and stop with the front of the trunk long. Let the second exhale carry the breastbone forward before the forehead descends.',
+    'For the full transition, keep the legs straight and heels down, hold the big toes, reach the elbows toward the floor and the forehead toward the knees, then release promptly. Outside the class, explore the finish as a steadier Paschimottanasana rather than repeating the snap.',
   ],
   ladder: {
     before: [

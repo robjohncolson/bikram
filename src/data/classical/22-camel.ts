@@ -16,7 +16,8 @@ import type { ClassicalNote } from '../types';
 //   nearest Supta Virasana; #23 Rabbit is nearest Balasana)
 // - https://en.wikipedia.org/wiki/Light_on_Yoga (1966; 200-odd asanas, ~600
 //   photographs; each asana graded 1–60)
-// - https://loyindex.org → Eyal Shifroni's published Light on Yoga index sheet
+// - https://loyindex.org → the published "Asana Indexes for Light on Yoga"
+//   Google Sheet linked from Eyal Shifroni's Light on Yoga index post
 //   https://docs.google.com/spreadsheets/d/e/2PACX-1vSAM6Wu_-FRfZKpiZtgM1qMR40VhJMmUhKcS6MtCO7h7O1Y0_jrh9PiCnBjSitdQq8p-TkuMb-WfsyN/pub?output=csv
 //   (Ustrasana #16, p. 87, intensity 3, plates 40–41 — between Parighasana
 //   #15 and Utkatasana #17; Virasana #40 p. 120 grade 1 plates 85–92; Supta
@@ -69,7 +70,7 @@ import type { ClassicalNote } from '../types';
 // - https://en.wikipedia.org/wiki/Virasana (vira = hero, supta = reclined;
 //   Light on Yoga pp. 123–125; a kneeling base for backbends)
 // - https://en.wikipedia.org/wiki/Urdhva_Dhanurasana (urdhva = upward, dhanu =
-//   bow; Ustrasana and Dhanurasana named as preparations)
+//   bow; Salabhasana, Bhujangasana and Dhanurasana named as preparations)
 // - https://courses.bikramyogaworks.com/pages/ustrasana-camel-pose (26 & 2
 //   execution: knees and feet six inches apart, hands on the hips with fingers
 //   down and thumbs out, head back first, then one hand at a time to the heel
@@ -79,27 +80,27 @@ export const camel: ClassicalNote = {
   asana: 'Ustrasana',
   asanaEnglish: 'Camel Pose',
   etymology:
-    'Uṣṭra is the camel — an old Indo-Iranian word (in the earliest texts it could name a buffalo too) that survives in the name Zarathustra — and āsana is a seat or posture; the kneeling arc, seen side-on, is usually read as the animal’s hump. The name is older than the shape: a nineteenth-century Mysore manual, the Sritattvanidhi, gives Ushtrasana to a different, standing pose, and the kneeling backbend you practise is a twentieth-century form recorded by two of Krishnamacharya’s students — Pattabhi Jois in the Ashtanga series and Iyengar in Light on Yoga.',
+    'Uṣṭra means camel and can also denote a buffalo; it descends from Proto-Indo-Iranian *úštras and is cognate with Avestan uštra. Āsana is a seat or posture, so Uṣṭrāsana is Camel Pose. The name has not always meant this shape: the nineteenth-century Sritattvanidhi applies Ushtrasana to a standing pose, while the familiar kneeling backbend appears in twentieth-century accounts by Pattabhi Jois and B. K. S. Iyengar. There is no name clash between the 26 & 2 and classical forms compared here: item 22 in the Bikram sequence maps directly to Ustrasana.',
   reference: { plates: '40–41', difficulty: 3 },
   contrast:
-    'Same name, same shape, opposite place in the curriculum: Light on Yoga files Ustrasana sixteenth among its two hundred-odd poses, in the beginners’ standing work between Parighasana and Utkatasana, and grades it 3 of 60 — an early backbend for learning how to arch with gravity — whereas 26 & 2 saves it for the summit of the floor series and calls it the deepest backbend of the class. The execution runs close — a kneeling base with the toes pointing back, hands to the hips first, thighs kept as vertical as you can manage, the head released back — but the finish differs: Iyengar’s completed form lays the palms flat on the soles of the feet and presses them to lever the chest up, while 26 & 2 drops the head back before the hands go down, takes each heel in a grip one hand at a time, and then drives stomach, thighs and hips forward for the rest of the hold. Iyengar takes it once, for roughly half a minute of ordinary breathing, and in his method the missing inches are made up with props — blocks beside the feet, a bolster across the soles or the calves, a wall — so the arc is built in the upper back before the hands ever reach the feet; 26 & 2 gives you two counted sets in a heated room and no props, so the arc is built by warmth and repetition, and the hands simply stay on the hips until the heels are yours. On the buttocks the lineages answer the same question differently: 26 & 2 has you squeeze the glutes throughout as guardians of the low back, while Iyengar-method teachers vary — some press the buttocks down and forward, others soften them to make room for the sacrum — and both are ways of keeping the hinge out of the lumbar spine. The exits say something too: Iyengar walks on from Ustrasana toward Urdhva Dhanurasana, Kapotasana and Laghu Vajrasana, settling afterwards with a forward bend or a twist; 26 & 2 has no wheel and no pigeon, so Camel is the roof of the sequence and Rabbit, its exact mirror, follows at once.',
+    'The shared name points to the same kneeling backbend, but the teaching settings differ. The published Light on Yoga index places Ustrasana at entry 16, between Parighasana and Utkatasana, and records plates 40–41 with a difficulty of 3; two Iyengar-association syllabi independently confirm plate 41. The book-level claim stops there: the technique below comes from cited modern teaching pages, including Iyengar-method sources, not from an unchecked attribution to Iyengar himself. Those pages set parallel shins, vertical thighs and toes pointing back, begin with the hands at the hips, and finish with the hands on the heels or the palms resting on the soles; they also offer blocks, a wall or a bolster when the feet are out of reach. The 26 & 2 source narrows the base to about six inches, releases the head before the reach, takes the heels one hand at a time and keeps the hips moving forward; the pose page gives you two sets and lets the hands remain at the hips for a smaller arc. Its continuous glute engagement stays intact. Related teaching sources describe the pelvic action in different language, so the refinements here direct the existing lift without treating either lineage as a correction of the other. In this sequence Camel remains the final backbend, and Rabbit follows immediately.',
   refinements: [
-    'Root the shins and the tops of the feet into the floor and lift the backs of the thighs, so that “push the hips forward” is a lift up out of the pelvis rather than a slide of the knees past vertical — in the Iyengar method the thighs stay perpendicular and the forward drive comes from the sacrum moving in and forward, which is the same thing the 26 & 2 cue means by keeping the thighs upright.',
-    'Build the arc in the upper back: draw the inner edges of the shoulder blades toward the spine and down, then press the spine between them forward into the chest — Iyengar’s way of making the sternum rise, and exactly the barrel-not-hinge that the 26 & 2 cue asks for.',
-    'Roll the upper arms outward before the hands go down, so the shoulders open rather than round when the grip lands; the collarbones stay wide and the chest keeps its lift once the heels are in hand.',
-    'Keep the lower front ribs from flaring: lengthen the side ribs up and let the lift come from the chest rather than the belly — Iyengar-method teachers watch for the flared rib because that is where the low-back hinge hides.',
-    'Lengthen the back of the neck before you let the head go, and let it be the last link to fall and the first to return — the neck continuing the line of the upper-back arch, not folding at its base — which is what “the hips lead, not the head” means in practice; and, as both lineages say, if the room spins, come up and sit back.',
+    'Keep the knees, shins and feet in the parallel tracks established by the class setup. Press the shins and the tops of the feet down as the backs of the thighs rise, so the forward action lifts through the pelvis instead of carrying the knees past vertical.',
+    'Arrange the chest before reaching: draw the shoulder blades inward and slightly down, send the breastbone upward, and let the region between the shoulder blades move toward the front body. This gives the class cue’s barrel-shaped arc a broad upper-back foundation.',
+    'Rotate the upper arms outward before either hand leaves the hips. Keep that rotation as the hands descend, so the collarbones remain broad and the shoulders do not roll forward around the grip.',
+    'Let the lower front ribs stay quiet while the side ribs and chest rise. The backbend can then spread along the trunk instead of turning the instruction to lift the chest into a thrust from the belly.',
+    'Lengthen the back of the neck before releasing the head, then let the head follow the upper-back arc rather than lead it. Keep the breath moving, and use the pose page’s own limit: if the room spins, return upright and sit back.',
   ],
   stages: [
-    'Hands on the back of the hips, fingers down, elbows drawing together: press the hips forward and lift the chest, stopping where the thighs are still vertical — the hands-on-hips half form (Ardha Ustrasana) of the Iyengar catalogue, and the exact shape the 26 & 2 cautions give for a sore low back.',
-    'Toes tucked under so the heels rise to meet the hands — an Iyengar-method rung to practise outside the hot room (in class the toes stay pointing straight back, so take the stage before or after this one instead).',
-    'One hand at a time: one hand stays on the hip pressing forward while the other reaches for its heel, then return and switch — the other half form, one hand on a heel with the opposite arm sweeping overhead, trains the same asymmetry.',
-    'Both heels in hand, head back, sternum lifting, hips and thighs pressing forward continuously; in the Iyengar method the final refinement is to lay the palms flat on the soles so the feet become a lever for the chest.',
+    'Kneel upright with the toes pointing straight back and keep both hands at the hips. Press the hips forward only until the thighs remain vertical, lift the chest and keep the gaze ahead; this is already the hands-on-hips half form.',
+    'Keep both hands supporting the hips as the upper back begins to arc. Let the gaze travel upward and release the head only as far as the breath remains continuous; this is the complete smaller version given by the pose page’s Take care guidance.',
+    'With the toes still pointing back, keep one hand at the hip while the other finds its heel. Return that hand and repeat on the second side, keeping the pelvis centred; this rehearses the one-hand-at-a-time entry without asking for the full grip.',
+    'Take both heels in hand, release the head, lift the chest and keep the hips and thighs moving forward while you breathe. This is the full 26 & 2 form; reaching the soles belongs to the related Iyengar-method finish, not to this class stage.',
   ],
   ladder: {
     before: [
       'Virasana (Hero)',
-      'Supta Virasana (Reclining Hero)',
+      'Salabhasana (Locust)',
       'Bhujangasana (Cobra)',
       'Dhanurasana (Bow)',
     ],

@@ -63,3 +63,23 @@
 @media (max-width: 560px) {
   .app-brand-name { display: none; }
 }
+
+@media (max-width: 420px) {
+  .app-nav-inner {
+    gap: 4px;
+    padding-inline: 8px;
+  }
+
+  .app-brand-mark {
+    font-size: 20px;
+  }
+
+  .app-links {
+    gap: 0;
+  }
+
+  .app-links a {
+    padding-inline: 8px;
+    font-size: 13.5px;
+  }
+}

@@ -58,14 +58,13 @@ import type { ClassicalNote } from '../types';
 //   heel beside the buttock on a thicker blanket; lengthen pubis to sternum;
 //   outer hips down, chest lifted; shoulder blades back, collarbones broad;
 //   the crossed foot's four corners pressed down as in Tadasana; the armpit
-//   against the outer knee; easier versions clasp the shin or hold the
-//   raised knee; preparations Marichyasana I and III, Bharadvajasana I)
+//   against the outer knee; an initial version clasps the shin; related
+//   asanas Marichyasana I and III, Bharadvajasana I)
 // - https://chestnuthillyoga.com/home-practice-resources/seated-twists-for-intermediate-students
-//   (Iyengar-method progression Marichyasana I → II → III → Ardha
-//   Matsyendrasana I → … → Bharadvajasana; sit on the foot laid on its outer
-//   edge under the sitting bones; stages hand clasp → elbow hook → bind;
-//   inhale to lengthen, exhale to turn; grip the outer hips in without
-//   hardening the abdomen; blankets, brick, belt as props)
+//   (Iyengar-method sequence including Marichyasana I–III and Ardha
+//   Matsyendrasana I; sit on the foot laid on its outer edge under the
+//   sitting bones; repeat progressive hand-clasp, elbow-hook and bind stages;
+//   blankets, brick and belt as props)
 // - https://yogauonline.com/yoga-poses/half-lord-of-the-fishes-pose/ (from
 //   Dandasana; blankets under the hips; reach up before rotating; twist on
 //   the exhale; back arm rolled outward to open the chest; elbow, forearm or
@@ -102,22 +101,21 @@ export const spineTwisting: ClassicalNote = {
   asana: 'Ardha Matsyendrasana I',
   asanaEnglish: 'Half Lord of the Fishes Pose',
   etymology:
-    'Ardha is “half” — an old Indo-Iranian word that also means a side or a part — and Matsyendra is “lord of the fishes”: matsya, fish (a cousin of the Persian māhī), joined to indra, the name of the Vedic storm-god used at the end of a compound to mean the chief or best of its kind; asana is a seat or posture. The lord in question is Matsyendranath, the tenth-century yogi whom the Nath tradition counts as the reviver of hatha yoga and the teacher of Gorakshanath, and whose legend has him swallowed by a fish and overhearing Shiva teach yoga to Parvati from inside its belly. The “half” marks your pose as the simpler form of a Matsyendrasana the fifteenth-century Hatha Yoga Pradipika already names — Iyengar photographs the whole of it as Paripurna (“complete”) Matsyendrasana and grades it 38 of 60.',
-  reference: { plates: '311–312', difficulty: 8 },
+    'Ardha means “half” or one of two parts. Matsya means “fish,” while indra can name the chief or foremost member of a class; together Matsyendra is understood as “lord of the fishes.” Āsana is a seat or posture. The name honours Matsyendranath, an early tenth-century yogi whom Nath accounts remember as a founding teacher and the guru of Gorakshanath. In one legend a fish swallows him, and he learns yoga by listening while Shiva instructs Parvati. The fifteenth-century Hatha Yoga Pradipika both traces its teaching lineage to Matsyendranath and describes Matsyendrasana; ardha distinguishes the commonly practised, less demanding half form from Paripurna, the complete form.',
+  reference: { plates: '307–316', difficulty: 8 },
   contrast:
-    'This is one of the places where the two lineages share both a name and a shape, and the differences are all in the seat and the arms. Light on Yoga files Ardha Matsyendrasana I among its intermediate seated twists — page 259, grade 8 of 60; the British Iyengar teaching syllabus keeps it at Level 1 beside Bharadvajasana I and Marichyasana III — as the first of three numbered forms that climb to grades 19 and 22 before the complete Paripurna Matsyendrasana at 38, whereas 26 & 2 gives it the last word of class: one counted hold of about twenty seconds each way, in heat, the only rotation the sequence contains. The seat differs first: in Iyengar’s presentation you sit on the folded foot — its outer edge laid under the sitting bones, a folded blanket between foot and seat when balance or the ankle complains — so the pelvis is lifted and the spine is given room to lengthen; 26 & 2 folds the heel beside the opposite hip and keeps both hips on the floor, so the twist is anchored by the down knee, which the posture’s own cue insists must stay down. The arms differ next: 26 & 2 presses the arm against the outside of the raised knee, grips the down knee, and plants the free hand on the floor behind the spine (the fuller studio dialogue reaches that hand round to the thigh) — a lever and a prop that make a strong, even twist available in a short hold — while Light on Yoga’s photographs for the pose run from plate 307 to 316 as a staircase: the elbow hooked across the knee, then the classical presentation at 311–312 with the armpit over the knee, the hand catching the foot and the free arm swung round behind the waist, then the arm straightened onto the foot at 313–314. Neither is the other’s correction: Iyengar’s ladder makes the bind the destination and the pose a rung between Marichyasana III and Pasasana, while 26 & 2 wants no bind, because after twenty-four postures of forward, backward and sideways bending the point is to turn the whole spine once each way, evenly, and let go.',
+    'The Sanskrit mapping is direct: item 25 in the Bikram sequence is Ardha Matsyendrasana, while the corresponding Light on Yoga index adds the numeral I. That public index records page 259, grade 8 of 60 and plates 307–316. The current British Iyengar syllabus selects plates 311–312 at Level 1; an older Canadian syllabus separately labels 307–308 as a supported preparation seated on the foot, 308 as the bent-elbow stage, 311–312 as the classical presentation and 313–314 as the straight-arm foot grip. The same public index lists Ardha Matsyendrasana II at grade 19, III at grade 22 and Paripurna Matsyendrasana at grade 38. Those page, plate and grade facts are the limit of the book claim here: the detailed technique comes from the cited modern teaching pages. In those Iyengar-method instructions you sit on the folded foot, sometimes with blanket support, and may progress from clasping the shin to bringing the armpit across the raised knee and reaching toward a foot-catching or bound form. In 26 & 2 you stay on both sitting bones, place the folded heel beside the opposite hip, step the other foot over the down knee, press the working arm outside the raised knee and use that hand to hold the down knee. The rear hand stays on the floor close behind the spine. You take that unbound shape for about twenty seconds, unwind, and rebuild it to the left. These are two teaching structures for the same named crossed-leg twist, without making either one a correction of the other.',
   refinements: [
-    'Plant the crossed foot as if it were standing in Tadasana — the whole sole pressing down, inner heel and big-toe mound especially — so the raised knee becomes a fixed post for the arm to work against instead of something that drifts outward; in the Iyengar method that foot is what keeps the twist honest.',
-    'Lengthen before you turn: on each inhale lift the trunk from the pubic bone up through the sternum and let the outer hips settle down, then twist only on the exhale — Iyengar teachers hang the whole rotation on the breath, so the spine never turns any shorter than it started, which is exactly the ratchet the 26 & 2 breath cue describes.',
-    'Turn the ribcage, not the shoulders: draw the shoulder blades back and down and broaden the collarbones first, then let the chest revolve from between the blades — the shoulders stay level, as the posture’s cue asks, and the twist lands in the upper back, where the spine has the most rotation to give.',
-    'Let the back hand prop, not carry: press the floor with the fingertips to grow taller, but keep the shoulders stacked over the hips — Iyengar-method teachers warn that leaning back into that hand tips the trunk and steals the twist.',
-    'When your turn allows, bring the contact against the knee down from the elbow toward the armpit — in the Iyengar method the armpit over the knee is what converts arm leverage into a whole-trunk turn — but keep the posture’s rule: the arm holds what the spine earns; it never cranks.',
+    'Spread the crossed foot firmly into the floor, giving particular attention to its inner edge. A steady foot keeps the raised knee available to meet the arm without drifting away from it.',
+    'Regain height before adding rotation: breathe in and lift from the pelvis through the breastbone, then use the outgoing breath to turn. Keep both sitting bones weighted and do not trade height for range.',
+    'Keep the shoulders level as the rib cage turns. Draw the shoulder blades gently into the back and widen the collarbones so the chest remains lifted instead of collapsing toward the raised knee.',
+    'Use the rear hand as a light support. Touch the floor close behind your spine to help you rise, while keeping the trunk over the sitting bones rather than leaning your weight back into the hand.',
   ],
   stages: [
-    'Bottom leg straight, the other foot planted outside it, hand or forearm on the raised knee — the leg arrangement of Marichyasana III without its bind, and the same version the 26 & 2 cautions give for a knee or hip that objects to folding under.',
-    'Both legs folded as in class, both hands holding the raised knee instead of the arm hooked — the hand-clasp stage Iyengar teachers use before the elbow — turning on the exhale with the down knee anchored and both sitting bones weighted.',
-    'The complete 26 & 2 form: arm pressed against the outer knee, hand gripping the down knee, free hand on the floor behind the spine, chin over the shoulder last.',
-    'Beyond class, in Iyengar’s direction: sit up onto the folded foot with a blanket between foot and seat, take the armpit over the knee, reach the hand toward the foot and the free arm round behind the waist — the classical presentation of plates 311–312.',
+    'Keep the bottom leg extended, plant the other foot beyond it, and place a hand or forearm against the raised knee. Use the other hand on the floor and turn only while you can remain upright.',
+    'Arrange both legs as in class, circle both hands around the front of the raised shin, and sit tall. Turn gently on the exhale while the down knee and both sitting bones stay grounded.',
+    'Take the complete 26 & 2 grip: working arm outside the raised knee, that hand holding the down knee, rear hand on the floor close to the spine, and chin turning last. Unwind, reverse the legs and arms, and take the left side.',
+    'Outside class, explore the Iyengar-method direction: sit on the folded foot with blanket support if useful, bring the armpit across the raised knee, reach that hand toward the foot and take the other arm behind the waist.',
   ],
   ladder: {
     before: [

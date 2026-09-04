@@ -92,7 +92,15 @@ function PracticeRow({ pose, next }: { pose: Pose; next?: Pose }) {
  * Iyengar documents it — our own words, his plate numbers.
  */
 function ClassicalSection({ note, pose }: { note: ClassicalNote; pose: Pose }) {
-  const sameName = note.asana !== null && note.asana.toLowerCase() === pose.sanskritName.toLowerCase();
+  const baseName = (name: string) =>
+    name
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/\s+[ivx]+$/i, '')
+      .replace(/[^a-z]/gi, '')
+      .toLowerCase();
+  const sameName = note.asana !== null && baseName(note.asana) === baseName(pose.sanskritName);
+  const plateCount = note.reference?.plates.match(/\d+[a-z]?/gi)?.length ?? 0;
   return (
     <section className="card pd-card pd-classical" aria-labelledby="pd-classical-h">
       <div className="pd-classical-head">
@@ -120,7 +128,7 @@ function ClassicalSection({ note, pose }: { note: ClassicalNote; pose: Pose }) {
           {note.reference && (
             <p className="pd-classical-ref">
               <span className="pill">
-                Light on Yoga · {/[–,-]/.test(note.reference.plates) ? 'plates' : 'plate'} {note.reference.plates}
+                Light on Yoga · {plateCount === 1 ? 'plate' : 'plates'} {note.reference.plates}
               </span>
               {note.reference.difficulty !== undefined && (
                 <span className="pill" title="Iyengar grades every asana from 1 (easiest) to 60">
