@@ -1,0 +1,79 @@
+/* <PoseMotion/> — sprite-sheet figure drawn through a CSS mask */
+
+.pose-motion {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+}
+
+.pose-motion-cell {
+  background: currentColor;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+  /* sheets are grayscale (luminance = stroke coverage); an RGBA fallback
+     sheet reads the same way since luminance masks multiply in alpha */
+  -webkit-mask-source-type: luminance;
+  mask-mode: luminance;
+  flex: none;
+}
+
+.pose-motion-controls {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: 100%;
+}
+
+.pose-motion-play {
+  flex: none;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  border: 1px solid var(--border-strong);
+  background: var(--bg-raised);
+  color: var(--text-soft);
+  font-size: 10px;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.pose-motion-play:hover {
+  color: var(--text);
+  border-color: var(--ember);
+}
+
+.pose-motion-stages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: center;
+}
+
+.pose-motion-stage {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  color: var(--text-soft);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
+}
+
+.pose-motion-stage:hover {
+  border-color: var(--border-strong);
+  color: var(--text);
+}
+
+.pose-motion-stage.is-current {
+  background: var(--ember-soft);
+  border-color: color-mix(in srgb, var(--ember) 45%, var(--border));
+  color: var(--ember-text);
+}
+
+.pose-motion-play:focus-visible,
+.pose-motion-stage:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 2px;
+}

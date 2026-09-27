@@ -1,0 +1,362 @@
+# 26 & 2 — reader findings index (2026-09-03)
+
+Ten parallel readers, one per subsystem, at `fba9848`. Issue ids `<reader>-I<n>` (severity in brackets,
+file:line), idea ids `<reader>-D<n>` (effort), open questions `<reader>-Q<n>`. These ids are what
+candidates.md cites as sources. The readers' full evidence paragraphs are in the session journals named in
+CONTINUATION_PROMPT.md ★★.
+
+## trainer-views — Trainer UI — src/views/Trainer.tsx, Trainer.css, KnowledgeMap.tsx, KnowledgeMap.css (consumers of src/trainer/index.ts) (17 issues, 13 ideas)
+- trainer-views-I1 [inconsistency] Review-mode hand-off misses show the name mnemonic, not the sequence note (src/views/Trainer.tsx:904)
+- trainer-views-I2 [gap] No scroll reset between cards: on a phone the next question renders above the fold (src/views/Trainer.tsx:648)
+- trainer-views-I3 [inconsistency] Store with only rehearsal-recall evidence shows a headline but no Reset button (src/views/Trainer.tsx:291)
+- trainer-views-I4 [inconsistency] Drill header flips to 'Smart review' if the search param changes without a remount (src/views/Trainer.tsx:220)
+- trainer-views-I5 [inconsistency] 'Unscheduled drilling' copy is false for unseen cards (src/views/Trainer.tsx:338)
+- trainer-views-I6 [gap] Chain mode never revisits a missed hand-off until the lap ends (src/views/Trainer.tsx:1053)
+- trainer-views-I7 [smell] UI hardcodes engine constants in copy and thresholds (src/views/KnowledgeMap.tsx:126)
+- trainer-views-I8 [smell] Two 'days ago' implementations with different semantics (src/views/KnowledgeMap.tsx:167)
+- trainer-views-I9 [inconsistency] 'Erase all progress?' leaves the practice streak intact (src/views/Trainer.tsx:375)
+- trainer-views-I10 [smell] The view writes store.bestStreak directly (src/views/Trainer.tsx:229)
+- trainer-views-I11 [smell] Landing 'due now' badge never refreshes while the screen sits open (src/views/Trainer.tsx:284)
+- trainer-views-I12 [gap] Knowledge map on a phone opens with the root node off-screen (src/views/KnowledgeMap.css:173)
+- trainer-views-I13 [smell] Arc pills and child rows select without moving the roving focus (src/views/KnowledgeMap.tsx:309)
+- trainer-views-I14 [smell] Enter does not continue when the answered option button has focus (src/views/Trainer.tsx:845)
+- trainer-views-I15 [smell] Near-duplicate flip card and quiz sections; icon components duplicated across views (src/views/Trainer.tsx:942)
+- trainer-views-I16 [gap] Question-building logic lives in the view and has zero tests (src/views/Trainer.tsx:110)
+- trainer-views-I17 [smell] Free-practice selection policy weights are UI-side engine math (src/views/Trainer.tsx:1054)
+- trainer-views-D1 [S] Scroll each new card to the top (phone fix)
+- trainer-views-D2 [S] Use the sequence note for hand-off misses in Review mode
+- trainer-views-D3 [M] Relearn re-entry for chain mode
+- trainer-views-D4 [M] Move question building into src/trainer/questions.ts with an injectable rng and tests
+- trainer-views-D5 [M] Split Trainer.tsx and share the flip card, quiz block and icons
+- trainer-views-D6 [S] Derive UI constants from the engine
+- trainer-views-D7 [S] Hide keyboard hints and keycaps on touch devices
+- trainer-views-D8 [M] Knowledge map: scroll the selected node into view and sync focus
+- trainer-views-D9 [S] Name the misses on the session-complete screen
+- trainer-views-D10 [S] Make Reset honest and complete
+- trainer-views-D11 [S] Refresh the due badge while the landing is open
+- trainer-views-D12 [S] Return to where the drill came from
+- trainer-views-D13 [S] Let Enter continue from a focused option
+- trainer-views-Q1: Is it intended that free practice schedules never-seen cards (schedulesOn(undefined,'good') → 30 min)? If yes, the 'Unscheduled drilling' copy should change; if no, recordAnswer needs a `free` flag so the SRS ladder is s
+- trainer-views-Q2: Should 'Reset progress' also clear the practice journal (streak/classes), or is the journal meant to survive as a record of what was physically practiced? The current wording promises 'all progress'.
+- trainer-views-Q3: Was excluding recall-only evidence from hasAnyProgress deliberate (a store touched only by the pacer debrief cannot be erased from the UI)?
+- trainer-views-Q4: The ~15 oxlint React warnings in the baseline could not be reproduced here: `npx oxlint` v1.77.0 on this Windows checkout prints nothing even with --react-plugin and the repo's .oxlintrc.json (only rules-of-hooks and onl
+- trainer-views-Q5: Is the CSS min-width of 920px on the map SVG a deliberate 'always the full subway map, scroll sideways' choice, or would a stacked/vertical layout under 560px be acceptable for phone use?
+- trainer-views-Q6: Roadmap #6 lists `prev:` cards as parked-but-planned; if they land, the chain mode would need a backward walk — worth deciding whether chain direction becomes a setting before extracting the question builders.
+
+## trainer-engine — Learning engine (src/trainer): knowledge DAG, BKT with forgetting decay, SM-2-lite scheduling, session queues, versioned store, practice journal (13 issues, 12 ideas)
+- trainer-engine-I1 [bug] practiceStreak skips or double-counts a day across DST transitions (src/trainer/journal.ts:148)
+- trainer-engine-I2 [inconsistency] A practiced leaf decays into the 'unseen' band and PoseDetail then says 'not yet practiced' (src/trainer/bkt.ts:143)
+- trainer-engine-I3 [inconsistency] A first WRONG answer raises P(known) above the prior, so 'weakest' rankings prefer never-practiced leaves over just-failed ones (src/trainer/bkt.ts:60)
+- trainer-engine-I4 [risk] loadStore discards any blob it cannot sanitize and the next save overwrites it — a schema bump plus a stale cached PWA shell wipes data (src/trainer/store.ts:94)
+- trainer-engine-I5 [gap] relearnSlot and interleave test adjacency on card.poseId only, so a missed 'next' card can land right after the card that shows its answer (src/trainer/engine.ts:89)
+- trainer-engine-I6 [smell] AGAIN_MINUTES doubles as the 'in relearn step' flag with no enforced invariant (src/trainer/engine.ts:218)
+- trainer-engine-I7 [inconsistency] Legacy spaced credit is capped at 10 on one legacy path and left uncapped on the other (src/trainer/store.ts:42)
+- trainer-engine-I8 [smell] Ease only ever falls; there is no test for the EASE_MIN floor or the MAX_MINUTES cap (src/trainer/srs.ts:25)
+- trainer-engine-I9 [risk] Order-keyed KC and card ids (tr:<order>, pos:<order>) silently re-attach evidence after the studio-variant reorder CLAUDE.md invites (src/trainer/graph.ts:39)
+- trainer-engine-I10 [gap] applyEvidence moves `last` backwards when the device clock has gone back, over-decaying later (src/trainer/bkt.ts:135)
+- trainer-engine-I11 [gap] hasAnyProgress ignores debrief-only evidence, hiding the reset control (src/views/Trainer.tsx:291)
+- trainer-engine-I12 [gap] Untested engine branches: weak filler, QUEUE_CAP truncation, due ordering, dueCount/unseenCount, resetStore, MAX_CLASSES, storage exceptions (src/trainer/engine.ts:125)
+- trainer-engine-I13 [smell] Landing takes three separate Date.now() snapshots per render (src/views/Trainer.tsx:287)
+- trainer-engine-D1 [S] Walk calendar days in practiceStreak and pin it with a DST test
+- trainer-engine-D2 [S] Give 'faded' its own band instead of reusing 'unseen'
+- trainer-engine-D3 [M] Make last class's missed hand-offs win the 'listen for' slots
+- trainer-engine-D4 [S] Refuse to overwrite a newer-version blob (store and journal)
+- trainer-engine-D5 [S] src/data/series.ts as the single arc/series table (roadmap leftover — recommended)
+- trainer-engine-D6 [M] prev: cards (roadmap leftover — worthwhile, second tier)
+- trainer-engine-D7 [S] Adjacency checks that know a next: card is also about its successor
+- trainer-engine-D8 [S] 'Pool padded to ≥4' leftover — assess as a no-op, drop it
+- trainer-engine-D9 [S] Cover the untested engine branches
+- trainer-engine-D10 [M] Sequence fingerprint in the store so a reorder cannot mis-attach evidence
+- trainer-engine-D11 [S] Tell the learner when progress is not being saved
+- trainer-engine-D12 [S] Make relearn state explicit and let ease recover slowly
+- trainer-engine-Q1: Is a studio-variant reorder actually planned? It decides whether the sequence-fingerprint work (and re-keying tr:/pos: by pose id) is worth doing now or whether a data test asserting the current order is enough.
+- trainer-engine-Q2: What did the roadmap's 'pool padded to ≥4 so pGuess stays ≤0.25' refer to? I read it as the MC option count, which is already always four; if it meant something else (e.g. the aggregate drill's `.slice(0, 4)` of weakest 
+- trainer-engine-Q3: Should a hand-off you failed at the debrief outrank never-practiced ones in the pacer's 'listen for' pair? The current BKT parameters say no (miss → 0.21 > prior 0.10); the copy on the idle card implies yes.
+- trainer-engine-Q4: `classesInLast` is exported and tested but no view consumes it — intended for a coming stat, or dead code?
+- trainer-engine-Q5: The working tree shows `package-lock.json` modified (presumably from the baseline `npm install`); it was clean in the session's git snapshot — should that be reverted before any commit from this pass?
+- trainer-engine-Q6: Is there appetite for a per-viewer clock abstraction in the views (one `now` per render/event), or is the engine's injected-clock discipline considered enough given the oxlint warnings are tolerated?
+
+## journeys — End-to-end user journeys across the views (App shell, Timeline, PoseDetail, Explorer, Trainer, KnowledgeMap, Pacer + PacerClassMode, Today, main.tsx) (19 issues, 12 ideas)
+- journeys-I1 [gap] Journey 1 — first visit on a phone: a good reference list, but the trainer and the spoken class are invisible (src/views/Timeline.tsx:256)
+- journeys-I2 [gap] Journey 2 — "class in an hour, refresh the order": the Timeline is the tool, but there is no compact/recite path and the chain drill cannot start from #1 (src/views/Trainer.tsx:1080)
+- journeys-I3 [gap] Journey 3 — voice practice at home: works end to end, but the class card is the third card down, its options sit below the Begin button, and two Pause controls compete (src/views/Pacer.tsx:1055)
+- journeys-I4 [gap] Journey 4 — "I missed a hand-off in rehearsal": the debrief saves evidence and then dead-ends; reaching the drill takes six taps and a hunt on a horizontally-scrolled SVG (src/views/Pacer.tsx:1218)
+- journeys-I5 [gap] Journey 5 — "why does Camel come after Half Tortoise?": the answer exists and is good, but it is the eleventh block on the posture page and appears nowhere the hand-off itself is shown (src/views/PoseDetail.tsx:437)
+- journeys-I6 [inconsistency] Journey 6 — back after three weeks: decay does the right thing but the trainer landing never says why the dots went out, and a practiced posture reads "not yet practiced" (src/views/PoseDetail.tsx:48)
+- journeys-I7 [gap] Journey 7 — finding /today: one link, at the bottom of 26 rows, and still no way in after the lens is turned on (src/views/Timeline.tsx:262)
+- journeys-I8 [gap] "End class" throws away a partial class: no journal record, no practice day, no debrief (src/views/Pacer.tsx:549)
+- journeys-I9 [risk] Debrief defaults to "all recalled": one tired tap after 90 minutes writes 25 strong correct observations (src/views/Pacer.tsx:1160)
+- journeys-I10 [risk] Tapping any nav link (or Back) during a class silently kills it — no confirmation, no record (src/views/Pacer.tsx:404)
+- journeys-I11 [inconsistency] Nav "Train" mid-drill relabels the focused drill as "Smart review" instead of leaving it; mid free-practice it does nothing (src/views/Trainer.tsx:220)
+- journeys-I12 [inconsistency] Home hero contradicts its own stats pill: "Twenty‑six postures" vs "24 postures + 2 breathing" (src/views/Timeline.tsx:199)
+- journeys-I13 [inconsistency] "hand-off" and "transition" name the same thing on the same screens (src/views/KnowledgeMap.tsx:150)
+- journeys-I14 [inconsistency] End-of-class copy contradicts itself and omits the final savasana that actually follows posture 26 (src/views/Pacer.tsx:718)
+- journeys-I15 [smell] "Posture not found" hard-codes posture names that already diverge from the data and will go stale with the studio variants README invites (src/views/PoseDetail.tsx:211)
+- journeys-I16 [smell] Rehearsal delays posture 1's announce four counts even though posture 1 is shown (src/views/Pacer.tsx:224)
+- journeys-I17 [smell] "Erase all progress?" leaves the journal (streak, last class) intact (src/views/Trainer.tsx:242)
+- journeys-I18 [risk] Sticky nav likely overflows on ≤390px phones (unverified — needs a screenshot) (src/App.css:63)
+- journeys-I19 [inconsistency] README overclaims "every posture page" has Go deeper while 11 of 26 ship without it (README.md:44)
+- journeys-D1 [S] Close the debrief loop: missed hand-offs become drill links, and the pacer's "Listen for" becomes one too
+- journeys-D2 [M] Record partial classes on "End class" and debrief the hand-offs actually rehearsed
+- journeys-D3 [S] Say what decay did: a "welcome back" line and an honest band word for faded knowledge
+- journeys-D4 [M] Protect a running class from the nav: hide or confirm, and add a beforeunload guard
+- journeys-D5 [S] Put the class first on /pace: reorder cards on phones, scroll to the class card on ?from=, move voice/rehearsal options above Begin
+- journeys-D6 [S] One pause during a class: route Space and the stage button to the class, and rename the metronome's own button
+- journeys-D7 [S] Home page doors: three cards under the hero and an install/offline line
+- journeys-D8 [S] A compact "recite" toggle on the Timeline and a "walk from #1" entry to the chain drill
+- journeys-D9 [S] Surface sequenceNote where the hand-off is: map transition card, NavCard "Next →", debrief
+- journeys-D10 [S] Make Today findable once it is on, and drop the Moon Chorus sentence
+- journeys-D11 [S] Make the debrief's claim explicit before it writes 25 correct observations
+- journeys-D12 [S] One vocabulary across screens: "hand-off" everywhere users read, "transition" only in code
+- journeys-Q1: Stall behaviour: after a screen lock the class catches up to wall-clock (late beats advance the clock silently, Pacer.tsx:337-347). If the phone locked because the practitioner took a call, they return several postures a
+- journeys-Q2: Should the rehearsal delay apply to posture 1 at all (Pacer.tsx:224 + cues.ts:174-176)? The first posture is shown, so its four silent counts are dead air by construction; passing `announceDelayBeats: 0` for `idx === sta
+- journeys-Q3: Does the sticky nav fit on a 375–390px phone? My arithmetic says it needs ~400px; nobody has looked. One screenshot settles it.
+- journeys-Q4: Is 'Blowing in Firm Pose' (with 'Pose') the intended display name? The not-found copy and the class-mode 'Kapalbhati closes the class' line both avoid it, and it is the only breathing item whose English name ends in 'Pos
+- journeys-Q5: Should 'Reset progress' also clear the journal, or should the prompt say 'Erase memory estimates?' — right now it says 'Erase all progress?' and leaves the streak standing.
+- journeys-Q6: The trainer landing never shows 'last practiced N days ago' while the pacer idle card does — is that a deliberate split (journal = classes only) or an oversight? The journal's `days` array already answers it for trainer 
+- journeys-Q7: Journey 4 relies on unlabeled diamonds on a 920px-min-width SVG; on a phone the map is a horizontal scroll with no per-diamond text. Is the map meant to be a desktop surface, with phones using the posture-page doors inst
+
+## sky — Moon-days lens (src/sky + /today) (13 issues, 10 ideas)
+- sky-I1 [inconsistency] 'Once per lunar month' is stated in three user-facing places but the walk is 26 days, not a lunation (src/views/Today.tsx:88)
+- sky-I2 [inconsistency] 'Tonight's moon' is the moon at the instant of viewing; the phase card changes mid-day on ~1 day in 5 (src/views/Today.tsx:67)
+- sky-I3 [smell] Tautological assertion in the lens test (src/sky/lens.test.ts:48)
+- sky-I4 [smell] Developer-facing sentence about a sibling app is rendered on the public page (src/views/Today.tsx:75)
+- sky-I5 [risk] The New Moon note makes a moon-timed prediction on a page that says it makes none (src/sky/notes.ts:28)
+- sky-I6 [gap] The effect-claim guard is narrow enough to pass the usual yoga-marketing sentences (src/sky/lens.test.ts:25)
+- sky-I7 [gap] Nothing pins note order to bucket/weekday index (src/sky/lens.test.ts:9)
+- sky-I8 [smell] 'day 0 of the lunar month' for the first half-day after every new moon (src/views/Today.tsx:70)
+- sky-I9 [inconsistency] Rabbit instruction is in mild tension with the pose's own cue (src/sky/notes.ts:82)
+- sky-I10 [inconsistency] 'Balsamic moon in the old vocabulary' is mid-20th-century vocabulary (src/sky/notes.ts:89)
+- sky-I11 [gap] Sole entry point is a footer link past the 'class complete' marker; an enabled lens is surfaced nowhere else (src/views/Timeline.tsx:184)
+- sky-I12 [smell] Docstring attributes both formulas to Meeus; the Sun is the USNO/Almanac approximation (src/sky/ephemeris.ts:3)
+- sky-I13 [smell] Hard-coded color fallback in Today.css (src/views/Today.css:160)
+- sky-D1 [S] Make the headline arithmetic true: say '26 days', or anchor the walk to the new moon
+- sky-D2 [S] Evaluate the phase at a fixed local evening hour so 'Tonight's moon' is stable all day
+- sky-D3 [S] Pin note order to index and widen the honesty fence
+- sky-D4 [M] Give an enabled lens one small surface on the Pacer idle card
+- sky-D5 [S] Move the discovery link above the fold and let it show its state
+- sky-D6 [S] Drop the zodiac signs (or keep only the Sun's) — they do no work and overstate the precision
+- sky-D7 [S] Count lunar days from 1 and phrase the age as a practitioner reads it
+- sky-D8 [S] Correct the provenance docstring and state the measured bound
+- sky-D9 [S] Fix the two wording wobbles in the notes
+- sky-D10 [S] Note the hemisphere on the disc, or leave it and say why
+- sky-Q1: Does the user consider a display-only line on the Pacer idle card (when the lens is on) inside or outside the 'changes nothing about the class' boundary? The code boundary is clear (no imports into pacer/trainer logic); 
+- sky-Q2: Are the zodiac signs wanted at all? No note uses them, the parked astrology engine was rejected, and the Moon's sign is unreliable near cusps with this formula — removing them makes the layer smaller and more honest, but
+- sky-Q3: 'Once per lunar month' vs 26 days: fix the copy, or anchor the walk to the new moon (Pranayama every new moon, rest days in the waning crescent)? Both are honest; the anchor is more poetic and slightly more code.
+- sky-Q4: Should the phase be evaluated at a fixed local evening hour (stable card, literal 'Tonight') or stay instantaneous (the disc is live, the note may flip mid-day)? I recommend the fixed hour but it is a judgement about wha
+- sky-Q5: Is 'lock the knee' language (notes.ts:39, mirroring the pose data) close enough to the Bikram dialogue's signature phrase to worry about? It is three generic words and the pose files already use it; I judged it fine, but
+
+## pacer-views — Pacer UI — src/views/Pacer.tsx, Pacer.css, PacerClassMode.tsx, PacerClassMode.css (consuming src/pacer/index.ts and src/trainer/index.ts) (15 issues, 11 ideas)
+- pacer-views-I1 [bug] Any settings or cue change mid-Kapalbhati/Pranayama silently cancels the segment's bar override (src/views/Pacer.tsx:417)
+- pacer-views-I2 [gap] Rehearsal withholds the name but still shows (and screen-reads) the live segment label, which often names the posture (src/views/Pacer.tsx:813)
+- pacer-views-I3 [gap] 'Preview voice' speaks the hidden posture's name during a rehearsal (src/views/Pacer.tsx:562)
+- pacer-views-I4 [gap] 'End class' discards the practice entirely: no journal record, no practice day, and the metronome keeps ticking (src/views/Pacer.tsx:549)
+- pacer-views-I5 [risk] Debrief treats every posture after `from` as a rehearsed hand-off, including ones skipped through with Next (src/views/Pacer.tsx:1159)
+- pacer-views-I6 [inconsistency] Two different 'Pause' controls; Space in class mode triggers the wrong one with no feedback (src/views/Pacer.tsx:483)
+- pacer-views-I7 [smell] Idle card calls never-drilled hand-offs 'your shakiest' (src/views/Pacer.tsx:630)
+- pacer-views-I8 [smell] `?from=` is read once in a useState initializer, so history moves between two /pace?from= URLs do not update the select (src/views/Pacer.tsx:167)
+- pacer-views-I9 [smell] The purity lint warnings are benign at runtime; two are worth fixing because the fix simplifies the code (src/views/Pacer.tsx:789)
+- pacer-views-I10 [risk] Metronome lifetime hangs on an unenforced 'all deps are []-stable' invariant (src/views/Pacer.tsx:390)
+- pacer-views-I11 [smell] Tap targets in class mode are ~40px and Pause shares a wrapping row with four equal-weight pills (src/views/PacerClassMode.css:131)
+- pacer-views-I12 [inconsistency] Last-posture and final-savasana copy differ between the card and class mode (src/views/PacerClassMode.tsx:126)
+- pacer-views-I13 [smell] Dead '~studio' branch and a voice select that can disagree with what actually speaks (src/views/Pacer.tsx:234)
+- pacer-views-I14 [smell] Live regions talk over the studio voice; the modal has no focus trap (src/views/Pacer.tsx:923)
+- pacer-views-I15 [inconsistency] The last-posture hand-off chimes even during a stall catch-up (src/views/Pacer.tsx:364)
+- pacer-views-D1 [L] Extract the class-run state machine into a pure, tested `src/pacer/classrun.ts`
+- pacer-views-D2 [M] Split Pacer.tsx into its four cards plus the debrief
+- pacer-views-D3 [S] Make Pause the whole countdown in class mode; demote Back/Next/Leave
+- pacer-views-D4 [S] Journal partial classes and stop the metronome on End class
+- pacer-views-D5 [S] Track which hand-offs were actually rehearsed and list only those in the debrief
+- pacer-views-D6 [S] Show the next posture large enough to read from the mat, and offer a bright variant of class mode
+- pacer-views-D7 [S] Surface wake-lock and audio-unlock state on the idle card and in class mode
+- pacer-views-D8 [S] Derive `seg` and `immersed` from state; drop the render-time ref read
+- pacer-views-D9 [S] Pin the metronome lifecycle with a ref-held beat handler
+- pacer-views-D10 [S] Add an 'orientation' line when the screen returns after a stall in class mode
+- pacer-views-D11 [S] Test the settings/cue persistence round-trip and the shared-JSON shape
+- pacer-views-Q1: oxlint printed nothing for me under Git Bash, PowerShell, and cmd with the repo's .oxlintrc.json (only `rules-of-hooks` and `only-export-components` enabled) and exit code 0, even with `-D react-hooks/refs -D react-hooks
+- pacer-views-Q2: iOS silent switch: Web Audio (the ticks) is muted by the ring/silent switch unless an HTMLMediaElement is playing; the shared <audio> priming in `unlockClips` may or may not flip the session to playback. Only the parked 
+- pacer-views-Q3: Is it intentional that 'Pause class' keeps the ticks (and the wake lock) going while 'Pause' on the stage silences them? If yes, the two need different words; if no, class mode should expose the silent pause.
+- pacer-views-Q4: Should a class ended early with 'End class' count as practice? The journal model (`toOrder`) suggests yes; the current code says no. Decide before implementing the journaling idea.
+- pacer-views-Q5: The debrief's default-recalled design was deliberate ('tap any hand-off you did NOT recall'); the skip-through path makes it exploitable by accident. Is a neutral three-state default acceptable to the user, or should ski
+- pacer-views-Q6: Bright vs dim class mode: the CSS assumes a dim room, but Bikram studios are usually brightly lit. Does the user practice at home (dim) or in a studio (bright)? That decides whether a bright variant is worth an afternoon
+
+## data-layer — Content data layer (src/data: types, access layer, 26 pose files, chakras, muscles, figures, segments) (14 issues, 12 ideas)
+- data-layer-I1 [inconsistency] Spine-strengthening interludes tell a prone practitioner to sit up (src/data/segments/poses-14-19.ts:31)
+- data-layer-I2 [inconsistency] Locust's second set is one silent 35-second segment, and has no rest tail (src/data/segments/poses-14-19.ts:43)
+- data-layer-I3 [inconsistency] Kapalbhati's spoken 'faster' second set contradicts the pacer contract (src/data/segments/poses-20-26.ts:65)
+- data-layer-I4 [inconsistency] Eagle says 'all fourteen' joints and then lists twelve (src/data/poses/04-eagle.ts:33)
+- data-layer-I5 [inconsistency] Wind-Removing's 'order digestion actually moves' is the wrong order (src/data/poses/14-wind-removing.ts:14)
+- data-layer-I6 [inconsistency] A handful of benefit lines are unhedged medical claims, and nothing tests for them (src/data/poses/14-wind-removing.ts:34)
+- data-layer-I7 [gap] The 'class' is 64 minutes, and the test that claims to guard 90 accepts 60 (src/data/segments/segments.test.ts:42)
+- data-layer-I8 [gap] `triceps` is a muscle group no posture references (src/data/muscles.ts:43)
+- data-layer-I9 [risk] getNeighbors / classOffsetSeconds are keyed by object identity (src/data/index.ts:19)
+- data-layer-I10 [gap] The `order === index + 1` invariant is documented as manual and tested nowhere (src/data/poses/index.ts:3)
+- data-layer-I11 [inconsistency] Sanskrit hyphenation and pronunciation schemes differ file to file (src/data/poses/02-half-moon.ts:8)
+- data-layer-I12 [risk] Cue wording leans on a few recognisable dialogue images (src/data/poses/05-standing-head-to-knee.ts:14)
+- data-layer-I13 [smell] Savasana lists spinal erectors as a primary stretch (src/data/poses/13-savasana.ts:55)
+- data-layer-I14 [smell] Hand-written `timing` pills disagree with the segments on the same page (src/data/poses/03-awkward.ts:11)
+- data-layer-D1 [S] A data-invariants test file (poses.test.ts)
+- data-layer-D2 [S] Port the sky lens's no-effect-claims test to pose content, then fix the six lines
+- data-layer-D3 [M] Model the spine series' prone rests honestly
+- data-layer-D4 [M] Bring the paced class to real 90-minute proportions
+- data-layer-D5 [S] Kapalbhati: stop promising a tempo the pacer will not give
+- data-layer-D6 [S] Key the access layer by id and add getPoseByOrder
+- data-layer-D7 [S] One Sanskrit style: hyphenation and a single '-asana' rendering, tested
+- data-layer-D8 [M] Derive the timing pill from segments and show the class structure on PoseDetail
+- data-layer-D9 [S] Fix the two factual slips a teacher would catch
+- data-layer-D10 [S] Give triceps its postures (or drop the group)
+- data-layer-D11 [S] Own the arcs in the data layer (the CONTINUATION #3 leftover, not parked)
+- data-layer-D12 [S] Let Savasana have no muscle work
+- data-layer-Q1: In your studio, what happens between the sets of Cobra/Locust/Full Locust/Bow — do you rest face-down with the head turned (no sit-up until after Bow), or turn over to savasana and sit up each time? The segments assume t
+- data-layer-Q2: Is Wind-Removing really two sets (14-wind-removing.ts `sets: 2`, 205 s with a savasana between)? Many class scripts run it once — right, left, both — then savasana and the first sit-up.
+- data-layer-Q3: Is the ~64-minute posture total deliberate (a shorter home-practice class the pacer paces at 60 BPM) or meant to mirror the 90-minute studio class the Timeline and Pose.sets doc ('in a standard 90-minute class') describe
+- data-layer-Q4: Is 'lamp post' / '747' / 'two panes of glass' acceptable as imagery under the 'never reproduce the dialogue' rule, or should the zero-drift standard extend to stock images? Nothing is quoted verbatim.
+- data-layer-Q5: The working tree already has `package-lock.json` modified (54 deletions) from the baseline npm install — it predates this review and I did not touch it; someone should decide whether to commit or discard it before the ne
+
+## infra — Build, PWA (service worker + manifest), tooling scripts, and repo hygiene (16 issues, 12 ideas)
+- infra-I1 [bug] gen-classical-index.py crashes on Windows: files opened without encoding='utf-8' (scripts/gen-classical-index.py:27)
+- infra-I2 [gap] App shell is not cached on the first visit; 'fully offline once visited' needs two loads (public/sw.js:41)
+- infra-I3 [risk] Network-first navigation has no timeout: slow reception shows a blank screen while the cached shell waits (public/sw.js:60)
+- infra-I4 [smell] Navigation responses are cached without an `ok` check and outside `waitUntil` (public/sw.js:63)
+- infra-I5 [inconsistency] Cache-first is applied to un-hashed public files (manifest, icons), so manifest changes never reach installed users (public/sw.js:73)
+- infra-I6 [gap] No eviction of stale hashed assets or stale voice clips; caches grow on every deploy (public/sw.js:49)
+- infra-I7 [gap] No update-available path and no version stamp: a phone can run a stale bundle for days with no way to tell (src/main.tsx:23)
+- infra-I8 [smell] 6.7 MB of voice clips download unconditionally on every first visit, on any network, with no progress or opt-out (src/main.tsx:24)
+- infra-I9 [risk] Live deploy serves hashed assets and voice clips with max-age=0; vercel.json has no headers block (vercel.json:2)
+- infra-I10 [smell] create-vite landing-template leftovers are tracked and two of them are deployed (public/icons.svg:1)
+- infra-I11 [inconsistency] Manifest theme_color disagrees with index.html theme-color; splash is dark for light-mode users (public/manifest.webmanifest:9)
+- infra-I12 [smell] generate-voice.mjs: fail() skips the temp-dir cleanup, and tool discovery is Linux-only (scripts/generate-voice.mjs:50)
+- infra-I13 [smell] package-lock.json drifts under `npm install` on this machine; no engine/npm pin (package.json:2)
+- infra-I14 [gap] No CI; production deploys from the working tree so tests never gate a release (package.json:6)
+- infra-I15 [inconsistency] `npm run lint` gates almost nothing: the repo's oxlint config reports zero warnings (.oxlintrc.json:4)
+- infra-I16 [risk] npm audit: nanoid <3.3.18 (high) is dev-only via vite -> postcss; zero runtime exposure (package-lock.json:1200)
+- infra-D1 [S] Precache the app shell at install so 'offline once visited' is literally true
+- infra-D2 [S] Race navigation against a short timer and guard what gets cached as the shell
+- infra-D3 [S] Scope cache-first to hashed paths and prune stale assets/clips
+- infra-D4 [M] Voice-download etiquette and an offline-readiness indicator on the pacer
+- infra-D5 [S] Build stamp plus a gentle, class-aware 'update ready' note
+- infra-D6 [S] Add immutable cache headers for hashed paths in vercel.json
+- infra-D7 [S] A minimal GitHub Actions gate, npm ci, and an engine pin
+- infra-D8 [S] Make gen-classical-index.py cross-platform (or port it to Node)
+- infra-D9 [S] Delete the create-vite scaffold leftovers
+- infra-D10 [S] Manifest polish: id, shortcuts into practice, aligned colours
+- infra-D11 [S] Fix the voice script's exit path and Windows discovery; note the Piper licence where a public reader looks
+- infra-D12 [M] Route-level code splitting, but only together with install-time precache
+- infra-Q1: Is this Windows checkout now the primary dev machine? Everything in CONTINUATION_PROMPT's 'standing facts' (piper at ~/.local/bin, python3, /usr/bin/google-chrome for screenshots, the .vercel project link) is from the Li
+- infra-Q2: The stated lint baseline (~15 React purity warnings) does not reproduce: with the repo's .oxlintrc.json, oxlint 1.77.0 reports nothing. Which tool/config produced those warnings, and are they meant to be a gate?
+- infra-Q3: Is the unconditional 6.7 MB voice download on first visit a deliberate trade for 'never fetch a line mid-hold', or should it wait for the first /pace visit, idle time, or a non-metered connection?
+- infra-Q4: Which colour is the app's identity for the installed title bar: ember (#c05621, manifest) or the page background (index.html theme-color)? And should the installed app stay locked to portrait?
+- infra-Q5: Could not observe the service worker in a real browser on this machine (Chrome extension not connected; browser-harness blocked on Chrome's one-time Allow prompt). The 'shell not cached on first visit' finding is derived
+- infra-Q6: The working tree now shows ` M package-lock.json` (libc fields dropped by this npm version after the orchestrator's `npm install`). Should that be reverted, or should the lockfile be regenerated here and an npm/Node vers
+- infra-Q7: LICENSE is deliberately absent (noted, not contested). Given the repo is public, is CONTINUATION_PROMPT the intended home for the Piper voice's non-commercial training-data note, or should README carry it?
+
+## pacer-engine — Breath-pacer engine (src/pacer: timing, metronome, cue compiler, clip/TTS sampler, wake lock, voice pipeline) (11 issues, 12 ideas)
+- pacer-engine-I1 [bug] Any settings or cue-pref change mid-class wipes the segment's metronome override (src/views/Pacer.tsx:417)
+- pacer-engine-I2 [bug] walkInSteps' 'always keep the last step' speaks a later part's instruction in the first side segment (src/pacer/cues.ts:86)
+- pacer-engine-I3 [inconsistency] Stall catch-up cannot fire when the AudioContext itself is suspended — the class silently pauses, contrary to the comment and CLAUDE.md (src/pacer/metronome.ts:117)
+- pacer-engine-I4 [inconsistency] Kapalbhati cues promise 'sixty' and 'a little faster'; the pulse actually runs 90 then 75 beats at an unchanged tempo (src/data/segments/poses-20-26.ts:64)
+- pacer-engine-I5 [inconsistency] 'Floor postures breathe first' only holds one day in seven — rotation rotates the breath line away (src/pacer/cues.ts:97)
+- pacer-engine-I6 [risk] Safari media Range requests against the SW voice cache can make every clip fail on the very device the app targets (public/sw.js:73)
+- pacer-engine-I7 [gap] When the clip channel fails, the TTS fallback is unprimed on iOS and nothing on screen carries the line — both channels can fail silently (src/pacer/voice.ts:64)
+- pacer-engine-I8 [gap] generate-voice.mjs cannot find its tools on this Windows checkout, and the clip hash ignores the voice/prosody parameters (scripts/generate-voice.mjs:167)
+- pacer-engine-I9 [smell] Superseded clips leak their ended/error listeners on the shared <audio> element (src/pacer/clips.ts:87)
+- pacer-engine-I10 [smell] Wake-lock release handler nulls whichever sentinel is current; concurrent requests can double-acquire (src/pacer/wakelock.ts:29)
+- pacer-engine-I11 [smell] The two-minute Savasana (posture 13) gets five spoken lines in its first 40 s while the compiler says rests stay silent (src/pacer/cues.ts:197)
+- pacer-engine-D1 [S] Voice-only mode: expose the engine's setQuiet as a 'ticks off' preference
+- pacer-engine-D2 [S] Ask iOS for a 'playback' audio session so ticks survive the ring/silent switch
+- pacer-engine-D3 [S] Prime speech synthesis inside the start gesture, next to unlockClips
+- pacer-engine-D4 [M] Serve 206 Partial Content from the voice cache for ranged requests
+- pacer-engine-D5 [M] Caption the current spoken line and surface a one-time 'voice unavailable — tones only' notice
+- pacer-engine-D6 [S] Compensate visuals for output latency (Bluetooth headphones)
+- pacer-engine-D7 [M] Decide what a frozen audio clock means, then implement it: wall-clock reconciliation or an explicit 'the class paused while the phone slept' state
+- pacer-engine-D8 [M] Make Kapalbhati count to sixty: a `pulses` cap on PoseSegment.pacer, then quiet for the rest of the segment
+- pacer-engine-D9 [M] Unit-test the metronome, clip queue and wake lock with fakes — the behaviours the phone shakedown depends on have zero tests
+- pacer-engine-D10 [M] Record the Sanskrit announce variants so 'Say Sanskrit names' does not switch voices 26 times a class
+- pacer-engine-D11 [S] Make the voice generator portable and self-describing: Windows tool discovery, params in the hash, a credits line
+- pacer-engine-D12 [S] Immutable cache headers for /voice/*.ogg
+- pacer-engine-Q1: When the AudioContext is suspended/interrupted (iOS screen lock, a phone call), should the class catch up to wall-clock (as CLAUDE.md and the metronome comment claim) or pause where it stood (what the code actually does)
+- pacer-engine-Q2: Is 'floor postures breathe first' meant to survive the daily rotation, or is rotation supposed to win? Today the breath line is spoken in single-slot floor postures only when dayIndex % 7 === 0.
+- pacer-engine-Q3: Is Kapalbhati meant to pulse for the full 90 s / 75 s, or to count to sixty and then rest? The cue and the metronome currently disagree.
+- pacer-engine-Q4: Has anyone confirmed that Safari plays <audio> clips served from the service-worker cache (ranged requests)? The offline verification cited in CONTINUATION_PROMPT was headless Chrome only.
+- pacer-engine-Q5: Is the two-voice class (studio clips for guides, browser TTS for every Sanskrit announce) acceptable, or should Piper's Sanskrit be auditioned?
+- pacer-engine-Q6: Should the app credit the Piper Lessac voice on-page, given the non-commercial training-data licence and the deliberate absence of a LICENSE file?
+- pacer-engine-Q7: The voice generator now lives on a Windows checkout with no piper on PATH — is the Linux machine still the place clips get regenerated, or should the script be made to run here?
+
+## classical — Classical "Go deeper" layer (src/data/classical, ClassicalNote contract, scripts/gen-classical-index.py, PoseDetail ClassicalSection) (23 issues, 10 ideas)
+- classical-I1 [bug] Generator crashes on Windows with the default code page (scripts/gen-classical-index.py:27)
+- classical-I2 [smell] Generator writes CRLF on Windows; committed index is LF (scripts/gen-classical-index.py:59)
+- classical-I3 [risk] A typo in PENDING_AUDIT silently ships an unaudited note (scripts/gen-classical-index.py:9)
+- classical-I4 [bug] Plural logic prints 'plates plate 92, inside Virasana' for the half-tortoise note (src/views/PoseDetail.tsx:123)
+- classical-I5 [inconsistency] sameName heading is wrong for Cobra (live) and Spine Twisting (pending) (src/views/PoseDetail.tsx:95)
+- classical-I6 [bug] Classical grid overflows the card on phones narrower than 370 CSS px (src/views/PoseDetail.css:613)
+- classical-I7 [gap] No test covers the classical layer at all (src/data/classical/index.ts:44)
+- classical-I8 [inconsistency] reference on asana:null notes contradicts the contract and each other (src/data/classical/21-half-tortoise.ts:89)
+- classical-I9 [inconsistency] Compound asana carries one half's grade (src/data/classical/24-head-to-knee-stretching.ts:129)
+- classical-I10 [inconsistency] Yoga Makaranda dated 1935 in one note, 1934 in three others (src/data/classical/10-standing-separate-leg-head-to-knee.ts:87)
+- classical-I11 [inconsistency] Savasana note cites a class cue that the pose file does not contain (src/data/classical/13-savasana.ts:96)
+- classical-I12 [risk] Camel: an uncited hold time, a lineage-site claim attributed to Iyengar, and a stage that tells you to skip it (src/data/classical/22-camel.ts:85)
+- classical-I13 [risk] Kapalbhati attributes a sentence to Iyengar on the strength of a studio blog (src/data/classical/26-kapalbhati.ts:107)
+- classical-I14 [risk] Rabbit and Head-to-Knee attribute technique to Iyengar himself via lineage blogs (src/data/classical/23-rabbit.ts:108)
+- classical-I15 [smell] IAST diacritics in 10 notes, plain transliteration in 16 and in every pose header (src/data/classical/05-standing-head-to-knee.ts:71)
+- classical-I16 [smell] Sources blocks misattribute the plate/grade index sheet in 20 files (src/data/classical/05-standing-head-to-knee.ts:30)
+- classical-I17 [smell] Some facts were taken from search-engine snippets, not the cited page (src/data/classical/02-half-moon.ts:15)
+- classical-I18 [smell] Awkward's 'uneven / awkward' gloss is not among the glosses its sources record (src/data/classical/03-awkward.ts:36)
+- classical-I19 [smell] One refinement edges toward correcting the class cue (src/data/classical/06-standing-bow.ts:68)
+- classical-I20 [smell] Lede promises plate numbers on notes that have none (src/views/PoseDetail.tsx:104)
+- classical-I21 [smell] Grade explanation lives in a hover-only title attribute (src/views/PoseDetail.tsx:126)
+- classical-I22 [smell] 195-465-word contrast paragraphs render as one soft-coloured block (src/views/PoseDetail.css:642)
+- classical-I23 [smell] Python in a Node repo, outside package.json, with a python3 entry point (scripts/gen-classical-index.py:1)
+- classical-D1 [M] Retire the Python generator: hand-maintained index plus a vitest invariant
+- classical-D2 [S] Give reference a `via` field and make plates strictly numeric
+- classical-D3 [S] Fix the name-relation heading with a normaliser or an explicit field
+- classical-D4 [M] Phone-proof the section: guard the grid, paragraph the contrast, lift the colour
+- classical-D5 [S] Make the section findable: a jump link in the header pills and a mark on the Timeline
+- classical-D6 [M] Link ladder chips to the sequence's own postures
+- classical-D7 [L] Ship the eleven pending notes with the punch list from this read
+- classical-D8 [S] One transliteration convention, enforced by the test
+- classical-D9 [M] A one-line `gist` per note for the skim reader
+- classical-D10 [S] Normalise the audit trail: index-sheet attribution and snippet-sourced facts
+- classical-Q1: Is Python an acceptable tool dependency for this repo, or should scripts/ be Node-only like generate-voice.mjs? The answer decides between porting the generator and replacing it with a test.
+- classical-Q2: How were claims attributed to Light on Yoga itself (26's 'inhalation slow, exhalation vigorous'; 22's half-minute hold) verified in the first fifteen audits, given the audit fetches URLs and the book cannot be fetched? D
+- classical-Q3: Should `reference` be allowed on `asana: null` notes at all (15, 21 do it; 12, 23, 26 refuse), or should the contract say 'no classical form, no reference'?
+- classical-Q4: IAST diacritics or plain transliteration - which does the user want in rendered text? Ten notes went one way and sixteen the other, and the pose headers are all plain.
+- classical-Q5: On a phone, should the section stay open by default (current) or collapse behind a summary? It adds up to ~1,500 words to the longest page in the app; a jump link solves discoverability but not length.
+- classical-Q6: Who authored the 'Asana Indexes for Light on Yoga' sheet? The files disagree (Shifroni / Barber / anonymous); if it is a third party's work, is a comment citation enough or should the app credit it somewhere visible?
+- classical-Q7: Should the classical notes feed anything else - e.g. a 'stage to hold today' shown on the pacer's idle card - or is 'this layer changes nothing about the class' a hard rule the user wants kept?
+
+## browse-views — Browsing UI and shared components: App shell (App.tsx/App.css/main.tsx/index.html), Timeline, PoseDetail, Explorer, Today views, BodyMap and PoseFigure components, global design tokens (16 issues, 12 ideas)
+- browse-views-I1 [bug] Nav overflows on phones narrower than ~386px — the Pace tab is cut off or invisible (src/App.css:44)
+- browse-views-I2 [gap] No catch-all route: any unknown URL renders an empty <main> under the nav (src/App.tsx:39)
+- browse-views-I3 [risk] Offline works only from the second online load, not 'once visited' (src/main.tsx:16)
+- browse-views-I4 [risk] `--text-faint` fails AA at the sizes it is used for — including the hold timings on the class map (src/styles/global.css:17)
+- browse-views-I5 [risk] Chakra colors are used as pill TEXT in the Explorer, where several fall to 2–3:1 (src/views/Explorer.tsx:92)
+- browse-views-I6 [smell] On the class map, strengthens-vs-stretches and which-chakra are carried only by color and hover tooltips (src/views/Timeline.tsx:96)
+- browse-views-I7 [smell] List semantics are dropped by `list-style: none`, and the sequence number is hidden from assistive tech on the map (src/views/Timeline.tsx:47)
+- browse-views-I8 [inconsistency] PoseDetail hardcodes '26' and calls the breathing exercises 'Posture N' (src/views/PoseDetail.tsx:260)
+- browse-views-I9 [inconsistency] Manifest disagrees with the head: ember theme_color, dark splash for light users, portrait lock (index.html:8)
+- browse-views-I10 [smell] Two unreferenced icon files ship in dist while the favicon is an inline emoji (index.html:5)
+- browse-views-I11 [smell] Every chakra/muscle tap in the Explorer pushes a history entry (src/views/Explorer.tsx:225)
+- browse-views-I12 [smell] Muscle lens has 43 tab stops before the content: 24 body-map paths plus 19 chips that duplicate them (src/components/BodyMap.tsx:266)
+- browse-views-I13 [smell] Landmark labeling: aria-label on a plain div, two identically named navs, unlabeled primary nav, no skip link (src/views/PoseDetail.tsx:64)
+- browse-views-I14 [gap] /today is reachable only from one italic link at the very foot of the Timeline, and being enabled surfaces nowhere (src/views/Timeline.tsx:184)
+- browse-views-I15 [gap] Document title never changes per route; no Open Graph / Twitter tags (index.html:12)
+- browse-views-I16 [inconsistency] Timeline's ARCS table duplicates trainer/graph.ts and both hardcode the 1 / 2-12 / 13-25 / 26 ranges (src/views/Timeline.tsx:16)
+- browse-views-D1 [M] Three doors under the hero: tell a first-time visitor what Train and Pace are
+- browse-views-D2 [S] Bring 'Take care' to the top of the posture page
+- browse-views-D3 [S] Per-route document titles and Open Graph tags
+- browse-views-D4 [S] A NotFound view on `path="*"` reusing the posture not-found styling
+- browse-views-D5 [S] Contrast pass on `--text-faint` and chakra-as-text, keeping the palette
+- browse-views-D6 [S] Surface the Moon-days lens only while it is on
+- browse-views-D7 [M] Tint the rail nodes by memory band so the class map doubles as a progress map
+- browse-views-D8 [S] Make the interactive BodyMap one tab stop with arrow keys, or defer focus to the chips
+- browse-views-D9 [S] A legend row on the class map and tappable chakra dots
+- browse-views-D10 [S] Precache the app shell on install so the first visit is really offline-capable
+- browse-views-D11 [S] Gate the 6.5 MB voice precache instead of firing it on every first load
+- browse-views-D12 [S] Test that every muscle's `view` has a matching BodyMap path (the type does not check this)
+- browse-views-Q1: Is the four-tab nav final? If a fifth destination (Today, a journal) ever joins, the phone nav needs a real pattern (scrollable pills or an overflow menu), not just tighter padding — worth deciding before fixing the 360p
+- browse-views-Q2: Is `/today`'s foot-of-page-only placement a deliberate part of the opt-in stance, or is a hint that appears only while the lens is enabled acceptable?
+- browse-views-Q3: Is the manifest's `orientation: portrait` intentional (phones flat on the floor) or incidental? It blocks landscape tablets for the pacer in standalone mode.
+- browse-views-Q4: Should the studio-voice precache stay unconditional (the 'before class, bad reception' priority) or respect cellular/saveData? This is a product call, not a code one.
+- browse-views-Q5: Is `--text-faint` intentionally below AA for the quiet editorial look? The hold timings on the class map are in that token; if the answer is yes, at least `.tl-timing` should move to `--text-soft`.
+- browse-views-Q6: Does the team want 'Take care' physically higher on the posture page, or only a caution pill in the header that jumps there?
+- browse-views-Q7: The CLI-screenshot pattern in CONTINUATION_PROMPT (Chrome `--window-size`) cannot emulate phone widths — desktop Chrome clamps the window. The playwright-core `isMobile` context I used in the scratchpad is the reliable w

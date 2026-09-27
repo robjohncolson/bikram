@@ -129,6 +129,14 @@
   color: var(--text);
 }
 
+.pd-header .pose-motion {
+  max-width: 260px;
+}
+
+.pd-header .pose-motion-frame.pd-figurewrap {
+  overflow: hidden;
+}
+
 /* ——— summary */
 .pd-summary {
   margin-top: 30px;

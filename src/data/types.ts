@@ -164,6 +164,30 @@ export interface ClassicalNote {
   ladder: { before: string[]; beyond: string[] };
 }
 
+/** One held stage inside a motion sprite, addressed by 0-based frame. */
+export interface MotionStage {
+  label: string;
+  frame: number;
+}
+
+/** A rendered motion sprite sheet: square cells laid out row-major. */
+export interface PoseMotion {
+  /** public URL of the PNG sheet */
+  sprite: string;
+  /** cell size in px (square) */
+  frame: number;
+  /** total frame count */
+  frames: number;
+  /** grid columns in the sheet */
+  cols: number;
+  /** intended playback rate */
+  fps: number;
+  /** camera view the sequence opens on */
+  view: string;
+  /** held stages, in order, with the frame each begins on */
+  stages: MotionStage[];
+}
+
 export interface Pose {
   /** Stable kebab-case id, used in routes: /pose/:id */
   id: string;
@@ -204,6 +228,13 @@ export interface Pose {
    * Rendered by <PoseFigure/>; omit to fall back to a numbered badge.
    */
   figure?: string;
+  /**
+   * Animated line-art figure: a sprite sheet rendered from the Blender
+   * mannequin rig (`scripts/blender/`), merged by `poses/index.ts` from the
+   * GENERATED `src/data/motion/manifest.ts`. The sheet is a grayscale
+   * luminance mask drawn over currentColor, so one render serves both themes.
+   */
+  motion?: PoseMotion;
   /**
    * Class-time structure (sides/sets/interludes), authored separately in
    * `src/data/segments/` and merged by `poses/index.ts`. Segments sum

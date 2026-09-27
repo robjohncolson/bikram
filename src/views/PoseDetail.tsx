@@ -7,6 +7,7 @@ import type { ClassicalNote, MuscleId, Pose } from '../data';
 import { BodyMap } from '../components/BodyMap';
 import type { MuscleHighlight } from '../components/BodyMap';
 import { PoseFigure } from '../components/PoseFigure';
+import { PoseMotion } from '../components/PoseMotion';
 import './PoseDetail.css';
 
 /** Compact prev/next link shown above the header. */
@@ -281,9 +282,13 @@ export function PoseDetail() {
               {pose.timing && <span className="pill">{pose.timing}</span>}
             </div>
           </div>
-          <div className="pd-figurewrap" aria-hidden>
-            <PoseFigure pose={pose} size={140} />
-          </div>
+          {pose.motion ? (
+            <PoseMotion motion={pose.motion} size={170} frameClassName="pd-figurewrap" />
+          ) : (
+            <div className="pd-figurewrap" aria-hidden>
+              <PoseFigure pose={pose} size={140} />
+            </div>
+          )}
         </header>
 
         {pose.summary && <p className="pd-summary">{pose.summary}</p>}

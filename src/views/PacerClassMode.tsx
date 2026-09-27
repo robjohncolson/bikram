@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Pose } from '../data';
+import { PoseMotion } from '../components/PoseMotion';
 import './PacerClassMode.css';
 
 export interface PacerClassModeProps {
@@ -72,6 +73,19 @@ export function PacerClassMode(props: PacerClassModeProps) {
     }
   };
 
+  // the figure shares the screen with the countdown: ≤ 180 px on phones,
+  // and it shrinks on short viewports so the controls stay on screen
+  const [figSize, setFigSize] = useState(() => figureSize());
+  useEffect(() => {
+    const onResize = () => setFigSize(figureSize());
+    window.addEventListener('resize', onResize);
+    return () => window.removeEventListener('resize', onResize);
+  }, []);
+  // the figure is an identity surface: withheld with the name in rehearsal.
+  // It loops as a demonstration on its own clock — it does not claim to
+  // track where the class is (segments and sprite stages don't map 1:1).
+  const motion = props.hidden ? undefined : props.pose.motion;
+
   // announce segment changes politely; the per-second countdown stays silent
   const [announced, setAnnounced] = useState('');
   useEffect(() => {
@@ -100,6 +114,11 @@ export function PacerClassMode(props: PacerClassModeProps) {
       </header>
 
       <main className="cm-mid">
+        {motion && figSize > 0 && (
+          <div className="cm-figure">
+            <PoseMotion motion={motion} size={figSize} showStages={false} />
+          </div>
+        )}
         {props.segmentLabel && (
           <p className="cm-seg" data-kind={props.segmentKind}>
             {props.segmentLabel}
@@ -156,4 +175,14 @@ export function PacerClassMode(props: PacerClassModeProps) {
       </div>
     </div>
   );
+}
+
+/** Figure edge in px for the current viewport; 0 = no room, skip it. */
+function figureSize(): number {
+  if (typeof window === 'undefined') return 0;
+  const w = window.innerWidth;
+  const h = window.innerHeight;
+  const cap = w <= 560 ? 180 : 240;
+  const size = Math.round(Math.min(cap, h * 0.24, w * 0.5));
+  return size < 72 ? 0 : size;
 }

@@ -6,24 +6,47 @@ const CACHE = 'yoga-26and2-v1';
    class never has to fetch a line mid-hold over hot-room reception. The
    page sends the clip list after registering (see main.tsx). */
 const VOICE_CACHE = 'yoga-voice-v1';
-const KEEP = new Set([CACHE, VOICE_CACHE]);
-const VOICE_BATCH = 6;
+/* The motion figures (one PNG sprite sheet per posture, ~100 KB each)
+   likewise get their own cache so a posture page animates offline. */
+const MOTION_CACHE = 'yoga-motion-v1';
+const KEEP = new Set([CACHE, VOICE_CACHE, MOTION_CACHE]);
+const BATCH = 6;
 
 function isAudio(res) {
   const type = res.headers.get('content-type') || '';
   return type.startsWith('audio/') || type === 'application/ogg';
 }
 
-async function precacheVoice(urls) {
-  const cache = await caches.open(VOICE_CACHE);
-  const have = new Set((await cache.keys()).map((r) => new URL(r.url).pathname));
-  const missing = urls.filter((u) => typeof u === 'string' && u.startsWith('/voice/') && !have.has(u));
-  for (let i = 0; i < missing.length; i += VOICE_BATCH) {
+function isImage(res) {
+  return (res.headers.get('content-type') || '').startsWith('image/');
+}
+
+/* path prefix → [cache name, content-type guard] */
+const STORES = {
+  '/voice/': [VOICE_CACHE, isAudio],
+  '/motion/': [MOTION_CACHE, isImage],
+};
+
+function storeFor(pathname) {
+  for (const prefix in STORES) if (pathname.startsWith(prefix)) return STORES[prefix];
+  return null;
+}
+
+async function precache(urls) {
+  const wanted = urls.filter((u) => typeof u === 'string' && storeFor(u));
+  const have = new Set();
+  for (const [name] of Object.values(STORES)) {
+    const cache = await caches.open(name);
+    for (const r of await cache.keys()) have.add(new URL(r.url).pathname);
+  }
+  const missing = wanted.filter((u) => !have.has(u));
+  for (let i = 0; i < missing.length; i += BATCH) {
     await Promise.all(
-      missing.slice(i, i + VOICE_BATCH).map(async (u) => {
+      missing.slice(i, i + BATCH).map(async (u) => {
         try {
+          const [name, guard] = storeFor(u);
           const res = await fetch(u);
-          if (res.ok && isAudio(res)) await cache.put(u, res);
+          if (res.ok && guard(res)) await (await caches.open(name)).put(u, res);
         } catch {
           /* offline or blocked — the next visit tries again */
         }
@@ -34,8 +57,9 @@ async function precacheVoice(urls) {
 
 self.addEventListener('message', (event) => {
   const data = event.data;
-  if (!data || data.type !== 'precache-voice' || !Array.isArray(data.urls)) return;
-  event.waitUntil(precacheVoice(data.urls));
+  if (!data || !Array.isArray(data.urls)) return;
+  if (data.type !== 'precache-voice' && data.type !== 'precache') return;
+  event.waitUntil(precache(data.urls));
 });
 
 self.addEventListener('install', () => {
@@ -68,15 +92,15 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  const voice = new URL(req.url).pathname.startsWith('/voice/');
+  const store = storeFor(new URL(req.url).pathname);
   event.respondWith(
     caches.match(req).then(
       (hit) =>
         hit ||
         fetch(req).then((res) => {
-          if (res.ok && (!voice || isAudio(res))) {
+          if (res.ok && (!store || store[1](res))) {
             const copy = res.clone();
-            caches.open(voice ? VOICE_CACHE : CACHE).then((c) => c.put(req, copy));
+            caches.open(store ? store[0] : CACHE).then((c) => c.put(req, copy));
           }
           return res;
         }),

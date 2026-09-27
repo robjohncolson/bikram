@@ -58,6 +58,12 @@
   gap: 4px;
 }
 
+/* the live posture's motion figure (sprite drawn in currentColor) */
+.cm-figure {
+  color: var(--cm-soft);
+  margin-bottom: 6px;
+}
+
 .cm-seg {
   font-size: clamp(16px, 2.6vw, 22px);
   font-weight: 600;

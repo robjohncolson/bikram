@@ -8,7 +8,9 @@
     "build": "tsc -b && vite build",
     "lint": "oxlint",
     "preview": "vite preview",
-    "test": "vitest run"
+    "test": "vitest run",
+    "motion": "node scripts/render-motion.mjs",
+    "motion:preview": "node scripts/render-motion.mjs --preview"
   },
   "dependencies": {
     "react": "^19.2.8",

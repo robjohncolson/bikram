@@ -7,6 +7,7 @@ import type { Pose } from '../types';
 import { figures } from '../figures';
 import { segmentsByPose } from '../segments';
 import { classicalByPose } from '../classical';
+import { motionByPose } from '../motion';
 
 import { pranayama } from './01-pranayama';
 import { halfMoon } from './02-half-moon';
@@ -68,6 +69,7 @@ const inOrder: Pose[] = [
 export const poses: Pose[] = inOrder.map((p) => ({
   ...p,
   ...(figures[p.id] ? { figure: figures[p.id] } : {}),
+  ...(motionByPose[p.id] ? { motion: motionByPose[p.id] } : {}),
   ...(segmentsByPose[p.id] ? { segments: segmentsByPose[p.id] } : {}),
   ...(classicalByPose[p.id] ? { classical: classicalByPose[p.id] } : {}),
 }));
