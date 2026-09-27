@@ -8,6 +8,7 @@ import { BodyMap } from '../components/BodyMap';
 import type { MuscleHighlight } from '../components/BodyMap';
 import { PoseFigure } from '../components/PoseFigure';
 import { PoseMotion } from '../components/PoseMotion';
+import { useRestingBreath } from '../components/useRestingBreath';
 import './PoseDetail.css';
 
 /** Compact prev/next link shown above the header. */
@@ -203,6 +204,12 @@ function ClassicalSection({ note, pose }: { note: ClassicalNote; pose: Pose }) {
   );
 }
 
+/** The hero figure, breathing at rest (6 in, 6 out); only it re-renders on each flip. */
+function HeroMotion({ motion }: { motion: NonNullable<Pose['motion']> }) {
+  const breath = useRestingBreath(6);
+  return <PoseMotion motion={motion} size={170} frameClassName="pd-figurewrap" breath={breath} />;
+}
+
 export function PoseDetail() {
   const { id } = useParams();
   const pose = id ? getPose(id) : undefined;
@@ -283,7 +290,7 @@ export function PoseDetail() {
             </div>
           </div>
           {pose.motion ? (
-            <PoseMotion motion={pose.motion} size={170} frameClassName="pd-figurewrap" />
+            <HeroMotion motion={pose.motion} />
           ) : (
             <div className="pd-figurewrap" aria-hidden>
               <PoseFigure pose={pose} size={140} />

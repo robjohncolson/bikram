@@ -61,6 +61,24 @@ RIGHT = {
 
 LEFT = mirror(RIGHT)
 
+# Guides (both sides): the vertical midline the crossed arms and crossed
+# legs both stack on, and the hip height to sit down to.
+GUIDES = [
+    {'from': (0, 0, 0.0), 'to': (0, 0, 1.62)},
+    {'from': (-0.42, 0, 0.69), 'to': (0.42, 0, 0.69)},
+]
+
+# Common mistake: sitting too high — the standing knee barely bends, so the
+# hips (and the whole wrap riding on them) float well above the sit line.
+RIGHT_GHOST = {
+    'pelvis.location': at(0, 0.04, -0.08),
+    'pelvis': (0, -0.15, 1),
+    'spine.lower': (0, -0.15, 1),
+    'thigh.L': (-0.03, -0.45, -0.89),
+    'shin.L': (0, 0.35, -0.94),
+}
+LEFT_GHOST = mirror(RIGHT_GHOST)
+
 POSTURE = {
     'id': 'eagle',
     'view': 'front',
@@ -68,9 +86,11 @@ POSTURE = {
     'transition': 7,
     'stages': [
         {'label': 'Arms wide', 'pose': ARMS_WIDE, 'hold': 3, 'view': 'front'},
-        {'label': 'Right side', 'pose': RIGHT, 'hold': 8},
+        {'label': 'Right side', 'pose': RIGHT, 'hold': 8,
+         'guides': GUIDES, 'ghost': RIGHT_GHOST},
         {'label': 'Release', 'pose': ARMS_WIDE, 'hold': 3, 'view': 'front'},
-        {'label': 'Left side', 'pose': LEFT, 'hold': 8},
+        {'label': 'Left side', 'pose': LEFT, 'hold': 8,
+         'guides': GUIDES, 'ghost': LEFT_GHOST},
         {'label': 'Release', 'pose': {}, 'hold': 4, 'view': 'front'},
     ],
 }

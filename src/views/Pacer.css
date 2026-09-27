@@ -351,6 +351,64 @@
   max-width: 62ch;
 }
 
+/* program picker: Full class / Short class */
+.pc-programs {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 10px;
+  margin-top: 4px;
+}
+
+.pc-program {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  text-align: left;
+  padding: 12px 14px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  background: var(--bg-sunken);
+  color: var(--text-soft);
+  transition:
+    border-color 0.15s ease,
+    background 0.15s ease;
+}
+
+.pc-program:hover {
+  border-color: var(--border-strong);
+}
+
+.pc-program[aria-pressed='true'] {
+  border-color: var(--ember);
+  background: color-mix(in srgb, var(--ember-soft) 60%, var(--bg-raised));
+}
+
+.pc-program-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.pc-program-name {
+  font-weight: 700;
+  font-size: 15px;
+  color: var(--text);
+}
+
+.pc-program-min {
+  font-size: 13px;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  color: var(--ember-text);
+  white-space: nowrap;
+}
+
+.pc-program-blurb {
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .pc-class-total {
   font-size: 13.5px;
   font-variant-numeric: tabular-nums;

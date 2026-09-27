@@ -1,6 +1,8 @@
 import type { Pose } from '../data';
 import { poses } from '../data';
 import { beatsForSeconds } from './timing';
+import type { ClassProgram } from './programs';
+import { programPoses } from './programs';
 
 /**
  * The class-cue sequencer: compiles the sequence into a per-posture
@@ -272,7 +274,17 @@ export function segmentAtBeat(track: PoseTrack, beat: number): SegmentPosition |
   return { index: last, label: segs[last].label, kind: segs[last].kind, beatsLeft: 1 };
 }
 
-/** Compile the whole class (from a starting posture) at a tempo. */
-export function buildClassTrack(bpm: number, fromOrder = 1, opts: CueOptions = {}): PoseTrack[] {
-  return poses.filter((p) => p.order >= fromOrder).map((p) => buildPoseTrack(p, bpm, opts));
+/**
+ * Compile a class at a tempo: the whole sequence from a starting posture
+ * (`fromOrder`, as `/pace?from=` uses it), or a program — its postures,
+ * trimmed at the segment level so a first-set-only posture never cues a
+ * second set.
+ */
+export function buildClassTrack(
+  bpm: number,
+  from: number | ClassProgram = 1,
+  opts: CueOptions = {},
+): PoseTrack[] {
+  const list = typeof from === 'number' ? poses.filter((p) => p.order >= from) : programPoses(from);
+  return list.map((p) => buildPoseTrack(p, bpm, opts));
 }

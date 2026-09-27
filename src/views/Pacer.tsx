@@ -7,6 +7,7 @@ import {
   CLOSING_LINE,
   CLOSING_SECONDS,
   PACER_PRESETS,
+  PROGRAMS,
   announceText,
   beatSeconds,
   beatsForSeconds,
@@ -17,8 +18,12 @@ import {
   clipsAvailable,
   createMetronome,
   createWakeLock,
+  breathPhaseFromBeat,
   phaseSeconds,
   playClip,
+  programById,
+  programMinutes,
+  programPoses,
   segmentAtBeat,
   silenceVoice,
   speak,
@@ -28,8 +33,9 @@ import {
   unlockClips,
   watchVoices,
 } from '../pacer';
-import type { BeatEvent, Metronome, PacerSettings, PoseTrack, VoiceChoice, WakeLock } from '../pacer';
-import { classOffsetSeconds, classTotalSeconds, poses } from '../data';
+import type { BeatEvent, BreathCue, ClassProgram, Metronome, PacerSettings, PoseTrack, VoiceChoice, WakeLock } from '../pacer';
+import type { Pose } from '../data';
+import { poses } from '../data';
 import {
   amendLastClass,
   applyEvidence,
@@ -64,6 +70,23 @@ type ClassRun =
     }
   | { phase: 'closing'; left: number; budget: number }
   | { phase: 'done'; pacedSeconds: number; rehearsedFrom?: number };
+
+/** `/pace?program=short` picks a program; `/pace?from=<order>` implies the full class. */
+function initialProgram(): ClassProgram {
+  const q = new URLSearchParams(window.location.search);
+  return q.get('from') ? programById('full') : programById(q.get('program'));
+}
+
+/** Canonical seconds before each posture of a class, and the class total. */
+function classClock(list: Pose[]): { offsets: number[]; total: number } {
+  const offsets: number[] = [];
+  let t = 0;
+  for (const p of list) {
+    offsets.push(t);
+    t += p.approxTotalSeconds;
+  }
+  return { offsets, total: t };
+}
 
 /** The posture whose figure and name stand for the final savasana. */
 const SAVASANA_IDX = poses.findIndex((p) => p.id === 'savasana');
@@ -163,6 +186,13 @@ export function Pacer() {
   const [running, setRunning] = useState(false);
   const [beatView, setBeatView] = useState<{ beat: number; bar: number; beatsPerBar: number } | null>(null);
   const [classRun, setClassRun] = useState<ClassRun>({ phase: 'idle' });
+  /** the class-mode figure's breath: follows bar parity while the class
+   *  runs, holds (frozen) while it is paused, undefined in pulse mode */
+  const [breath, setBreath] = useState<BreathCue | undefined>(undefined);
+  const [program, setProgram] = useState<ClassProgram>(initialProgram);
+  /** The program's postures, trimmed — the class walks this list. */
+  const classPoses = useMemo(() => programPoses(program), [program]);
+  const clock = useMemo(() => classClock(classPoses), [classPoses]);
   // /pace?from=<order> — a posture page's "practice from here"
   const [startIdx, setStartIdx] = useState(() => {
     const from = Number(new URLSearchParams(window.location.search).get('from'));
@@ -183,6 +213,9 @@ export function Pacer() {
   const stalledRef = useRef(false);
   /** A posture hand-off happened inside a stall — owe one orientation cue. */
   const stallHandoffRef = useRef(false);
+  /** The running class's postures and program, fixed at Begin. */
+  const posesRef = useRef<Pose[]>(classPoses);
+  const programRef = useRef<ClassProgram>(program);
   /** Where this class started — the rehearsal debrief lists hand-offs from here. */
   const classFromRef = useRef(0);
   const classStartedAtRef = useRef(0);
@@ -217,7 +250,7 @@ export function Pacer() {
    *  exactly as the idle card's math promises. */
   const buildTrack = useCallback((idx: number) => {
     const p = cuesRef.current;
-    return buildPoseTrack(poses[idx], 60, {
+    return buildPoseTrack(posesRef.current[idx], 60, {
       sanskrit: p.sanskrit,
       guides: p.guides,
       rotation: dayIndex(),
@@ -294,14 +327,16 @@ export function Pacer() {
     trackRef.current = null;
     const journal = loadJournal();
     const endedAt = Date.now();
+    const list = posesRef.current;
     recordClass(journal, {
       startedAt: classStartedAtRef.current || endedAt,
       endedAt,
-      fromOrder: poses[classFromRef.current]?.order ?? 1,
-      toOrder: poses[poses.length - 1].order,
+      fromOrder: list[classFromRef.current]?.order ?? 1,
+      toOrder: list[list.length - 1]?.order ?? poses.length,
       pacedSeconds: Math.round(pacedRef.current),
       bpm: settingsRef.current.bpm,
       rehearsed: cuesRef.current.rehearse,
+      program: programRef.current.id,
     });
     saveJournal(journal);
     commitClass({
@@ -342,7 +377,7 @@ export function Pacer() {
           // a live beat 0 speaks its own announce; otherwise re-orient once
           if (stallHandoffRef.current && beatIdx > 0) {
             metRef.current?.chime();
-            sayCue(announceText(poses[c.idx], cuesRef.current.sanskrit), true);
+            sayCue(announceText(posesRef.current[c.idx], cuesRef.current.sanskrit), true);
           }
           stallHandoffRef.current = false;
         }
@@ -357,7 +392,7 @@ export function Pacer() {
         commitClass({ ...c, left, revealed });
         return;
       }
-      if (c.idx >= poses.length - 1) {
+      if (c.idx >= posesRef.current.length - 1) {
         // the last posture is done: a quiet final savasana, then the bell
         silenceVoice();
         metRef.current?.chime();
@@ -396,6 +431,12 @@ export function Pacer() {
       const delay = Math.max(0, (e.time - m.now()) * 1000);
       later(() => {
         setBeatView({ beat: e.beat, bar: e.bar, beatsPerBar: e.beatsPerBar });
+        const phase = classRef.current.phase;
+        if (phase === 'running' || phase === 'closing') {
+          setBreath(breathPhaseFromBeat(e.bar, e.beatsPerBar, beatSeconds(settingsRef.current.bpm)));
+        } else if (phase !== 'paused') {
+          setBreath(undefined);
+        }
         tickClass();
       }, delay);
     });
@@ -431,7 +472,7 @@ export function Pacer() {
     cuesRef.current = cues;
     const c = classRef.current;
     if (c.phase === 'running' || c.phase === 'paused') {
-      trackRef.current = buildPoseTrack(poses[c.idx], 60, {
+      trackRef.current = buildPoseTrack(posesRef.current[c.idx], 60, {
         sanskrit: cues.sanskrit,
         guides: cues.guides,
         rotation: dayIndex(),
@@ -501,7 +542,7 @@ export function Pacer() {
       const c = classRef.current;
       if (c.phase !== 'running' && c.phase !== 'paused') return;
       const idx = c.idx + dir;
-      if (idx < 0 || idx >= poses.length) return;
+      if (idx < 0 || idx >= posesRef.current.length) return;
       silenceVoice();
       metRef.current?.chime();
       const track = buildTrack(idx);
@@ -528,13 +569,16 @@ export function Pacer() {
     pacedRef.current = 0;
     stalledRef.current = false;
     stallHandoffRef.current = false;
-    classFromRef.current = startIdx;
+    posesRef.current = classPoses;
+    programRef.current = program;
+    const from = Math.min(startIdx, classPoses.length - 1);
+    classFromRef.current = from;
     classStartedAtRef.current = Date.now();
-    const track = buildTrack(startIdx);
+    const track = buildTrack(from);
     trackRef.current = track;
     // the first posture was chosen by hand — nothing to recall yet
-    commitClass({ phase: 'running', idx: startIdx, left: track.totalBeats, budget: track.totalBeats, revealed: true });
-  }, [buildTrack, commitClass, startIdx]);
+    commitClass({ phase: 'running', idx: from, left: track.totalBeats, budget: track.totalBeats, revealed: true });
+  }, [buildTrack, classPoses, commitClass, program, startIdx]);
 
   const toggleClassPause = useCallback(() => {
     const c = classRef.current;
@@ -557,10 +601,10 @@ export function Pacer() {
   /** Test-drive the chosen voice on the posture currently in view. */
   const previewVoice = useCallback(() => {
     const c = classRef.current;
-    const idx = c.phase === 'running' || c.phase === 'paused' ? c.idx : startIdx;
-    const pose = poses[idx] ?? poses[0];
+    const running = c.phase === 'running' || c.phase === 'paused';
+    const pose = (running ? posesRef.current[c.idx] : classPoses[startIdx]) ?? poses[0];
     sayCue(announceText(pose, cuesRef.current.sanskrit), true);
-  }, [sayCue, startIdx]);
+  }, [classPoses, sayCue, startIdx]);
 
   // Keyboard: Space start/pause, [ ] tempo, arrows skip posture in class.
   useEffect(() => {
@@ -613,7 +657,7 @@ export function Pacer() {
   const count = curBeat >= 0 ? Math.min(curBeat + 1, liveBeats) : null;
   const rate = breathsPerMinute(settings);
   const rateLine = `${fmtRate(rate)} ${isPulse ? 'pulses' : 'breaths'} / min`;
-  const classMinutes = Math.round((classTotalSeconds * (60 / settings.bpm)) / 60);
+  const classMinutes = programMinutes(program, settings.bpm);
 
   // What the idle card says about last time: computed once per idle spell,
   // not per beat. "Listen for" names the two shakiest hand-offs the trainer
@@ -648,8 +692,29 @@ export function Pacer() {
           Each posture holds for its class time, counted in beats — slow the tempo and the whole
           class slows with it.
         </p>
+        <div className="pc-programs" role="group" aria-label="Class program">
+          {PROGRAMS.map((pr) => (
+            <button
+              key={pr.id}
+              type="button"
+              aria-pressed={pr.id === program.id}
+              className="pc-program"
+              onClick={() => {
+                setProgram(pr);
+                setStartIdx(0);
+              }}
+            >
+              <span className="pc-program-head">
+                <span className="pc-program-name">{pr.name}</span>
+                <span className="pc-program-min">{programMinutes(pr, settings.bpm)} min</span>
+              </span>
+              <span className="pc-program-blurb">{pr.blurb}</span>
+            </button>
+          ))}
+        </div>
         <p className="pc-class-total text-faint">
-          Whole class ≈ <strong>{classMinutes} min</strong> at {settings.bpm} BPM.
+          {program.name} ≈ <strong>{classMinutes} min</strong> at {settings.bpm} BPM, then two
+          minutes of final savasana.
         </p>
         {idleInfo && (idleInfo.last || idleInfo.shaky.length > 0) && (
           <p className="pc-class-last text-soft">
@@ -658,9 +723,11 @@ export function Pacer() {
                 Last class{' '}
                 {idleInfo.ago === 0 ? 'today' : idleInfo.ago === 1 ? 'yesterday' : `${idleInfo.ago} days ago`}
                 {' — '}
-                {idleInfo.last.fromOrder === 1 && idleInfo.last.toOrder === poses.length
-                  ? 'the whole class'
-                  : `postures ${idleInfo.last.fromOrder}–${idleInfo.last.toOrder}`}
+                {idleInfo.last.program === 'short'
+                  ? 'the short class'
+                  : idleInfo.last.fromOrder === 1 && idleInfo.last.toOrder === poses.length
+                    ? 'the whole class'
+                    : `postures ${idleInfo.last.fromOrder}–${idleInfo.last.toOrder}`}
                 , ≈{Math.max(1, Math.round(idleInfo.last.pacedSeconds / 60))} min
                 {idleInfo.last.rehearsed &&
                   idleInfo.last.handoffs !== undefined &&
@@ -700,7 +767,7 @@ export function Pacer() {
             value={startIdx}
             onChange={(e) => setStartIdx(Number(e.target.value))}
           >
-            {poses.map((p, i) => (
+            {classPoses.map((p, i) => (
               <option key={p.id} value={i}>
                 {p.order} · {p.englishName}
               </option>
@@ -719,7 +786,9 @@ export function Pacer() {
         <p className="text-soft">
           ≈ {Math.max(1, Math.round(classRun.pacedSeconds / 60))} minutes of paced breathing.
         </p>
-        {classRun.rehearsedFrom !== undefined && <RehearsalDebrief from={classRun.rehearsedFrom} />}
+        {classRun.rehearsedFrom !== undefined && (
+          <RehearsalDebrief list={classPoses} from={classRun.rehearsedFrom} />
+        )}
         <button type="button" className="pc-btn" onClick={endClass}>
           Back to the pacer
         </button>
@@ -763,8 +832,8 @@ export function Pacer() {
           segmentKind="rest"
           paused={false}
           progress={1}
-          posture={poses.length}
-          postureCount={poses.length}
+          posture={classPoses.length}
+          postureCount={classPoses.length}
           nextLine="Lie back and let the breath go — the bell rings at two minutes."
           eyebrow="Class complete"
           canPause={false}
@@ -774,16 +843,17 @@ export function Pacer() {
           onNext={() => {}}
           onTogglePause={() => {}}
           onExit={exitImmersion}
+          breath={breath}
         />
       );
     }
   } else {
-    const pose = poses[classRun.idx];
-    const next = poses[classRun.idx + 1];
+    const pose = classPoses[classRun.idx];
+    const next = classPoses[classRun.idx + 1];
     const hidden = cues.rehearse && !classRun.revealed;
     const fracDone = 1 - classRun.left / classRun.budget;
     const progress =
-      (classOffsetSeconds(pose) + fracDone * pose.approxTotalSeconds) / classTotalSeconds;
+      (clock.offsets[classRun.idx] + fracDone * pose.approxTotalSeconds) / clock.total;
     const remainNote =
       classRun.phase === 'paused' ? ' · paused' : !running ? ' · metronome stopped' : '';
     const seg = trackRef.current
@@ -801,7 +871,8 @@ export function Pacer() {
           )}
           <div className="pc-class-poseinfo">
             <p className="eyebrow">
-              Posture {classRun.idx + 1} of {poses.length}
+              Posture {classRun.idx + 1} of {classPoses.length}
+              {program.id !== 'full' && <> · {program.name}</>}
             </p>
             <h3 className="pc-class-posename">
               {hidden ? 'What comes next?' : `${pose.order} · ${pose.englishName}`}
@@ -854,7 +925,7 @@ export function Pacer() {
             className="pc-btn"
             onClick={() => skipPose(1)}
             aria-label="Skip forward one posture"
-            disabled={classRun.idx === poses.length - 1}
+            disabled={classRun.idx === classPoses.length - 1}
           >
             Next ›
           </button>
@@ -886,13 +957,14 @@ export function Pacer() {
           rehearse={cues.rehearse}
           progress={progress}
           posture={classRun.idx + 1}
-          postureCount={poses.length}
+          postureCount={classPoses.length}
           canBack={classRun.idx > 0}
-          canNext={classRun.idx < poses.length - 1}
+          canNext={classRun.idx < classPoses.length - 1}
           onBack={() => skipPose(-1)}
           onNext={() => skipPose(1)}
           onTogglePause={toggleClassPause}
           onExit={exitImmersion}
+          breath={breath}
         />
       );
     }
@@ -1154,9 +1226,11 @@ export function Pacer() {
  * transition KCs — the knowledge map moves from classes, not just
  * quizzes. Never touches the review schedule.
  */
-function RehearsalDebrief({ from }: { from: number }) {
-  // every posture after the first was announced late — a recall each
-  const handoffs = poses.slice(from + 1);
+function RehearsalDebrief({ list, from }: { list: Pose[]; from: number }) {
+  // every posture after the first was announced late — a recall each. Only
+  // hand-offs between neighbours in the sequence are transition KCs; a
+  // short class's jumps (Eagle into Cobra) are recalled but not recorded.
+  const handoffs = list.slice(from + 1).filter((p, i) => list[from + i].order === p.order - 1);
   const [missed, setMissed] = useState<Set<string>>(() => new Set());
   const [saved, setSaved] = useState<number | null>(null);
 

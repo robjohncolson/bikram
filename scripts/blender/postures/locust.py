@@ -63,6 +63,43 @@ BOTH = prone(**{
     'foot.L': BOTH_FOOT, 'foot.R': BOTH_FOOT,
 })
 
+# --- Teaching layers -------------------------------------------------------
+# Guides (side view): the floor line the chin and both hips stay heavy on,
+# and the straight line from the hip the lifted leg rises along (one piece,
+# knee locked).
+HIP_Z = 0.15
+
+
+def leg_guides(leg=UP45, hip_z=HIP_Z, reach=1.25):
+    lx, ly, lz = leg
+    n = (ly * ly + lz * lz) ** 0.5
+    return [
+        {'from': (0, -1.0, 0.0), 'to': (0, 0.95, 0.0)},
+        {'from': (0, Y0, hip_z), 'to': (0, Y0 + reach * ly / n, hip_z + reach * lz / n)},
+    ]
+
+
+def hip_hike(side):
+    """Common mistake: the hip on the lifting side rolls up off the arm to
+    throw the leg higher — the pelvis leaves the floor and the torso tips."""
+    x = -1 if side == 'R' else 1
+    return {
+        'pelvis.location': at(0, Y0, FLOOR + 0.08),
+        'pelvis': (0, -0.94, -0.34), 'spine.lower': (0, -0.98, -0.2),
+        'spine.upper': (0, -1, -0.06),
+        f'hipbone.{side}': (0.55 * x, 0, 0.85),
+        f'thigh.{side}': (0, 0.68, 0.73), f'shin.{side}': (0, 0.68, 0.73),
+        f'foot.{side}': (0, 0.55, 0.83),
+    }
+
+
+# Both legs: guides are the floor line and the legs' line; the mistake is
+# swinging them up with the knees bent.
+BOTH_GHOST = {
+    'shin.L': (0, 0.2, 0.98), 'shin.R': (0, 0.2, 0.98),
+    'foot.L': (0, -0.1, 1), 'foot.R': (0, -0.1, 1),
+}
+
 POSTURE = {
     'id': 'locust',
     'view': 'side',
@@ -70,9 +107,12 @@ POSTURE = {
     'transition': 7,
     'stages': [
         {'label': 'Lie prone', 'pose': LIE, 'hold': 4},
-        {'label': 'Right leg', 'pose': RIGHT, 'hold': 6},
-        {'label': 'Left leg', 'pose': LEFT, 'hold': 6},
-        {'label': 'Both legs', 'pose': BOTH, 'hold': 8},
+        {'label': 'Right leg', 'pose': RIGHT, 'hold': 6,
+         'guides': leg_guides(), 'ghost': hip_hike('R')},
+        {'label': 'Left leg', 'pose': LEFT, 'hold': 6,
+         'guides': leg_guides(), 'ghost': hip_hike('L')},
+        {'label': 'Both legs', 'pose': BOTH, 'hold': 8,
+         'guides': leg_guides(BOTH_LEG, hip_z=0.20), 'ghost': BOTH_GHOST},
         {'label': 'Lower', 'pose': LIE, 'hold': 4},
     ],
 }

@@ -35,6 +35,99 @@
   --pill: var(--text-soft);
 }
 
+/* ——————————————————————————————— tonight card */
+
+.tl-tonight {
+  margin: 28px 0 36px;
+  padding: 20px 22px 22px;
+  border-color: color-mix(in srgb, var(--ember) 30%, var(--border));
+  background: linear-gradient(
+    to bottom right,
+    color-mix(in srgb, var(--ember-soft) 55%, var(--bg-raised)),
+    var(--bg-raised) 70%
+  );
+}
+
+.tl-tonight-title {
+  font-size: clamp(21px, 2.8vw, 26px);
+  margin: 6px 0 6px;
+}
+
+.tl-tonight-body {
+  font-size: 15px;
+  line-height: 1.55;
+  max-width: 58ch;
+}
+
+.tl-tonight-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.tl-tonight-note {
+  font-size: 13.5px;
+}
+
+.tl-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 9px 18px;
+  border-radius: 999px;
+  border: 1px solid var(--border-strong);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-soft);
+  font-variant-numeric: tabular-nums;
+  transition:
+    background 0.15s ease,
+    color 0.15s ease,
+    border-color 0.15s ease,
+    transform 0.15s ease;
+}
+
+.tl-btn:hover {
+  color: var(--text);
+  border-color: var(--text-faint);
+}
+
+.tl-btn-primary {
+  background: var(--ember);
+  border-color: var(--ember);
+  color: var(--bg);
+}
+
+.tl-btn-primary:hover {
+  background: color-mix(in srgb, var(--ember) 88%, var(--text));
+  border-color: color-mix(in srgb, var(--ember) 88%, var(--text));
+  color: var(--bg);
+  transform: translateY(-1px);
+}
+
+@media (max-width: 560px) {
+  .tl-tonight {
+    margin-top: 22px;
+    padding: 16px 16px 18px;
+  }
+
+  .tl-tonight-body {
+    font-size: 14px;
+  }
+
+  .tl-tonight-actions .tl-btn {
+    flex: 1 1 100%;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tl-btn-primary:hover {
+    transform: none;
+  }
+}
+
 /* ——————————————————————————————— the rail */
 
 .tl-flow {

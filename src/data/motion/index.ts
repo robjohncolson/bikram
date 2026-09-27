@@ -8,7 +8,9 @@ import { motionManifest } from './manifest';
 
 export const motionByPose: Record<string, PoseMotion> = motionManifest;
 
-/** Public URLs of every sprite sheet (for offline precaching). */
+/** Public URLs of every sprite sheet, layer sheets included (for offline precaching). */
 export function motionUrls(): string[] {
-  return Object.values(motionManifest).map((m) => m.sprite);
+  return Object.values(motionManifest).flatMap((m) =>
+    [m.sprite, m.guides, m.ghost].filter((u): u is string => Boolean(u)),
+  );
 }

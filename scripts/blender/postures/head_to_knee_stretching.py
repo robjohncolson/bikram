@@ -70,12 +70,15 @@ def folded_leg(side, sx):
     return {
         'thigh.' + side: (sx * 0.78, -0.62, -0.08),
         'shin.' + side: (-sx * 0.97, -0.25, 0),
-        'foot.' + side: (-sx * 0.35, -0.93, 0.05),
+        # rolled so the sole turns in against the other thigh (and the heel
+        # spur stays off the floor)
+        'foot.' + side: {'dir': (-sx * 0.35, -0.93, 0.05), 'roll': -sx * 70},
     }
 
 
-def arms_to(dirs, targets, pole):
-    """Hands to world targets (wrists placed just behind each target)."""
+def arms_to(dirs, targets, pole, hands=None):
+    """Wrists to world targets; `hands` (side → direction) aims the hands,
+    otherwise they carry on from the forearm, tipped up a little."""
     neck = neck_of(dirs)
     out = {}
     for side, sx in (('L', 1), ('R', -1)):
@@ -86,8 +89,15 @@ def arms_to(dirs, targets, pole):
         up, fo = reach(shoulder, tgt, pole)
         out['upperarm.' + side] = up
         out['forearm.' + side] = fo
-        out['hand.' + side] = _n(_add(fo, (0, -0.3, 0.4)))
+        out['hand.' + side] = hands[side] if hands else _n(_add(fo, (0, -0.3, 0.4)))
     return out
+
+
+def grip(ball, sx):
+    """Wrist on the `sx` side of a toes-up foot, just heel-ward of the ball;
+    the hand wraps round in front of the sole so the palm swelling sits on
+    the foot's edge and the fingers cross the sole (interlaced)."""
+    return _add(ball, (sx * 0.075, 0.04, -0.01)), _n((-sx * 0.55, -0.83, 0.0))
 
 
 BASE = {'pelvis.location': offset(0, PELVIS[1], PELVIS[2] - 1.0)}
@@ -102,21 +112,61 @@ SIT = {**BASE, **_legs_both, **TALL,
        **arms_to(TALL, {'L': (0.14, PELVIS[1] - 0.35, 0.2), 'R': (-0.14, PELVIS[1] - 0.35, 0.2)}, (0, 1, 0))}
 
 
-def head_to_knee(side, sx):
-    """`side` is the straight leg; the torso folds over it."""
+def fold_torso(sx):
+    """The head-to-knee fold over the `sx` leg: hinged at the hips, the back
+    rounding over the thigh, forehead down on the knee."""
+    return {
+        'pelvis': (sx * 0.06, -0.65, 0.76),
+        'spine.lower': (sx * 0.1, -0.85, 0.5),
+        'spine.upper': (sx * 0.08, -0.9, 0.0),
+        'neck': (sx * 0.03, -0.6, -0.8),
+        'head': (0, -0.8, -0.6),
+    }
+
+
+def head_to_knee(side, sx, torso=None):
+    """`side` is the straight leg; the torso folds over it, forehead to the
+    knee, both hands wrapping the foot."""
     other, ox = ('L', 1) if side == 'R' else ('R', -1)
     legs, ball = straight_leg(side, sx, splay=0.12)
     legs.update(folded_leg(other, ox))
-    torso = {
-        'pelvis': (sx * 0.06, -0.5, 0.87),
-        'spine.lower': (sx * 0.1, -0.7, 0.7),
-        'spine.upper': (sx * 0.1, -0.85, 0.3),
-        'neck': (sx * 0.05, -0.5, -0.87),
-        'head': (0, -0.7, -0.7),
-    }
-    wrist = _add(ball, (0, 0.06, 0.02))
-    arms = arms_to(torso, {'L': _add(wrist, (0.07, 0, 0)), 'R': _add(wrist, (-0.07, 0, 0))}, (0, 0.2, -1))
+    torso = torso or fold_torso(sx)
+    (w_out, h_out), (w_in, h_in) = grip(ball, sx), grip(ball, -sx)
+    targets = {side: w_out, other: w_in}
+    hands = {side: h_out, other: h_in}
+    arms = arms_to(torso, targets, (0, 0.2, -1), hands)
     return {**BASE, **legs, **torso, **arms}
+
+
+def diff(pose, base):
+    return {k: v for k, v in pose.items() if base.get(k) != v}
+
+
+def leg_line(side, sx, splay=0.0):
+    """Floor line under a straight leg, from behind the hip to past the toes."""
+    d = _n((sx * splay, -1, 0))
+    hip = (PELVIS[0] + sx * 0.10, PELVIS[1], 0.02)
+    return {'from': _add(hip, d, -0.08), 'to': _add(hip, d, THIGH + SHIN + 0.2)}
+
+
+def knee_guides(side, sx):
+    """The floor line the straight leg stays flat along, and the vertical at
+    the knee the forehead comes down to."""
+    knee = _add((PELVIS[0] + sx * 0.10, PELVIS[1], 0.0), _n((sx * 0.12, -1, 0)), THIGH)
+    return [leg_line(side, sx, 0.12),
+            {'from': knee, 'to': (knee[0], knee[1], 0.45)}]
+
+
+def knee_ghost(side, sx):
+    """Common mistake: the hips stay upright and the back humps to reach the
+    foot, so the head hangs over the thigh, short of the knee."""
+    return diff(head_to_knee(side, sx, {
+        'pelvis': (sx * 0.03, -0.25, 0.97),
+        'spine.lower': (sx * 0.08, -0.6, 0.8),
+        'spine.upper': (sx * 0.06, -0.95, 0.3),
+        'neck': (sx * 0.02, -0.6, -0.8),
+        'head': (0, -0.35, -0.94),
+    }), head_to_knee(side, sx))
 
 
 RIGHT = head_to_knee('R', -1)
@@ -133,8 +183,27 @@ FOLD_TORSO = {
     'head': (0, -0.95, -0.3),
 }
 FOLD = {**BASE, **_legs, **FOLD_TORSO,
-        **arms_to(FOLD_TORSO, {'L': _add(_ballL, (0.06, 0.06, 0.02)), 'R': _add(_ballR, (-0.06, 0.06, 0.02))},
-                  (0, 0, -1))}
+        **arms_to(FOLD_TORSO, {'L': grip(_ballL, 1)[0], 'R': grip(_ballR, -1)[0]}, (0, 0, -1),
+                  {'L': grip(_ballL, 1)[1], 'R': grip(_ballR, -1)[1]})}
+
+FOLD_GUIDES = [
+    leg_line('R', -1),
+    # the long, flat line the back lies along: belly, then chest, then head
+    {'from': (0, PELVIS[1] - 0.05, 0.36), 'to': (0, PELVIS[1] - 0.95, 0.36)},
+]
+
+# Common mistake: sitting back on the tailbone and hunching to reach the
+# feet — the back humps up above the flat line, the hands fall short.
+_FOLD_GHOST_TORSO = {
+    'pelvis': (0, -0.2, 0.98),
+    'spine.lower': (0, -0.6, 0.8),
+    'spine.upper': (0, -0.95, 0.3),
+    'neck': (0, -0.6, -0.8),
+    'head': (0, -0.35, -0.94),
+}
+FOLD_GHOST = diff({**FOLD, **_FOLD_GHOST_TORSO, **arms_to(
+    _FOLD_GHOST_TORSO, {'L': grip(_ballL, 1)[0], 'R': grip(_ballR, -1)[0]}, (0, 0, -1),
+    {'L': grip(_ballL, 1)[1], 'R': grip(_ballR, -1)[1]})}, FOLD)
 
 POSTURE = {
     'id': 'head-to-knee-stretching',
@@ -143,9 +212,12 @@ POSTURE = {
     'transition': 8,
     'stages': [
         {'label': 'Sit', 'pose': SIT, 'hold': 4},
-        {'label': 'Right leg', 'pose': RIGHT, 'hold': 7},
-        {'label': 'Left leg', 'pose': LEFT, 'hold': 7},
-        {'label': 'Both legs', 'pose': FOLD, 'hold': 9},
+        {'label': 'Right leg', 'pose': RIGHT, 'hold': 7,
+         'guides': knee_guides('R', -1), 'ghost': knee_ghost('R', -1)},
+        {'label': 'Left leg', 'pose': LEFT, 'hold': 7,
+         'guides': knee_guides('L', 1), 'ghost': knee_ghost('L', 1)},
+        {'label': 'Both legs', 'pose': FOLD, 'hold': 9,
+         'guides': FOLD_GUIDES, 'ghost': FOLD_GHOST},
         {'label': 'Release', 'pose': SIT, 'hold': 4},
     ],
 }

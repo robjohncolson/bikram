@@ -49,6 +49,27 @@ def tree(lift):
     }
 
 
+def tree_guides(lift):
+    """The plumb line up through the standing leg (the lamp post), and the
+    hip line that stays level."""
+    s = 1 if lift == 'R' else -1          # X sign of the standing side
+    return [
+        {'from': (s * 0.13, 0, 0.0), 'to': (s * 0.13, 0, 1.85)},
+        {'from': (-0.42, 0, 0.98), 'to': (0.42, 0, 0.98)},
+    ]
+
+
+def tree_ghost(lift):
+    """Common mistake: the hip stays closed -- the folded knee points
+    forward instead of out and down, and that side of the pelvis hitches up."""
+    s = -1 if lift == 'R' else 1
+    return {
+        'pelvis': (-s * 0.08, 0, 1),
+        f'thigh.{lift}': (s * 0.22, -0.72, -0.66),
+        f'shin.{lift}': (-s * 0.6, 0.3, 0.2),
+    }
+
+
 STAND = {}
 
 POSTURE = {
@@ -59,9 +80,11 @@ POSTURE = {
     'stages': [
         {'label': 'Stand', 'pose': STAND, 'hold': 3},
         {'label': 'Lift right foot', 'pose': hold_foot('R'), 'hold': 3},
-        {'label': 'Right side', 'pose': tree('R'), 'hold': 9},
+        {'label': 'Right side', 'pose': tree('R'), 'hold': 9,
+         'guides': tree_guides('R'), 'ghost': tree_ghost('R')},
         {'label': 'Release', 'pose': STAND, 'hold': 3},
-        {'label': 'Left side', 'pose': tree('L'), 'hold': 6},
+        {'label': 'Left side', 'pose': tree('L'), 'hold': 6,
+         'guides': tree_guides('L'), 'ghost': tree_ghost('L')},
         {'label': 'Release', 'pose': STAND, 'hold': 3},
     ],
 }

@@ -116,4 +116,19 @@ describe('practice journal', () => {
     window.localStorage.setItem(JOURNAL_KEY, 'not json');
     expect(loadJournal()).toEqual(emptyJournal());
   });
+
+  it('keeps the class program and loads records stored before programs', () => {
+    const j = emptyJournal();
+    recordClass(j, rec(NOW - DAY));
+    recordClass(j, rec(NOW, { program: 'short', fromOrder: 1, toOrder: 26, pacedSeconds: 1_000 }));
+    saveJournal(j);
+    const back = loadJournal();
+    expect(back.classes[0].program).toBeUndefined();
+    expect(back.classes[1].program).toBe('short');
+    window.localStorage.setItem(
+      JOURNAL_KEY,
+      JSON.stringify({ version: 1, classes: [{ ...rec(NOW), program: 42 }], days: [] }),
+    );
+    expect(loadJournal().classes[0].program).toBeUndefined();
+  });
 });

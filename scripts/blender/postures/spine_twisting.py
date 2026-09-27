@@ -5,12 +5,14 @@ Seated (pelvis joint at z≈0.12, sit bones on the floor). Right side: the left
 knee folds down in front with the left heel beside the right hip, the right
 foot steps over and plants outside the left knee, the left arm hooks over the
 outside of the right knee to hold the left knee, and the right hand plants
-on the floor behind. The twist itself is shown by rotating the shoulder
-line (the clavicles) toward the right-back — the rig's bones are pure
-directions with no roll, so the spine cannot visibly corkscrew and the tube
-head has no face to turn; the shoulder line and the arms carry the read.
-The left side is the exact mirror (`mirror`). Arms are solved by a small
-two-bone reach so the hands land on their targets.
+on the floor behind. The twist ROLLS the spine: `spine.lower` −25° and
+`spine.upper` −35° about their own (vertical) axes, so the omitted
+clavicles ride the roll and the shoulder line turns ~60° to the right while
+the hips stay square. The left side is the exact mirror (`mirror`, which
+flips roll signs too). Arms are solved by a small two-bone reach from the
+rolled shoulder positions so the hands land on their targets. The full
+twists carry teaching guides (tall midline, square hip line, turned
+shoulder line) and a ghost of the common mistake.
 """
 import math
 
@@ -71,18 +73,37 @@ LEGS_RIGHT = {
 }
 
 
-def arms(clav_l, clav_r, twist):
+def neck_of(dirs):
+    """World neck joint from the torso directions (tuples or roll dicts)."""
+    p = PELVIS
+    for bone, length in (('pelvis', 0.12), ('spine.lower', 0.15), ('spine.upper', 0.13)):
+        e = dirs.get(bone, (0, 0, 1))
+        p = _add(p, _n(e['dir'] if isinstance(e, dict) else e), length)
+    return p
+
+
+def turned(deg):
+    """Rest clavicle directions (L, R) turned `deg` about the vertical — where
+    the riding clavicles end up under a total spine roll of `deg`."""
+    c, s_ = math.cos(math.radians(deg)), math.sin(math.radians(deg))
+    return (c, s_, 0.2), (-c, -s_, 0.2)
+
+
+def arms(clav_l, clav_r, twist, neck=NECK, with_clavicles=True):
     """Left arm hooks outside the right knee to the left knee; right hand
-    on the floor behind. `twist` 0..1 pulls the right hand further behind."""
-    sl = _add(NECK, _n(clav_l), 0.2044)
-    sr = _add(NECK, _n(clav_r), 0.2044)
+    on the floor behind. `twist` 0..1 pulls the right hand further behind.
+    With `with_clavicles=False` the clavicles are left to ride the spine
+    roll (`clav_l`/`clav_r` then only locate the shoulders)."""
+    sl = _add(neck, _n(clav_l), 0.2044)
+    sr = _add(neck, _n(clav_r), 0.2044)
     upL, foL = reach(sl, _add(kneeL, (-0.02, 0.02, 0.12)), (-1, -0.3, 0.4))
     upR, foR = reach(sr, (-0.08 - 0.05 * twist, PELVIS[1] + 0.25 + 0.08 * twist, 0.12), (-1, 0.3, 0))
-    return {
-        'clavicle.L': clav_l, 'clavicle.R': clav_r,
+    out = {'clavicle.L': clav_l, 'clavicle.R': clav_r} if with_clavicles else {}
+    out.update({
         'upperarm.L': upL, 'forearm.L': foL, 'hand.L': _n(_add(foL, (0, 0, -0.3))),
         'upperarm.R': upR, 'forearm.R': foR, 'hand.R': _n(_add(foR, (0, 0.3, -0.5))),
-    }
+    })
+    return out
 
 
 BASE = {'pelvis.location': offset(0, PELVIS[1], PELVIS[2] - 1.0),
@@ -103,10 +124,46 @@ SIT = {
 SET_RIGHT = {**BASE, **LEGS_RIGHT, 'neck': (0, 0, 1), 'head': (0, 0, 1),
              **arms((1, -0.05, 0.2), (-1, 0.05, 0.2), 0)}
 
-# Shoulder line turned ~60 degrees to the right: left shoulder forward,
-# right shoulder back; the head follows a touch over the right shoulder.
-RIGHT = {**BASE, **LEGS_RIGHT, 'neck': (-0.08, 0.06, 1), 'head': (-0.15, 0.12, 1),
-         **arms((0.5, -0.87, 0.2), (-0.5, 0.87, 0.2), 1)}
+# The twist: the spine rolls −25° low and −35° high (≈ −60° at the
+# shoulders, to the right); the clavicles ride it, left shoulder forward,
+# right shoulder back. The head follows a touch over the right shoulder.
+TWIST = -60
+RIGHT = {**BASE, **LEGS_RIGHT,
+         'spine.lower': {'dir': (0, 0, 1), 'roll': -25},
+         'spine.upper': {'dir': (0, 0, 1), 'roll': -35},
+         'neck': (-0.08, 0.06, 1), 'head': (-0.15, 0.12, 1),
+         **arms(*turned(TWIST), 1, with_clavicles=False)}
+
+# Guides: the vertical midline the spine grows tall on (no leaning), the
+# hip line that stays square, and the shoulder line that turns.
+SHOULDER_Z = PELVIS[2] + 0.44
+
+
+def twist_guides(deg):
+    c, s_ = math.cos(math.radians(deg)), math.sin(math.radians(deg))
+    mid = (PELVIS[0], PELVIS[1])
+    return [
+        {'from': (mid[0], mid[1], 0.0), 'to': (mid[0], mid[1], 1.0)},
+        {'from': (mid[0] - 0.3, mid[1], PELVIS[2]), 'to': (mid[0] + 0.3, mid[1], PELVIS[2])},
+        {'from': (mid[0] - 0.36 * c, mid[1] - 0.36 * s_, SHOULDER_Z),
+         'to': (mid[0] + 0.36 * c, mid[1] + 0.36 * s_, SHOULDER_Z)},
+    ]
+
+
+RIGHT_GUIDES = twist_guides(TWIST)
+
+# Common mistake: leaning back and sideways onto the planted hand while
+# turning — the spine slumps off the midline and the turn is shallower.
+_GHOST_TORSO = {
+    'pelvis': (-0.08, 0.2, 0.98),
+    'spine.lower': {'dir': (-0.18, 0.28, 0.94), 'roll': -15},
+    'spine.upper': {'dir': (-0.22, 0.15, 0.96), 'roll': -20},
+    'neck': (-0.2, 0.0, 1), 'head': (-0.2, 0.05, 1),
+}
+_gl, _gr = turned(-35)
+RIGHT_GHOST = {**_GHOST_TORSO,
+               **arms((_gl[0], _gl[1], 0.05), (_gr[0], _gr[1], -0.1), 0.6,
+                      neck=neck_of(_GHOST_TORSO))}
 
 
 def mirror(pose):
@@ -117,24 +174,36 @@ def mirror(pose):
             out[k] = v
             continue
         name = k[:-2] + ('.R' if k.endswith('.L') else '.L') if k[-2:] in ('.L', '.R') else k
-        out[name] = (-v[0], v[1], v[2])
+        if isinstance(v, dict):
+            d = v['dir']
+            out[name] = {'dir': (-d[0], d[1], d[2]), 'roll': -v['roll']}
+        else:
+            out[name] = (-v[0], v[1], v[2])
     return out
+
+
+def mirror_guides(guides):
+    return [{'from': (-g['from'][0], *g['from'][1:]), 'to': (-g['to'][0], *g['to'][1:])} for g in guides]
 
 
 SET_LEFT = mirror(SET_RIGHT)
 LEFT = mirror(RIGHT)
+LEFT_GUIDES = mirror_guides(RIGHT_GUIDES)
+LEFT_GHOST = mirror(RIGHT_GHOST)
 
 POSTURE = {
     'id': 'spine-twisting',
-    'view': 'back',
+    'view': 'side',
     'frame': {'center_z': 0.45, 'scale': 1.4},
     'transition': 8,
     'stages': [
         {'label': 'Sit', 'pose': SIT, 'hold': 3},
         {'label': 'Set the legs', 'pose': SET_RIGHT, 'hold': 4},
-        {'label': 'Right side', 'pose': RIGHT, 'hold': 9},
+        {'label': 'Right side', 'pose': RIGHT, 'hold': 9,
+         'guides': RIGHT_GUIDES, 'ghost': RIGHT_GHOST},
         {'label': 'Change', 'pose': SET_LEFT, 'hold': 4},
-        {'label': 'Left side', 'pose': LEFT, 'hold': 8},
+        {'label': 'Left side', 'pose': LEFT, 'hold': 8,
+         'guides': LEFT_GUIDES, 'ghost': LEFT_GHOST},
         {'label': 'Release', 'pose': SIT, 'hold': 3},
     ],
 }

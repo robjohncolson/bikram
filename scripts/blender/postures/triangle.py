@@ -56,6 +56,31 @@ def triangle(side):
     }
 
 
+def triangle_guides(side):
+    """The pane the whole body stays in, the horizontal at the bent thigh,
+    and the one vertical line of the arms."""
+    s = -1 if side == 'R' else 1
+    return [
+        {'plane': 'y', 'at': 0.0, 'z': (0.0, 1.95), 'w': 2.3},
+        {'from': (s * 0.1, 0, 0.53), 'to': (s * 0.9, 0, 0.53)},
+        {'from': (s * 0.6, 0, 0.0), 'to': (s * 0.33, 0, 1.85)},
+    ]
+
+
+def triangle_ghost(side):
+    """Common mistake: the torso tips forward out of the plane, chest to
+    the floor, and the top arm drifts forward with it."""
+    s = -1 if side == 'R' else 1
+    o = 'L' if side == 'R' else 'R'
+    return {
+        'spine.lower': (s * 0.7, -0.5, 0.45),
+        'spine.upper': (s * 0.6, -0.75, 0.25),
+        'neck': (s * 0.6, -0.75, 0.2), 'head': (s * 0.5, -0.85, 0.0),
+        f'upperarm.{o}': (s * 0.15, -0.7, 0.7), f'forearm.{o}': (s * 0.15, -0.7, 0.7),
+        f'hand.{o}': (s * 0.15, -0.7, 0.7),
+    }
+
+
 POSTURE = {
     'id': 'triangle',
     'view': 'front',
@@ -64,9 +89,11 @@ POSTURE = {
     'stages': [
         {'label': 'Arms out', 'pose': OPEN, 'hold': 4},
         {'label': 'Bend right knee', 'pose': bend('R'), 'hold': 3},
-        {'label': 'Right side', 'pose': triangle('R'), 'hold': 9},
+        {'label': 'Right side', 'pose': triangle('R'), 'hold': 9,
+         'guides': triangle_guides('R'), 'ghost': triangle_ghost('R')},
         {'label': 'Centre', 'pose': OPEN, 'hold': 3},
-        {'label': 'Left side', 'pose': triangle('L'), 'hold': 7},
+        {'label': 'Left side', 'pose': triangle('L'), 'hold': 7,
+         'guides': triangle_guides('L'), 'ghost': triangle_ghost('L')},
         {'label': 'Rise', 'pose': OPEN, 'hold': 3},
     ],
 }

@@ -17,6 +17,17 @@ describe('motion manifest', () => {
     }
   });
 
+  it('ships every optional layer sheet it names, content-addressed', () => {
+    for (const [id, m] of Object.entries(motionManifest)) {
+      for (const layer of ['guides', 'ghost'] as const) {
+        const url = m[layer];
+        if (url === undefined) continue;
+        expect(url).toMatch(new RegExp(`^/motion/${id}\\.${layer}\\.[0-9a-f]{8}\\.png$`));
+        expect(shipped.has(url), `missing ${url}`).toBe(true);
+      }
+    }
+  });
+
   it('keeps every stage inside the sheet, in order, starting at frame 0', () => {
     for (const m of Object.values(motionManifest)) {
       expect(m.frames).toBeGreaterThan(0);

@@ -6,6 +6,8 @@ on the floor pointing back (+Y). The hands hold the heels throughout the
 curl, so the arms are solved each stage by a tiny two-bone reach
 (`arms_to_heels`) from the torso directions instead of being hand-aimed.
 Side view: the face points screen-right (-Y), the heels sit screen-left.
+The palms land on the heels (`GRIP_HAND`); "Hips up" carries teaching
+guides and a ghost of the common mistake.
 """
 import math
 
@@ -49,10 +51,10 @@ def spine(pelvis_joint, dirs):
     return _add(p, _n(dirs.get('spine.upper', (0, 0, 1))), 0.13)
 
 
-def reach(shoulder, target, pole):
-    """Upper arm / forearm+hand directions from `shoulder` to `target`,
-    elbow bending toward `pole`. Lengths 0.29 and 0.35 (forearm + hand)."""
-    a, b = 0.29, 0.35
+def reach(shoulder, target, pole, b=0.25):
+    """Upper arm / forearm directions from `shoulder` to `target` (the
+    wrist), elbow bending toward `pole`. Lengths 0.29 and `b`."""
+    a = 0.29
     v = tuple(t - s for t, s in zip(target, shoulder))
     d = min(math.sqrt(sum(c * c for c in v)), a + b - 1e-4)
     u = _n(v)
@@ -68,25 +70,36 @@ def reach(shoulder, target, pole):
     return up, fo
 
 
-def arms_to_heels(pelvis_joint, dirs, pole=(0, 1, 0), grip_z=0.12):
+# The feet lie pointed (tops on the floor), so the heel spur sits on top of
+# the ankle at about (±0.10, KNEE_Y + SHIN, 0.13). The grip puts the palm
+# swelling (0.035 past the wrist) on the outside-top of each heel, fingers
+# wrapping back and down around it.
+GRIP_HAND = _n((0, 0.45, -0.9))
+
+
+def arms_to_heels(pelvis_joint, dirs, pole=(0, 1, 0), clav=(0.0, 0.2), hand=GRIP_HAND):
+    """Both palms onto the heels from the torso directions. `clav` is the
+    clavicles' (y, z) lean: (0.45, -0.3) draws the shoulders back toward the
+    heels, which the curled stages need for the straight arms to arrive."""
     neck = spine(pelvis_joint, dirs)
     out = {}
     for side, sx in (('L', 1), ('R', -1)):
-        clav = _n((sx, 0.0, 0.2))
-        out['clavicle.' + side] = clav
-        shoulder = _add(neck, clav, 0.2044)
-        heel = (sx * 0.12, KNEE_Y + SHIN - 0.02, grip_z)
-        up, fo = reach(shoulder, heel, pole)
+        c = _n((sx, clav[0], clav[1]))
+        out['clavicle.' + side] = c
+        shoulder = _add(neck, c, 0.2044)
+        palm = (sx * 0.13, KNEE_Y + SHIN - 0.01, 0.18)
+        wrist = _add(palm, hand, -0.035)
+        up, fo = reach(shoulder, wrist, pole)
         out['upperarm.' + side] = up
         out['forearm.' + side] = fo
-        out['hand.' + side] = fo
+        out['hand.' + side] = hand
     return out
 
 
-def stage(thigh, torso, pole=(0, 1, 0), arms=None):
+def stage(thigh, torso, pole=(0, 1, 0), arms=None, clav=(0.0, 0.2)):
     legs, pj = kneel(thigh)
     pose = {**legs, **torso}
-    pose.update(arms if arms is not None else arms_to_heels(pj, torso, pole))
+    pose.update(arms if arms is not None else arms_to_heels(pj, torso, pole, clav))
     return pose
 
 
@@ -112,13 +125,36 @@ ROLL = stage((0, -0.75, -0.66), {
     'head': (0, 0.35, -0.94),
 })
 
-HIPS_UP = stage((0, -0.05, -1), {
-    'pelvis': (0, -0.75, 0.66),
-    'spine.lower': (0, -0.8, -0.6),
-    'spine.upper': (0, -0.15, -0.99),
-    'neck': (0, 0.4, -0.92),
-    'head': (0, 0.6, -0.8),
-}, pole=(0, 0, 1))
+HIPS_UP_THIGH = (0, -0.1, -1)
+HIPS_UP = stage(HIPS_UP_THIGH, {
+    'pelvis': (0, -0.7, 0.72),
+    'spine.lower': (0, -0.75, -0.66),
+    'spine.upper': (0, -0.05, -1),
+    'neck': (0, 0.45, -0.9),
+    'head': (0, 0.35, -0.94),
+}, pole=(0, 0, 1), clav=(0.45, -0.3))
+_, _HIPS_UP_PJ = kneel(HIPS_UP_THIGH)
+
+# Guides: the vertical at the knees (edge-on pane from the side) — the
+# crown lands at its foot and the hips stack straight up it — and the
+# height the hips lift to, carried back over the heels the hands pull on.
+HIPS_UP_GUIDES = [
+    {'plane': 'y', 'at': KNEE_Y, 'z': (0.0, 0.85), 'w': 0.6},
+    {'from': (0, KNEE_Y - 0.12, _HIPS_UP_PJ[2] + 0.1), 'to': (0, KNEE_Y + SHIN + 0.1, _HIPS_UP_PJ[2] + 0.1)},
+]
+
+# Common mistake: the hips stay low toward the heels, the head takes the
+# weight further forward and the arms go slack (elbows bent, no pull).
+GHOST_THIGH = (0, -0.5, -0.87)
+HIPS_UP_GHOST = {
+    k: v for k, v in stage(GHOST_THIGH, {
+        'pelvis': (0, -0.85, 0.52),
+        'spine.lower': (0, -0.9, -0.3),
+        'spine.upper': (0, -0.3, -0.95),
+        'neck': (0, 0.2, -0.98),
+        'head': (0, 0.3, -0.95),
+    }, pole=(0, -0.2, -1)).items() if HIPS_UP.get(k) != v
+}
 
 POSTURE = {
     'id': 'rabbit',
@@ -129,7 +165,8 @@ POSTURE = {
         {'label': 'Sit on the heels', 'pose': SIT, 'hold': 4},
         {'label': 'Hold the heels', 'pose': HOLD, 'hold': 4},
         {'label': 'Roll forward', 'pose': ROLL, 'hold': 5},
-        {'label': 'Hips up', 'pose': HIPS_UP, 'hold': 10},
+        {'label': 'Hips up', 'pose': HIPS_UP, 'hold': 10,
+         'guides': HIPS_UP_GUIDES, 'ghost': HIPS_UP_GHOST},
         {'label': 'Rise', 'pose': HOLD, 'hold': 4},
     ],
 }

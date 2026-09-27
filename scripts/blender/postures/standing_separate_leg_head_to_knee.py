@@ -52,6 +52,28 @@ def fold(front, back):
     }
 
 
+def fold_guides(front):
+    """The front leg as the straight '1' (drawn long so it shows past the
+    hip and foot), and the plumb line the tucked head drops down onto the
+    front knee."""
+    x = -0.1 if front == 'R' else 0.1
+    return [
+        {'from': (x, 0.16, 0.98), 'to': (x, -0.62, 0.0)},
+        {'from': (0, -0.27, 0.38), 'to': (0, -0.27, 1.12)},
+    ]
+
+
+def fold_ghost(front, back):
+    """Common mistake: the head reaches forward for the knee instead of the
+    chin tucking -- back flatter, neck craned, forehead past the knee."""
+    return {
+        'pelvis': (0, -0.85, 0.52),
+        'spine.lower': (0, -0.85, -0.52),
+        'spine.upper': (0, -0.8, -0.6),
+        'neck': (0, -0.75, -0.66), 'head': (0, -0.6, -0.8),
+    }
+
+
 POSTURE = {
     'id': 'standing-separate-leg-head-to-knee',
     'view': 'side',
@@ -60,9 +82,11 @@ POSTURE = {
     'stages': [
         {'label': 'Arms up', 'pose': UP, 'hold': 3},
         {'label': 'Face the right foot', 'pose': split('R', 'L'), 'hold': 4},
-        {'label': 'Head to knee', 'pose': fold('R', 'L'), 'hold': 10},
+        {'label': 'Head to knee', 'pose': fold('R', 'L'), 'hold': 10,
+         'guides': fold_guides('R'), 'ghost': fold_ghost('R', 'L')},
         {'label': 'Rise', 'pose': split('R', 'L'), 'hold': 3},
-        {'label': 'Left side', 'pose': fold('L', 'R'), 'hold': 6},
+        {'label': 'Left side', 'pose': fold('L', 'R'), 'hold': 6,
+         'guides': fold_guides('L'), 'ghost': fold_ghost('L', 'R')},
         {'label': 'Rise', 'pose': UP, 'hold': 3},
     ],
 }

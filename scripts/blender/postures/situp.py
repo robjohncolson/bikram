@@ -96,19 +96,34 @@ SIT_UP = {
 }
 
 
-def fold():
-    pelvis, lower, upper = (0, 0.5, 0.87), (0, 0.8, 0.6), (0, 0.9, 0.4)
+def fold(bent=False):
+    """The forward fold. `bent` is the ghost: knees bent up off the floor,
+    the low back rounded and upright, the head dropped toward the knees."""
+    if bent:
+        pelvis, lower, upper = (0, 0.2, 0.98), (0, 0.6, 0.8), (0, 0.9, 0.35)
+        head_dirs = {'neck': (0, 0.8, -0.6), 'head': (0, 0.6, -0.8)}
+    else:
+        pelvis, lower, upper = (0, 0.5, 0.87), (0, 0.8, 0.6), (0, 0.9, 0.4)
+        head_dirs = {'neck': (0, 0.95, 0.3), 'head': (0, 0.97, 0.2)}
     neck = neck_of(pelvis, lower, upper)
     pose = {
         'pelvis.location': LOC,
         'pelvis': pelvis, 'spine.lower': lower, 'spine.upper': upper,
-        'neck': (0, 0.95, 0.3), 'head': (0, 0.97, 0.2),
+        **head_dirs,
         **LEGS,
     }
+    feet_y, feet_z = 0.74, 0.26
+    if bent:
+        th, sh = _n((0, 0.82, 0.57)), _n((0, 0.82, -0.57))
+        for s, sign in (('R', -1), ('L', 1)):
+            pose[f'thigh.{s}'] = (sign * 0.03, th[1], th[2])
+            pose[f'shin.{s}'] = (sign * 0.03, sh[1], sh[2])
+        ankle = _add(_add((0, 0.02, 0.10), th, 0.44), sh, 0.44)
+        feet_y, feet_z = ankle[1], ankle[2] + 0.16
     for s, sign in (('R', -1), ('L', 1)):
         clav = _n((sign * 0.95, 0.3, -0.1))
         shoulder = _add(neck, clav, 0.204)
-        wrist = (sign * 0.16, 0.74, 0.26)             # hands around the balls of the feet
+        wrist = (sign * 0.16, feet_y, feet_z)         # hands around the balls of the feet
         up, fo = two_bone(shoulder, wrist, UPPER, FORE, (sign * 0.5, 0, -1))
         pose[f'clavicle.{s}'] = clav
         pose[f'upperarm.{s}'] = up
@@ -116,6 +131,21 @@ def fold():
         pose[f'hand.{s}'] = (-sign * 0.3, 0.6, 0.4)
     return pose
 
+
+def diff(pose, base):
+    """Only the entries of `pose` that differ from `base` (a ghost overlay)."""
+    return {k: v for k, v in pose.items() if base.get(k) != v}
+
+
+FOLD = fold()
+FOLD_GHOST = diff(fold(bent=True), FOLD)
+
+# Guides: the floor line the straight legs and heels stay on, and the
+# vertical over the knees the forehead dives toward.
+FOLD_GUIDES = [
+    {'from': (0, -0.3, 0.0), 'to': (0, 1.1, 0.0)},
+    {'from': (0, 0.44, 0.0), 'to': (0, 0.44, 0.62)},
+]
 
 POSTURE = {
     'id': 'situp',
@@ -125,7 +155,8 @@ POSTURE = {
     'stages': [
         {'label': 'Arms overhead', 'pose': {**SUPINE, **ARMS_OVERHEAD}, 'hold': 5},
         {'label': 'Sit up', 'pose': SIT_UP, 'hold': 5},
-        {'label': 'Fold forward', 'pose': fold(), 'hold': 10},
+        {'label': 'Fold forward', 'pose': FOLD, 'hold': 10,
+         'guides': FOLD_GUIDES, 'ghost': FOLD_GHOST},
         {'label': 'Lie back', 'pose': {**SUPINE, **ARMS_DOWN}, 'hold': 5},
     ],
 }

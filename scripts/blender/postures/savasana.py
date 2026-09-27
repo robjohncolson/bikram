@@ -62,6 +62,13 @@ STILL = {
     'foot.L': (0.35, 0.45, 0.8), 'foot.R': (-0.35, 0.45, 0.8),
 }
 
+# Guide: one line — the floor under the body, which from the side is also
+# the midline the relaxed feet fall away from. No ghost: stillness has no
+# single wrong shape worth drawing.
+STILL_GUIDES = [
+    {'from': (0, -1.05, 0.0), 'to': (0, 1.1, 0.0)},
+]
+
 POSTURE = {
     'id': 'savasana',
     'view': 'side',
@@ -70,6 +77,6 @@ POSTURE = {
     'stages': [
         {'label': 'Lie down', 'pose': LIE_DOWN, 'hold': 5},
         {'label': 'Settle', 'pose': SETTLE, 'hold': 6},
-        {'label': 'Stillness', 'pose': STILL, 'hold': 12},
+        {'label': 'Stillness', 'pose': STILL, 'hold': 12, 'guides': STILL_GUIDES},
     ],
 }

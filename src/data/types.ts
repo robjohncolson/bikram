@@ -174,6 +174,16 @@ export interface MotionStage {
 export interface PoseMotion {
   /** public URL of the PNG sheet */
   sprite: string;
+  /**
+   * optional guides layer (reference lines/planes, no body): same frame
+   * layout as `sprite`, blank where a stage has no guides
+   */
+  guides?: string;
+  /**
+   * optional ghost layer (a second figure in the common-mistake pose):
+   * same frame layout as `sprite`, drawn only during that stage's hold
+   */
+  ghost?: string;
   /** cell size in px (square) */
   frame: number;
   /** total frame count */

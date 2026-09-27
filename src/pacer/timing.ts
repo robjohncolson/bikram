@@ -100,3 +100,30 @@ export const PACER_PRESETS: PacerPreset[] = [
     beatsPerBar: 1,
   },
 ];
+
+/** The breath a figure should be doing, and how long that phase lasts. */
+export interface BreathCue {
+  phase: 'inhale' | 'exhale';
+  /** length of this phase in seconds (one bar) */
+  seconds: number;
+}
+
+/**
+ * Breath phase for a beat's bar: even bars inhale, odd bars exhale, and a
+ * phase lasts one bar (`beatsPerBar × beatSeconds`). Pulse mode (one-beat
+ * bars, Kapalbhati) flips every beat — too fast to read as breathing — so
+ * it, and any nonsensical input, returns undefined: no breath visual.
+ */
+export function breathPhaseFromBeat(
+  bar: number,
+  beatsPerBar: number,
+  beatSecs: number,
+): BreathCue | undefined {
+  if (!Number.isFinite(bar) || bar < 0) return undefined;
+  if (!Number.isFinite(beatsPerBar) || beatsPerBar <= 1) return undefined;
+  if (!Number.isFinite(beatSecs) || beatSecs <= 0) return undefined;
+  return {
+    phase: Math.floor(bar) % 2 === 0 ? 'inhale' : 'exhale',
+    seconds: beatsPerBar * beatSecs,
+  };
+}

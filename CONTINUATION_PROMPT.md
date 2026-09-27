@@ -4,9 +4,41 @@ Read `CLAUDE.md` first (architecture + conventions; it is current). This file is
 newest-first log of where the work stands and what is still open.
 
 **Live**: https://bikram-chi.vercel.app · **Repo**: https://github.com/robjohncolson/bikram (PUBLIC
-since 2026-08-27) · deploy with `npx vercel deploy --prod --yes` · `npm test` = 91 tests / 11 files,
-all green on the 2026-09-27 working tree (uncommitted — see the top entry). **Deploys now happen from GitHub on
+since 2026-08-27) · deploy with `npx vercel deploy --prod --yes` · `npm test` = 103+ tests / 14 files,
+all green on the 2026-09-27 working tree (see the top entries). **Deploys now happen from GitHub on
 push to `main` via Vercel's Git integration**; the CLI token on this machine is expired.
+
+---
+
+## ✔ 2026-09-27 (later) — TEACHING LAYERS, BREATH, SHORT CLASS, TONIGHT CARD (UNCOMMITTED until pushed)
+
+Second pass on the figures, same pipeline (Opus implements → Codex gpt-6-astra reviews → fixes).
+
+- **Rig**: hands/feet volumes on the skin mesh; per-bone `roll` (`{'dir', 'roll'}`; omitted children
+  ride a rolled parent — how Spine Twisting's shoulder line now turns); **guides** (world-space
+  lines/planes → `<id>.guides.<sha>.png`) and **ghost** (a mistake pose on a second mannequin →
+  `<id>.ghost.<sha>.png`), identical frame layout to the figure sheet, blank outside their stage.
+  All 26 modules carry guides + a ghost on their full-expression stages (Savasana: guide only).
+  `content_address` now cleans exact stems only. README documents every key — author from it.
+- **Player**: three stacked luminance-mask cells (ghost under, figure, guides over — tokens
+  `--ember` mix / currentColor / `--stretches`); Guides + Mistake chips (`aria-pressed`,
+  persisted `yoga-motion-layers-v1`); class mode forces guides on / ghost off, no chips.
+- **Breath**: `breathPhaseFromBeat` (timing.ts, tested) → `PoseMotion.breath` → CSS transform
+  transition on the stack (`data-breath`, `--breath-dur`); pulse mode = still; pause pins the
+  computed transform inline (Codex finding — transitions can't pause); hero breathes at the six-count
+  via `useRestingBreath`; reduced motion disables all of it.
+- **Short class** (`src/pacer/programs.ts`, tested): 8 postures, first set only (segments cut from
+  the first "Second set …" label; floor postures keep their savasana/sit-up exits), 15 min + final
+  savasana; `buildClassTrack(bpm, from | program)`; `/pace?program=short`; picker on the idle card
+  (`role=group` + `aria-pressed`); `ClassRecord.program` (optional, old records load).
+- **Tonight card** on `/`: streak, days since, one primary action (short class), practised-today
+  state offers the trainer's due count.
+- Codex round 2: 4 findings (stale sheets → re-rendered; breath not frozen on pause → fixed;
+  radiogroup without radio keyboard semantics → toggle buttons; "four standing postures" → three).
+
+**Open:** phone-width check of the Tonight card and class-mode figure with three layers; the
+Separate Leg Stretching ghost hides behind the figure at the quarter view; `mirror: True` (second
+mannequin for the other side) not implemented; `.container` padding still overrides `.tl-hero`'s.
 
 ---
 

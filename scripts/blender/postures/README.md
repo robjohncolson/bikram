@@ -59,6 +59,81 @@ Cheat sheet (directions):
   the floor pointing back, feet `(0,1,0)`, and lower `pelvis.location` so the
   knees touch z≈0.06.
 
+## Rolling a bone (twists)
+
+A bone entry may also be a dict: `'spine.upper': {'dir': (0, 0, 1), 'roll': -60}`.
+The bone is aimed at `dir` exactly as a plain tuple would be, THEN turned
+`roll` degrees about its own head → tail axis (right-handed: for a bone
+pointing up, positive turns the chest toward the mannequin's LEFT, +X;
+negative toward its right). Plain tuples still work everywhere.
+
+Tubes are round, so a roll on its own changes nothing you can see. It shows
+through the children: any bone you OMIT whose parent is rolled (or is itself
+riding along) keeps its pose relative to that parent instead of snapping
+back to its rest direction. So a rolled `spine.upper` with the clavicles
+left out turns the whole shoulder line — a twist. Bones you DO list are
+still aimed in world space (they override the ride), and rolls accumulate
+down a chain (`spine.lower` −25 plus `spine.upper` −35 ≈ −60 at the
+shoulders). Spine Twisting, right side, could read:
+
+```python
+RIGHT = {**BASE, **LEGS_RIGHT,
+         'spine.lower': {'dir': (0, 0, 1), 'roll': -25},
+         'spine.upper': {'dir': (0, 0, 1), 'roll': -35},   # shoulders turn right-back
+         # clavicles omitted: they ride the roll (left shoulder forward)
+         'upperarm.L': ..., 'forearm.L': ...}               # arms still aimed in world space
+```
+
+A `mirror()` helper must flip the roll's sign along with X.
+
+## Hands and feet
+
+The skin has a palm swelling just past each wrist and a heel spur plus a
+ball-of-foot swelling on each foot. They ride the `hand.*` / `foot.*` bones
+(no new bones, nothing to pose): aim `hand.*` so the palm lands on the
+thing gripped, and remember the heel points opposite the sole — toes-up
+feet show it at the back of the ankle, pointed feet at the top.
+
+## Teaching layers: guides and ghost
+
+Both are optional per stage and render into their OWN sprite sheets with
+the same frame layout as the figure (the app overlays them). A posture
+with neither renders exactly as before.
+
+`'guides'` — world-space reference lines and planes, drawn as thin strokes
+with the body hidden, visible for that stage's hold plus the nearer half
+of each neighbouring transition:
+
+```python
+{'label': 'Right side', 'pose': RIGHT, 'hold': 8,
+ 'guides': [
+     {'from': (0, 0, 0), 'to': (0, 0, 2.05)},                        # a line: the centre line
+     {'plane': 'y', 'at': -0.16, 'z': (0.0, 2.05), 'w': 1.5},        # a pane of glass in front
+ ]}
+```
+
+A plane is a rectangle perpendicular to the named axis: `'plane': 'y'` is
+a frontal pane at `y = at` (the face points -Y, so negative is in front),
+`'plane': 'x'` a sagittal pane at `x = at`. `z` is its bottom/top (default
+`(0, 2)`), `w` its width centred on the body's midline (default 1.0).
+Planes read as rectangles face-on and as single lines edge-on, so choose
+the stage `view` with that in mind. Lines behind a pane are still drawn.
+
+`'ghost'` — the common mistake, as a second figure drawn only during that
+stage's hold. It is laid OVER the stage's `pose`, so list only what goes
+wrong (bone dirs, `pelvis.location`, rolls all work):
+
+```python
+{'label': 'Right side', 'pose': RIGHT, 'hold': 8,
+ 'ghost': {'pelvis.location': (0, 0, 0), 'pelvis': (0, 0, 1),     # hips never pushed across
+           'spine.lower': (-0.05, 0, 1), 'spine.upper': (-0.3, 0, 0.95)}}
+```
+
+Keep the ghost plausibly close to the real pose — it should read as "almost,
+but", not as a different posture. The preview shows guides in blue and the
+ghost in orange under the figure; `half_moon.py` (Right side) is the
+worked example.
+
 Helper functions: every `.py` in this folder is rendered as a posture, so
 there is no shared helper module — keep small solvers (two-bone reach,
 kneel height) inside the module that uses them.

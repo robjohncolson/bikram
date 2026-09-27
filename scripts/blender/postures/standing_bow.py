@@ -61,8 +61,32 @@ FULL = {
     'thigh.R': (0, 0.85, 0.52),
     'shin.R': (0, -0.63, 0.78),
     'foot.R': (0, 0.3, 0.95),
-    'upperarm.R': (0, 0.74, 0.68), 'forearm.R': (0, 0.74, 0.68), 'hand.R': (0, 0.6, 0.8),
+    # palm curls in over the inside of the ankle
+    'upperarm.R': (0, 0.74, 0.68), 'forearm.R': (0, 0.74, 0.68), 'hand.R': (0.35, 0.6, 0.72),
     'upperarm.L': (0, -1, 0.1), 'forearm.L': (0, -1, 0.1), 'hand.L': (0, -1, 0.1),
+}
+
+
+def guides(side=1):
+    """The level line the torso lies along and the kicked foot rises above,
+    and the vertical lamp-post of the locked standing leg from its hip.
+    `side` 1 = right leg kicking (standing on the left, +X); -1 mirrors."""
+    x = 0.10 * side
+    return [
+        {'from': (0, 0.5, 1.2), 'to': (0, -1.1, 1.2)},
+        {'from': (x, 0, 0.02), 'to': (x, 0, 1.0)},
+    ]
+
+
+# Common mistake: the kicking knee splays out to the side, so the hip opens
+# and the foot kicks out and back instead of up — it stalls barely above
+# the level line (the arm follows the ankle down).
+FULL_GHOST = {
+    'thigh.R': (-0.55, 0.8, 0.05),
+    'shin.R': (-0.1, -0.5, 0.86),
+    'foot.R': (-0.3, 0.35, 0.88),
+    'upperarm.R': (-0.31, 0.84, 0.44), 'forearm.R': (-0.31, 0.84, 0.44),
+    'hand.R': (0.2, 0.75, 0.6),
 }
 
 POSTURE = {
@@ -74,9 +98,11 @@ POSTURE = {
         {'label': 'Hold the foot', 'pose': HOLD, 'hold': 4},
         {'label': 'Arm up', 'pose': ARM_UP, 'hold': 3},
         {'label': 'Kick', 'pose': KICK, 'hold': 5},
-        {'label': 'Full bow', 'pose': FULL, 'hold': 8},
+        {'label': 'Full bow', 'pose': FULL, 'hold': 8,
+         'guides': guides(), 'ghost': FULL_GHOST},
         {'label': 'Release', 'pose': {}, 'hold': 3},
-        {'label': 'Left side', 'pose': mirror(FULL), 'hold': 6},
+        {'label': 'Left side', 'pose': mirror(FULL), 'hold': 6,
+         'guides': guides(-1), 'ghost': mirror(FULL_GHOST)},
         {'label': 'Release', 'pose': {}, 'hold': 3},
     ],
 }

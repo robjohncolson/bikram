@@ -67,13 +67,16 @@ def body(pelvis, lower, upper, neck, head, clav_up=0.0):
     return pose
 
 
-def hands_down(pose):
-    p = _add(P, _n(pose['pelvis']), 0.12)
+def hands_down(pose, hint=None):
+    base = _add(P, pose.get('pelvis.location', LOC), 1.0)
+    base = _add(base, LOC, -1.0)
+    p = _add(base, _n(pose['pelvis']), 0.12)
     p = _add(p, _n(pose['spine.lower']), 0.15)
     neck = _add(p, _n(pose['spine.upper']), 0.13)
     for s, sign in (('R', -1), ('L', 1)):
         shoulder = _add(neck, _n(pose[f'clavicle.{s}']), 0.204)
-        up, fo = two_bone(shoulder, WRIST[s], UPPER, FORE, (sign * 0.05, 0.35, 1))
+        h = hint or (0.05, 0.35, 1)
+        up, fo = two_bone(shoulder, WRIST[s], UPPER, FORE, (sign * h[0], h[1], h[2]))
         pose[f'upperarm.{s}'] = up
         pose[f'forearm.{s}'] = fo
         pose[f'hand.{s}'] = (0, -1, -0.05)
@@ -96,6 +99,30 @@ LIFT = hands_down(body(
     clav_up=0.15,
 ))
 
+
+
+def diff(pose, base):
+    """Only the entries of `pose` that differ from `base` (a ghost overlay)."""
+    return {k: v for k, v in pose.items() if base.get(k) != v}
+
+
+# Common mistake: pressing up with the arms — elbows lock nearly straight,
+# the chest rises higher and more upright and the hips peel off the floor.
+_ghost = {
+    **body((0, -0.85, 0.53), (0, -0.55, 0.84), (0, -0.25, 0.97), (0, -0.2, 0.98), (0, -0.2, 0.98),
+           clav_up=0.15),
+    'pelvis.location': _add(LOC, (0, 0, 0.09)),
+    'thigh.L': (0.02, 1, -0.2), 'thigh.R': (-0.02, 1, -0.2),
+}
+LIFT_GHOST = diff(hands_down(_ghost, hint=(0.05, 1, 0.1)), LIFT)
+
+# Guides: the hip-height line the hips and navel stay under (on the floor)
+# while the chest lifts, and the vertical over the palms (under the shoulders).
+LIFT_GUIDES = [
+    {'from': (0, -0.35, 0.25), 'to': (0, 1.05, 0.25)},
+    {'from': (0, WRIST['R'][1], 0.0), 'to': (0, WRIST['R'][1], 0.75)},
+]
+
 POSTURE = {
     'id': 'cobra',
     'view': 'side',
@@ -104,7 +131,8 @@ POSTURE = {
     'stages': [
         {'label': 'Lie prone', 'pose': PRONE, 'hold': 4},
         {'label': 'Hands under shoulders', 'pose': HANDS, 'hold': 5},
-        {'label': 'Lift', 'pose': LIFT, 'hold': 10},
+        {'label': 'Lift', 'pose': LIFT, 'hold': 10,
+         'guides': LIFT_GUIDES, 'ghost': LIFT_GHOST},
         {'label': 'Lower', 'pose': HANDS, 'hold': 4},
     ],
 }

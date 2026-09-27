@@ -5,7 +5,8 @@ Kneeling base: shins flat on the floor pointing back, knees anchored at
 y=KNEE_Y, z≈0.06. `kneel(thigh)` solves `pelvis.location` from the thigh
 direction so the knees stay planted while the hips press forward.
 Side view: the face points screen-right (-Y), the heels sit screen-left.
-The heel grip is solved (`arms_to_heels`) so the hands land on the heels.
+The heel grip is solved (`arms_to_heels`) so the palms land on the heels.
+The full expression carries teaching guides and a ghost (the mistake).
 """
 import math
 
@@ -69,10 +70,11 @@ def _add(a, b, k=1.0):
     return tuple(x + k * y for x, y in zip(a, b))
 
 
-def reach(shoulder, target, pole):
-    """Upper-arm / forearm+hand directions from `shoulder` to `target`
-    (fingertips), elbow bending toward `pole`. Lengths 0.29 and 0.35."""
-    a, b = 0.29, 0.35
+def reach(shoulder, target, pole, b=0.35):
+    """Upper-arm / forearm directions from `shoulder` to `target`, elbow
+    bending toward `pole`. Upper arm 0.29; `b` is 0.35 to the fingertips
+    (forearm + hand in line) or 0.25 to the wrist."""
+    a = 0.29
     v = tuple(t - s for t, s in zip(target, shoulder))
     d = min(math.sqrt(sum(c * c for c in v)), a + b - 1e-4)
     u = _n(v)
@@ -85,22 +87,35 @@ def reach(shoulder, target, pole):
     return _n(tuple(e - s for e, s in zip(elbow, shoulder))), _n(tuple(e - l for e, l in zip(end, elbow)))
 
 
+# Palm on the heel, fingers along the upturned sole toward the toes. The
+# feet lie pointed (top of the foot on the floor), so the heel spur sits on
+# top of the ankle at about (±0.10, KNEE_Y + 0.44, 0.13).
+GRIP_HAND = _n((0, 0.6, -0.8))
+
+
 def arms_to_heels(thigh, dirs):
-    """Both hands onto the heels from the torso directions."""
+    """Both palms onto the heels from the torso directions: the wrist is
+    placed so the palm swelling (0.035 past it) sits on top of the heel."""
     t = _n(thigh)
     p = (0.0, KNEE_Y - 0.44 * t[1], 0.08 - 0.44 * t[2])
     for bone, length in (('pelvis', 0.12), ('spine.lower', 0.15), ('spine.upper', 0.13)):
         p = _add(p, _n(dirs[bone]), length)
     out = {}
     for side, sx in (('L', 1), ('R', -1)):
-        clav = _n((sx, 0.05, 0.05))
+        clav = _n((sx, 0.1, -0.12))                    # shoulders drawn back and down
         out['clavicle.' + side] = clav
         shoulder = _add(p, clav, 0.2044)
-        up, fo = reach(shoulder, (sx * 0.13, KNEE_Y + 0.44, 0.13), (0, -1, 0))
+        palm = (sx * 0.11, KNEE_Y + 0.44, 0.20)
+        wrist = _add(palm, GRIP_HAND, -0.035)
+        up, fo = reach(shoulder, wrist, (0, -1, 0), b=0.25)
         out['upperarm.' + side] = up
         out['forearm.' + side] = fo
-        out['hand.' + side] = fo
+        out['hand.' + side] = GRIP_HAND
     return out
+
+
+def stage(thigh, torso):
+    return {**kneel(thigh), **torso, **arms_to_heels(thigh, torso)}
 
 
 HEELS_THIGH = (0, 0.12, -1)
@@ -111,10 +126,37 @@ HEELS_TORSO = {
     'neck': (0, 0.55, -0.83),
     'head': (0, 0.25, -0.97),
 }
-HEELS = {
-    **kneel(HEELS_THIGH),
-    **HEELS_TORSO,
-    **arms_to_heels(HEELS_THIGH, HEELS_TORSO),
+HEELS = stage(HEELS_THIGH, HEELS_TORSO)
+
+
+def arc(center, r, a0, a1, steps=7):
+    """A sagittal arc (x = 0) as short guide lines; angles in degrees from
+    +Y (behind) toward +Z (up)."""
+    cy, cz = center
+    pts = [(0.0, cy + r * math.cos(math.radians(a)), cz + r * math.sin(math.radians(a)))
+           for a in (a0 + (a1 - a0) * i / steps for i in range(steps + 1))]
+    return [{'from': p, 'to': q} for p, q in zip(pts, pts[1:])]
+
+
+# Guides: the vertical plane at the knees (edge-on from the side) the hips
+# stay forward of, and the arc the chest lifts along — up and over a
+# barrel, not a fold at one hinge.
+HEELS_GUIDES = [
+    {'plane': 'y', 'at': KNEE_Y, 'z': (0.0, 1.05), 'w': 0.6},
+    *arc((0.0, 0.52), 0.34, 165, 55),
+]
+
+# Common mistake: the hips sink back toward the heels, so the thighs tip
+# back and the bend folds at the low back instead of lifting the chest.
+GHOST_THIGH = (0, -0.45, -0.89)
+HEELS_GHOST = {
+    k: v for k, v in stage(GHOST_THIGH, {
+        'pelvis': (0, 0.2, 0.98),
+        'spine.lower': (0, 0.6, 0.8),
+        'spine.upper': (0, 0.95, 0.1),
+        'neck': (0, 0.45, -0.89),
+        'head': (0, 0.2, -0.98),
+    }).items() if HEELS.get(k) != v
 }
 
 POSTURE = {
@@ -126,7 +168,8 @@ POSTURE = {
         {'label': 'Kneel', 'pose': KNEEL, 'hold': 4},
         {'label': 'Hands on hips', 'pose': HIPS, 'hold': 5},
         {'label': 'Head back', 'pose': HEAD_BACK, 'hold': 5},
-        {'label': 'Hold the heels', 'pose': HEELS, 'hold': 10},
+        {'label': 'Hold the heels', 'pose': HEELS, 'hold': 10,
+         'guides': HEELS_GUIDES, 'ghost': HEELS_GHOST},
         {'label': 'Rise', 'pose': HIPS, 'hold': 4},
     ],
 }

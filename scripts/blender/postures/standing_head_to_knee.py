@@ -75,6 +75,30 @@ HEAD_TO_KNEE = {
     **both_arms((0, -0.56, -0.83), (0, -0.92, 0.38), (0, -0.8, 0.6)),
 }
 
+def guides(side=1):
+    """The hip-height horizontal the kicked leg must reach, and the vertical
+    line of the locked standing leg. `side` 1 = right leg kicking (standing
+    on the left, +X); -1 mirrors it."""
+    x = 0.10 * side
+    return [
+        {'from': (0, 0.35, 0.98), 'to': (0, -1.05, 0.98)},
+        {'from': (x, 0, 0.02), 'to': (x, 0, 1.0)},
+    ]
+
+
+# Kick-out mistake: the kicked leg sags below hip height.
+KICK_GHOST = {
+    'thigh.R': (0, -1, -0.3), 'shin.R': (0, -1, -0.3),
+}
+
+# Head-to-knee mistake: the standing knee softens to buy the forehead its
+# reach, so the hips drop and the kicked leg sags with them.
+HEAD_TO_KNEE_GHOST = {
+    'pelvis.location': (0, 0, -0.07),
+    'thigh.L': (0, -0.4, -0.92), 'shin.L': (0, 0.4, -0.92),
+    'thigh.R': (0, -1, -0.12), 'shin.R': (0, -1, -0.12),
+}
+
 POSTURE = {
     'id': 'standing-head-to-knee',
     'view': 'side',
@@ -82,11 +106,14 @@ POSTURE = {
     'transition': 7,
     'stages': [
         {'label': 'Hold the foot', 'pose': HOLD, 'hold': 4},
-        {'label': 'Kick out', 'pose': KICK, 'hold': 5},
+        {'label': 'Kick out', 'pose': KICK, 'hold': 5,
+         'guides': guides(), 'ghost': KICK_GHOST},
         {'label': 'Elbows down', 'pose': ELBOWS, 'hold': 5},
-        {'label': 'Head to knee', 'pose': HEAD_TO_KNEE, 'hold': 8},
+        {'label': 'Head to knee', 'pose': HEAD_TO_KNEE, 'hold': 8,
+         'guides': guides(), 'ghost': HEAD_TO_KNEE_GHOST},
         {'label': 'Release', 'pose': {}, 'hold': 3},
-        {'label': 'Left side', 'pose': mirror(HEAD_TO_KNEE), 'hold': 6},
+        {'label': 'Left side', 'pose': mirror(HEAD_TO_KNEE), 'hold': 6,
+         'guides': guides(-1), 'ghost': mirror(HEAD_TO_KNEE_GHOST)},
         {'label': 'Release', 'pose': {}, 'hold': 3},
     ],
 }

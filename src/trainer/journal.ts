@@ -19,6 +19,8 @@ export interface ClassRecord {
   pacedSeconds: number;
   bpm: number;
   rehearsed: boolean;
+  /** class program id ('full' | 'short'); absent on records from before programs */
+  program?: string;
   /** rehearsal debrief, once saved */
   handoffs?: number;
   recalled?: number;
@@ -63,6 +65,9 @@ function sanitize(data: unknown): Journal | null {
       pacedSeconds: isNum(r.pacedSeconds) ? Math.max(0, r.pacedSeconds) : 0,
       bpm: isNum(r.bpm) ? r.bpm : 60,
       rehearsed: r.rehearsed === true,
+      ...(typeof r.program === 'string' && r.program.length > 0 && r.program.length <= 32
+        ? { program: r.program }
+        : {}),
       ...(isNum(r.handoffs) ? { handoffs: Math.floor(r.handoffs) } : {}),
       ...(isNum(r.recalled) ? { recalled: Math.floor(r.recalled) } : {}),
     });

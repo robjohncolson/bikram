@@ -52,6 +52,28 @@ FOLD = {
     'hand.L': (-0.2, 0.3, -0.9), 'hand.R': (0.2, 0.3, -0.9),
 }
 
+# Guides: the plumb line the forehead drops on, midway between the feet,
+# and the floor line joining the heels.
+FOLD_GUIDES = [
+    {'from': (0, 0, 0.0), 'to': (0, 0, 1.25)},
+    {'from': (-0.55, 0, 0.02), 'to': (0.55, 0, 0.02)},
+]
+
+# Common mistake: knees soften and the back rounds -- the fold comes from
+# the waist, not the hips, and the head hangs short of the floor.
+FOLD_GHOST = {
+    'pelvis.location': (0, 0.08, -0.26),
+    'thigh.L': (0.4, -0.62, -0.68), 'shin.L': (0.4, 0.42, -0.81),
+    'thigh.R': (-0.4, -0.62, -0.68), 'shin.R': (-0.4, 0.42, -0.81),
+    'pelvis': (0, -0.7, 0.7),
+    'spine.lower': (0, -1, 0.1),
+    'spine.upper': (0, -0.6, -0.8),
+    'neck': (0, -0.1, -1), 'head': (0, 0.2, -1),
+    'upperarm.L': (0.3, 0.1, -0.95), 'upperarm.R': (-0.3, 0.1, -0.95),
+    'forearm.L': (0.3, 0.3, -0.9), 'forearm.R': (-0.3, 0.3, -0.9),
+    'hand.L': (0.1, 0.3, -0.95), 'hand.R': (-0.1, 0.3, -0.95),
+}
+
 POSTURE = {
     'id': 'standing-separate-leg-stretching',
     'view': 'quarter',
@@ -61,7 +83,8 @@ POSTURE = {
         {'label': 'Wide stance', 'pose': STANCE, 'hold': 3},
         {'label': 'Arms out', 'pose': ARMS_OUT, 'hold': 4},
         {'label': 'Fold', 'pose': HINGE, 'hold': 4},
-        {'label': 'Head to floor', 'pose': FOLD, 'hold': 10},
+        {'label': 'Head to floor', 'pose': FOLD, 'hold': 10,
+         'guides': FOLD_GUIDES, 'ghost': FOLD_GHOST},
         {'label': 'Rise', 'pose': ARMS_OUT, 'hold': 4},
     ],
 }

@@ -4,9 +4,9 @@ legs up and back so the chest and thighs both leave the floor: a drawn bow
 rocking on the abdomen.
 
 Prone recipe: head toward -Y, legs toward +Y, tubes resting at z≈0.12. The
-arms are straight "strings" aimed from the shoulder at the ankle; the tube
-hand has no fingers, so the grip is the hand ending at the ankle (a little
-outside it, for the grip from the outside).
+arms are straight "strings" aimed from the shoulder at a point just outside
+the ankle (`grip` solves it from the stage's own spine and legs); the hand
+turns in so the palm wraps the outer ankle.
 """
 
 
@@ -38,16 +38,51 @@ def prone(**over):
     return pose
 
 
-def string(d, inward=0.08):
-    """Both arms straight along `d` (the side-view direction shoulder →
-    ankle), converging slightly so the hands land just outside the ankles —
-    the grip from the outside."""
-    _, y, z = d
-    return {
-        'upperarm.L': (-inward, y, z), 'upperarm.R': (inward, y, z),
-        'forearm.L': (-inward, y, z), 'forearm.R': (inward, y, z),
-        'hand.L': (-inward, y, z), 'hand.R': (inward, y, z),
-    }
+def _unit(v):
+    m = sum(c * c for c in v) ** 0.5
+    return tuple(c / m for c in v)
+
+
+def _walk(pose, start, chain):
+    """End point of a chain of (bone, length) from `start` in `pose`."""
+    p = start
+    for bone, length in chain:
+        d = _unit(pose.get(bone) or HIPBONE_REST[bone])
+        p = tuple(a + length * c for a, c in zip(p, d))
+    return p
+
+
+HIPBONE_REST = {'hipbone.L': (0.1, 0, -0.02), 'hipbone.R': (-0.1, 0, -0.02)}
+SPINE = (('pelvis', 0.12), ('spine.lower', 0.15), ('spine.upper', 0.13))
+ARM = 0.29 + 0.25
+
+
+def grip(pose, out=0.06):
+    """Straight arms aimed from each shoulder at a point just OUTSIDE its
+    ankle; the hand then turns in toward the ankle, so the palm (the swelling
+    just past the wrist) lies against the outer ankle and the fingers wrap — the grip from the outside."""
+    loc = pose['pelvis.location']
+    base = (loc[0], loc[1], 1.0 + loc[2])
+    neck = _walk(pose, base, SPINE)
+    arms = {}
+    for side, x in (('L', 1), ('R', -1)):
+        shoulder = _walk(pose, neck, ((f'clavicle.{side}', 0.204),))
+        hip = _walk(pose, base, ((f'hipbone.{side}', 0.102),))
+        ankle = _walk(pose, hip, ((f'thigh.{side}', 0.44), (f'shin.{side}', 0.44)))
+        target = (ankle[0] + x * out, ankle[1], ankle[2])
+        u = _unit(tuple(t - s for t, s in zip(target, shoulder)))
+        wrist = tuple(s + ARM * c for s, c in zip(shoulder, u))
+        arms[f'upperarm.{side}'] = u
+        arms[f'forearm.{side}'] = u
+        inward = _unit(tuple(a - w for a, w in zip(ankle, wrist)))
+        arms[f'hand.{side}'] = _unit(tuple(p + q for p, q in zip(u, inward)))
+    return arms
+
+
+def gripping(**over):
+    pose = prone(**over)
+    pose.update(grip(pose))
+    return pose
 
 
 LIE = prone()
@@ -55,8 +90,7 @@ LIE = prone()
 # Knees bend, heels come toward the hips, hands reach back to the feet;
 # the chest lifts just enough to reach.
 SHIN_HOLD = (0, -0.8, 0.6)
-HOLD = prone(**{
-    **string((0, 0.87, 0.48)),
+HOLD = gripping(**{
     'spine.upper': (0, -0.97, 0.22), 'neck': (0, -0.95, 0.3), 'head': (0, -0.97, 0.25),
     'shin.L': SHIN_HOLD, 'shin.R': SHIN_HOLD,
     'foot.L': (0, 0.3, 0.95), 'foot.R': (0, 0.3, 0.95),
@@ -66,8 +100,7 @@ HOLD = prone(**{
 # body rocks on the abdomen with thighs and chest off the floor.
 THIGH = (0, 0.8, 0.6)
 SHIN = (0, -0.5, 0.87)
-KICK = prone(**{
-    **string((0, 0.68, 0.73)),
+KICK = gripping(**{
     'pelvis': (0, -1, 0.15),
     'spine.lower': (0, -0.85, 0.52), 'spine.upper': (0, -0.6, 0.8),
     'neck': (0, -0.5, 0.87), 'head': (0, -0.6, 0.8),
@@ -75,6 +108,28 @@ KICK = prone(**{
     'thigh.L': THIGH, 'thigh.R': THIGH, 'shin.L': SHIN, 'shin.R': SHIN,
     'foot.L': (0, 0.75, 0.66), 'foot.R': (0, 0.75, 0.66),
 })
+
+# --- Teaching layers -------------------------------------------------------
+# Guides (side view): the hip-height line along the floor the thighs lift
+# above (knees off the floor), and the vertical the kicking feet rise toward.
+KICK_GUIDES = [
+    {'from': (0, -0.2, 0.12), 'to': (0, 0.55, 0.12)},
+    {'from': (0, 0.08, 0.3), 'to': (0, 0.08, 1.1)},
+]
+
+# Common mistake: the knees splay wide and stay on the floor; the feet only
+# rise as far as the arms pull them, so the chest barely leaves the floor.
+_GHOST = prone(**{
+    'pelvis': (0, -1, 0.05),
+    'spine.lower': (0, -0.95, 0.3), 'spine.upper': (0, -0.8, 0.6),
+    'neck': (0, -0.7, 0.72), 'head': (0, -0.8, 0.6),
+    'clavicle.L': (0.95, 0.15, -0.1), 'clavicle.R': (-0.95, 0.15, -0.1),
+    'thigh.L': (0.28, 1, 0.06), 'thigh.R': (-0.28, 1, 0.06),
+    'shin.L': (0.05, -0.35, 0.94), 'shin.R': (-0.05, -0.35, 0.94),
+    'foot.L': (0, 0.6, 0.8), 'foot.R': (0, 0.6, 0.8),
+})
+_GHOST.update(grip(_GHOST))
+KICK_GHOST = {k: v for k, v in _GHOST.items() if KICK.get(k) != v}
 
 POSTURE = {
     'id': 'bow',
@@ -84,7 +139,8 @@ POSTURE = {
     'stages': [
         {'label': 'Lie prone', 'pose': LIE, 'hold': 4},
         {'label': 'Hold the feet', 'pose': HOLD, 'hold': 5},
-        {'label': 'Kick up', 'pose': KICK, 'hold': 10},
+        {'label': 'Kick up', 'pose': KICK, 'hold': 10,
+         'guides': KICK_GUIDES, 'ghost': KICK_GHOST},
         {'label': 'Lower', 'pose': LIE, 'hold': 4},
     ],
 }

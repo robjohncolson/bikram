@@ -29,3 +29,6 @@ dist-ssr
 
 # cross-agent runner scratch
 state/
+
+# Python bytecode
+__pycache__/

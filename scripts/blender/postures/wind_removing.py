@@ -76,9 +76,18 @@ def knee(side, dx=0.0):
     return _add(HIP[side], t, 0.44), t
 
 
-def hug(sides):
-    """Knee(s) in, hands interlaced on the shin(s) just below the knee."""
+def hug(sides, lift=0.0, soft_leg=False):
+    """Knee(s) in, hands interlaced on the shin(s) just below the knee.
+    `lift` curls the upper back off the mat (shoulders rising); `soft_leg`
+    lets the extended leg's knee bend up — both only used by the ghost."""
     pose = {**TORSO}
+    shoulder = SHOULDER
+    if lift:
+        upper = _n((0, -1, lift))
+        neck = _add(_add(P, (0, -0.27, 0)), upper, 0.13)
+        shoulder = {s: _add(neck, CLAV[s], 0.204) for s in 'RL'}
+        pose.update({'spine.upper': upper, 'neck': _n((0, -1, lift * 1.4)),
+                     'head': _n((0, -1, lift * 1.6))})
     grips = []
     for s in 'RL':
         if s in sides:
@@ -87,6 +96,10 @@ def hug(sides):
             pose[f'shin.{s}'] = SHIN_IN
             pose[f'foot.{s}'] = (0, 0.6, 0.8)
             grips.append(_add(k, SHIN_IN, 0.10))
+        elif soft_leg:
+            sx = -0.03 if s == 'R' else 0.03
+            pose.update({f'thigh.{s}': (sx, 1, 0.42), f'shin.{s}': (sx, 1, -0.42),
+                         f'foot.{s}': (0, 0.3, 1)})
         else:
             pose.update(LONG_LEG[s])
     gx = sum(g[0] for g in grips) / len(grips)
@@ -95,12 +108,31 @@ def hug(sides):
     spread = 0.10 if len(grips) == 1 else 0.17
     for s, sign in (('R', -1), ('L', 1)):
         wrist = (gx + sign * spread, gy, gz)
-        up, fo = two_bone(SHOULDER[s], wrist, UPPER, FORE, (sign, 0.1, 0.1))
+        up, fo = two_bone(shoulder[s], wrist, UPPER, FORE, (sign, 0.1, 0.1))
         pose[f'upperarm.{s}'] = up
         pose[f'forearm.{s}'] = fo
         pose[f'hand.{s}'] = (-sign, 0, 0.5)
     return pose
 
+
+def diff(pose, base):
+    """Only the entries of `pose` that differ from `base` (a ghost overlay)."""
+    return {k: v for k, v in pose.items() if base.get(k) != v}
+
+
+def ghost(sides):
+    """Common mistake: yanking with the arms so the shoulders peel off the
+    mat, and (one knee) the extended leg going soft at the knee."""
+    return diff(hug(sides, lift=0.45, soft_leg=len(sides) == 1), hug(sides))
+
+
+# Guides: the floor line the shoulders and back stay long on, and the
+# vertical over the shoulder that the knee is drawn toward (the shoulder,
+# not the chest).
+GUIDES = [
+    {'from': (0, -1.0, 0.0), 'to': (0, 1.05, 0.0)},
+    {'from': (0, SHOULDER['R'][1], 0.0), 'to': (0, SHOULDER['R'][1], 0.72)},
+]
 
 FLAT = {**TORSO, **ARMS_DOWN, **LONG_LEG['R'], **LONG_LEG['L']}
 
@@ -111,9 +143,12 @@ POSTURE = {
     'transition': 8,
     'stages': [
         {'label': 'Lie down', 'pose': FLAT, 'hold': 4},
-        {'label': 'Right knee', 'pose': hug('R'), 'hold': 8},
-        {'label': 'Left knee', 'pose': hug('L'), 'hold': 8},
-        {'label': 'Both knees', 'pose': hug('RL'), 'hold': 10},
+        {'label': 'Right knee', 'pose': hug('R'), 'hold': 8,
+         'guides': GUIDES, 'ghost': ghost('R')},
+        {'label': 'Left knee', 'pose': hug('L'), 'hold': 8,
+         'guides': GUIDES, 'ghost': ghost('L')},
+        {'label': 'Both knees', 'pose': hug('RL'), 'hold': 10,
+         'guides': GUIDES, 'ghost': ghost('RL')},
         {'label': 'Release', 'pose': FLAT, 'hold': 4},
     ],
 }

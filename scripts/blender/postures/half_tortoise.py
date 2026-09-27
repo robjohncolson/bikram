@@ -52,8 +52,21 @@ SIT = {
 UP = {**SEATED, **UPRIGHT, **arms_overhead()}
 
 # Folded: belly on the thighs, spine long, forehead down beyond the knees,
-# arms stretched forward along the floor with the palms together.
+# arms stretched forward along the floor. The arms converge until the wrists
+# nearly meet, and the steepled hands tip down so their little-finger edges
+# rest on the floor.
 ARMS_FWD = (0, -1, -0.33)
+
+
+def reach(axis=ARMS_FWD):
+    arms = arms_overhead(axis=axis, squeeze=0.3)
+    arms['hand.L'] = (-0.3, -1, -0.45)
+    arms['hand.R'] = (0.3, -1, -0.45)
+    arms['clavicle.L'] = (0.9, -0.3, 0)
+    arms['clavicle.R'] = (-0.9, -0.3, 0)
+    return arms
+
+
 FOLD = {
     **SEATED,
     'pelvis': (0, -0.7, 0.35),
@@ -61,8 +74,30 @@ FOLD = {
     'spine.upper': (0, -0.9, -0.4),
     'neck': (0, -0.5, -0.86),
     'head': (0, -0.94, -0.35),
-    **arms_overhead(axis=ARMS_FWD, squeeze=0.2),
-    'clavicle.L': (0.9, -0.3, 0), 'clavicle.R': (-0.9, -0.3, 0),
+    **reach(),
+}
+
+# --- Teaching layers -------------------------------------------------------
+# Guides (side view): the vertical over the heels the hips stay glued to,
+# and the floor line the forehead and the little fingers reach along.
+HEEL_Y = 0.28
+FOLD_GUIDES = [
+    {'from': (0, HEEL_Y, 0.0), 'to': (0, HEEL_Y, 0.6)},
+    {'from': (0, -0.95, 0.0), 'to': (0, -0.2, 0.0)},
+]
+
+# Common mistake: the seat lifts off the heels and the body slides forward
+# over the knees, so the fold happens by tipping rather than hinging.
+# (Knees stay put: thigh steeper, hip raised and forward along it.)
+FOLD_GHOST = {
+    'pelvis.location': at(0, 0.105, -0.57),
+    'thigh.L': (0, -0.6, -0.8), 'thigh.R': (0, -0.6, -0.8),
+    'pelvis': (0, -0.8, -0.2),
+    'spine.lower': (0, -0.8, -0.5),
+    'spine.upper': (0, -0.7, -0.7),
+    'neck': (0, -0.4, -0.9),
+    'head': (0, -0.9, -0.4),
+    **reach(),
 }
 
 POSTURE = {
@@ -73,7 +108,8 @@ POSTURE = {
     'stages': [
         {'label': 'Sit on the heels', 'pose': SIT, 'hold': 4},
         {'label': 'Arms up', 'pose': UP, 'hold': 5},
-        {'label': 'Fold', 'pose': FOLD, 'hold': 10},
+        {'label': 'Fold', 'pose': FOLD, 'hold': 10,
+         'guides': FOLD_GUIDES, 'ghost': FOLD_GHOST},
         {'label': 'Rise', 'pose': UP, 'hold': 4},
     ],
 }

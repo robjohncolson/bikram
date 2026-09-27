@@ -46,6 +46,13 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   renders the tone events (warn tick, change chime, end bell).
   `wakelock.ts` keeps the screen awake during practice (guarded,
   visibility-aware).
+  `programs.ts` defines class programs (`FULL_CLASS`, `SHORT_CLASS`;
+  `/pace?program=short`): items by order with optional `sets: 1`, which
+  `firstSetOnly` honours by cutting segments from the first "Second set"
+  label on (so the voice never cues a set that is not coming);
+  `programMinutes` is the honest length. `buildClassTrack` takes an order
+  or a program. The home page's Tonight card reads the journal and links
+  the short class (or the trainer's due reviews once you have practised).
   Phone-proofing: `clips.ts` reuses ONE `<audio>` element primed inside
   the start gesture (`unlockClips`) and reports load/play failures via
   `fallback` so `sayCue` speaks the line with TTS instead of going silent;
@@ -80,6 +87,10 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   8-bit grayscale, luminance = stroke coverage, ~140 KB). `<PoseMotion/>` draws a cell through
   `mask-image` + `mask-mode: luminance` over `background: currentColor`,
   so one render serves both themes. `manifest.test.ts` pins ids, files, and stage order.
+  Optional teaching layers: stage `guides` (lines/planes) and `ghost` (the
+  common-mistake pose) render to `<id>.guides.<sha8>.png` / `<id>.ghost.<sha8>.png`
+  with the same frame layout (`PoseMotion.guides` / `.ghost`); bone entries may
+  be `{dir, roll}` for twists — see `scripts/blender/postures/README.md`.
   `npm run motion:preview <id>` renders just the held stages into a
   contact sheet (`.motion-tmp/preview-<id>.png`) — use it to tune a
   posture before the full render (~2 s/frame). The worker precaches

@@ -6,7 +6,15 @@
   gap: 10px;
 }
 
+/* one box, one frame index: ghost under, figure, guides on top */
+.pose-motion-stack {
+  position: relative;
+  flex: none;
+}
+
 .pose-motion-cell {
+  position: absolute;
+  inset: 0;
   background: currentColor;
   -webkit-mask-repeat: no-repeat;
   mask-repeat: no-repeat;
@@ -17,11 +25,24 @@
   flex: none;
 }
 
+/* the common-mistake figure: a faint warm echo under the real one */
+.pose-motion-cell--ghost {
+  background: color-mix(in srgb, var(--ember) 55%, transparent);
+}
+
+/* alignment guides: cool accent over the figure */
+.pose-motion-cell--guides {
+  background: var(--stretches);
+}
+
 .pose-motion-controls {
   display: flex;
   align-items: flex-start;
   gap: 8px;
   max-width: 100%;
+  /* play + layer chips on one line; stages wrap below when space is short */
+  flex-wrap: wrap;
+  justify-content: center;
 }
 
 .pose-motion-play {
@@ -72,8 +93,79 @@
   color: var(--ember-text);
 }
 
+.pose-motion-layers {
+  display: flex;
+  flex: none;
+  gap: 6px;
+}
+
+.pose-motion-layer {
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px dashed var(--border-strong);
+  background: transparent;
+  color: var(--text-faint);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: border-color 120ms ease, color 120ms ease, background 120ms ease;
+}
+
+.pose-motion-layer:hover {
+  color: var(--text);
+}
+
+.pose-motion-layer--guides[aria-pressed='true'] {
+  border-style: solid;
+  border-color: var(--stretches);
+  color: var(--stretches);
+  background: color-mix(in srgb, var(--stretches) 12%, transparent);
+}
+
+.pose-motion-layer--ghost[aria-pressed='true'] {
+  border-style: solid;
+  border-color: var(--ember);
+  color: var(--ember-text);
+  background: var(--ember-soft);
+}
+
+.pose-motion-caption {
+  margin: 0;
+  max-width: 36ch;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text-faint);
+}
+
 .pose-motion-play:focus-visible,
+.pose-motion-layer:focus-visible,
 .pose-motion-stage:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
+}
+
+/* Breath: a subtle swell from the chest (~30% down the cell) with a small
+   lift on inhale, settling on exhale. The phase flip drives a transition
+   whose length is the pacer's bar (--breath-dur); transform only, so
+   both themes are untouched. Same easing as the pacer orb. */
+.pose-motion-stack[data-breath] {
+  transform-origin: 50% 30%;
+  transition: transform var(--breath-dur, 6s) cubic-bezier(0.45, 0.05, 0.35, 1);
+  will-change: transform;
+}
+
+.pose-motion-stack[data-breath='inhale'] {
+  transform: translateY(-1.5px) scale(1.03);
+}
+
+.pose-motion-stack[data-breath='exhale'] {
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pose-motion-stack[data-breath] {
+    transform: none !important;
+    transition: none !important;
+  }
 }

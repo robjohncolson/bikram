@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Pose } from '../data';
 import { PoseMotion } from '../components/PoseMotion';
+import type { BreathPhase } from '../components/PoseMotion';
 import './PacerClassMode.css';
 
 export interface PacerClassModeProps {
@@ -13,6 +14,8 @@ export interface PacerClassModeProps {
   segmentLabel?: string;
   segmentKind?: string;
   paused: boolean;
+  /** the metronome's breath for the figure to follow; undefined = still (pulse mode) */
+  breath?: BreathPhase;
   /** rehearsal: the posture's identity is withheld until it is announced */
   hidden?: boolean;
   /** rehearsal is on: never show what comes next */
@@ -116,7 +119,14 @@ export function PacerClassMode(props: PacerClassModeProps) {
       <main className="cm-mid">
         {motion && figSize > 0 && (
           <div className="cm-figure">
-            <PoseMotion motion={motion} size={figSize} showStages={false} />
+            <PoseMotion
+              motion={motion}
+              size={figSize}
+              showStages={false}
+              breath={props.breath}
+              breathPaused={props.paused}
+              layers={{ guides: true, ghost: false }}
+            />
           </div>
         )}
         {props.segmentLabel && (

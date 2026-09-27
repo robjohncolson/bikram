@@ -62,6 +62,23 @@ FLY = prone(**{
     'foot.L': (0, 0.9, 0.25), 'foot.R': (0, 0.9, 0.25),
 })
 
+# --- Teaching layers -------------------------------------------------------
+# Guides (side view): the wing line at shoulder height (the arms reach out
+# from it, never hanging below), and the line through the arc's two high
+# points — crown and toes lift to the same height, a banana, not a seesaw.
+SHOULDER_Z = 0.27
+FLY_GUIDES = [
+    {'from': (0, -0.8, SHOULDER_Z), 'to': (0, 0.1, SHOULDER_Z)},
+    {'from': (0, -0.9, 0.53), 'to': (0, 0.95, 0.53)},
+]
+
+# Common mistake: only the chest and arms fly; the legs stay on the floor.
+FLY_GHOST = {
+    'thigh.L': (0, 1, 0), 'thigh.R': (0, 1, 0),
+    'shin.L': (0, 1, 0), 'shin.R': (0, 1, 0),
+    'foot.L': (0, 1, -0.15), 'foot.R': (0, 1, -0.15),
+}
+
 POSTURE = {
     'id': 'full-locust',
     'view': 'side',
@@ -70,7 +87,8 @@ POSTURE = {
     'stages': [
         {'label': 'Lie prone', 'pose': LIE, 'hold': 4},
         {'label': 'Arms out', 'pose': ARMS, 'hold': 5, 'view': 'front'},
-        {'label': 'Lift everything', 'pose': FLY, 'hold': 10},
+        {'label': 'Lift everything', 'pose': FLY, 'hold': 10,
+         'guides': FLY_GUIDES, 'ghost': FLY_GHOST},
         {'label': 'Lower', 'pose': ARMS, 'hold': 4},
     ],
 }

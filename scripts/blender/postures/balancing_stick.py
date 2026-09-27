@@ -49,6 +49,28 @@ def stick(stand, lift):
     }
 
 
+def stick_guides(stand):
+    """The one horizontal line fingertips to heel, and the standing leg's
+    vertical pillar under it."""
+    x = -0.1 if stand == 'R' else 0.1
+    return [
+        {'from': (0, -1.2, 1.0), 'to': (0, 1.0, 1.0)},
+        {'from': (x, 0, 0.0), 'to': (x, 0, 1.0)},
+    ]
+
+
+def stick_ghost(stand, lift):
+    """Common mistake: the stick breaks -- arms droop below the line, the
+    middle sags and the lifted leg drops."""
+    down = (0, -1, -0.28)
+    return {
+        **arms_along(down, (0, -0.35, -0.1)),
+        'spine.lower': (0, -1, -0.12), 'spine.upper': (0, -1, -0.2),
+        'neck': (0, -1, -0.1), 'head': (0, -1, 0.05),
+        f'thigh.{lift}': (0, 1, -0.3), f'shin.{lift}': (0, 1, -0.3),
+    }
+
+
 POSTURE = {
     'id': 'balancing-stick',
     'view': 'side',
@@ -57,9 +79,11 @@ POSTURE = {
     'stages': [
         {'label': 'Arms up', 'pose': UP, 'hold': 4},
         {'label': 'Step forward', 'pose': step('R', 'L'), 'hold': 3},
-        {'label': 'Tip to horizontal', 'pose': stick('R', 'L'), 'hold': 10},
+        {'label': 'Tip to horizontal', 'pose': stick('R', 'L'), 'hold': 10,
+         'guides': stick_guides('R'), 'ghost': stick_ghost('R', 'L')},
         {'label': 'Rise', 'pose': UP, 'hold': 3},
-        {'label': 'Left side', 'pose': stick('L', 'R'), 'hold': 6},
+        {'label': 'Left side', 'pose': stick('L', 'R'), 'hold': 6,
+         'guides': stick_guides('L'), 'ghost': stick_ghost('L', 'R')},
         {'label': 'Rise', 'pose': UP, 'hold': 4},
     ],
 }

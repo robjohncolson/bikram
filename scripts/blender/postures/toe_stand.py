@@ -136,6 +136,35 @@ def mirror(pose):
     return out
 
 
+def diff(pose, base):
+    """Only the entries of `pose` that differ from `base` (a ghost overlay)."""
+    return {k: v for k, v in pose.items() if base.get(k) != v}
+
+
+def mirror_guides(guides):
+    return [{**g, 'from': (-g['from'][0], *g['from'][1:]), 'to': (-g['to'][0], *g['to'][1:])}
+            for g in guides]
+
+
+# Guides (right side, left leg standing): the balance line straight up from
+# the ball of the standing foot through the crown, and the level the folded
+# knee reaches toward (hip height, across the lap).
+PRAYER_GUIDES = [
+    {'from': (0.06, -0.03, 0.0), 'to': (0.06, -0.03, 1.40)},
+    {'from': (-0.62, 0.05, 0.36), 'to': (0.30, 0.05, 0.36)},
+]
+
+# Common mistake: collapsing forward over the fingertips — the chest drops,
+# the head pitches past the balance line and the hands hover low in front.
+PRAYER_GHOST = diff(build(
+    pelvis_at=(0, 0.08, 0.34), spine=((0, -0.4, 0.92), (0, -0.5, 0.87), (0, -0.45, 0.89)),
+    neck=(0, -0.5, 0.87), head=(0, -0.5, 0.87),
+    stand_ankle=(0.10, 0, 0.17), stand_foot=TOE_FOOT, knee_hint=(0, -1, 0.1),
+    tree_thigh=(-0.9, -0.45, -0.2),
+    wrists=(0.05, -0.45, 0.50), hands=(-0.15, -0.4, 0.9), elbow_hint=(1, 0.3, -0.6),
+), PRAYER)
+
+
 POSTURE = {
     'id': 'toe-stand',
     'view': 'quarter',
@@ -145,8 +174,10 @@ POSTURE = {
         {'label': 'Tree', 'pose': TREE, 'hold': 4},
         {'label': 'Fold', 'pose': FOLD, 'hold': 5},
         {'label': 'Sit to the heel', 'pose': SIT, 'hold': 5},
-        {'label': 'Prayer', 'pose': PRAYER, 'hold': 10},
+        {'label': 'Prayer', 'pose': PRAYER, 'hold': 10,
+         'guides': PRAYER_GUIDES, 'ghost': PRAYER_GHOST},
         {'label': 'Rise', 'pose': TREE, 'hold': 4},
-        {'label': 'Left side', 'pose': mirror(PRAYER), 'hold': 8},
+        {'label': 'Left side', 'pose': mirror(PRAYER), 'hold': 8,
+         'guides': mirror_guides(PRAYER_GUIDES), 'ghost': mirror(PRAYER_GHOST)},
     ],
 }

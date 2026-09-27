@@ -36,6 +36,26 @@ RIGHT = {
     'head': (-0.62, 0, 0.78),
 }
 
+# Guides for the right side: the centre line the hips push away from, and
+# the two panes of glass (front and back) the body bends between.
+RIGHT_GUIDES = [
+    {'from': (0, 0, 0), 'to': (0, 0, 2.05)},
+    {'plane': 'y', 'at': -0.16, 'z': (0.0, 2.05), 'w': 1.5},
+    {'plane': 'y', 'at': 0.16, 'z': (0.0, 2.05), 'w': 1.5},
+]
+
+# Common mistake: the hips stay centred, so the bend is only in the upper
+# back and the arms barely leave vertical.
+RIGHT_GHOST = {
+    **arms_overhead(axis=(-0.38, 0, 0.92)),
+    'pelvis.location': (0, 0, 0),
+    'pelvis': (0, 0, 1),
+    'spine.lower': (-0.05, 0, 1),
+    'spine.upper': (-0.3, 0, 0.95),
+    'neck': (-0.38, 0, 0.92),
+    'head': (-0.38, 0, 0.92),
+}
+
 LEFT = {
     **arms_overhead(axis=(0.62, 0, 0.78)),
     'pelvis.location': (-0.07, 0, 0),
@@ -76,7 +96,8 @@ POSTURE = {
     'transition': 7,
     'stages': [
         {'label': 'Arms up', 'pose': UP, 'hold': 4},
-        {'label': 'Right side', 'pose': RIGHT, 'hold': 8},
+        {'label': 'Right side', 'pose': RIGHT, 'hold': 8,
+         'guides': RIGHT_GUIDES, 'ghost': RIGHT_GHOST},
         {'label': 'Centre', 'pose': UP, 'hold': 3},
         {'label': 'Left side', 'pose': LEFT, 'hold': 8},
         {'label': 'Centre', 'pose': UP, 'hold': 3, 'view': 'side'},

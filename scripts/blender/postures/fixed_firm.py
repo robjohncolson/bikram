@@ -59,7 +59,10 @@ ELBOWS = {
     'hand.L': (0, -1, -0.05), 'hand.R': (0, -1, -0.05),
 }
 
-# Flat on the back, arms overhead on the floor, holding opposite elbows.
+# Flat on the back, arms overhead on the floor, holding opposite elbows:
+# the forearms cross one on top of the other (the right elbow rests a little
+# higher so the left forearm passes under it), and each hand curls around the
+# outside of the opposite elbow.
 FLAT = (0, 1, 0)
 LIE = {
     **SHINS, **THIGHS_FLAT,
@@ -67,9 +70,25 @@ LIE = {
     'pelvis': FLAT, 'spine.lower': FLAT, 'spine.upper': FLAT,
     'neck': FLAT, 'head': (0, 1, -0.02),
     'clavicle.L': (0.95, 0.3, 0), 'clavicle.R': (-0.95, 0.3, 0),
-    'upperarm.L': (-0.26, 1, 0.05), 'upperarm.R': (0.26, 1, 0.05),
-    'forearm.L': (-1, 0.05, 0.08), 'forearm.R': (1, 0.05, -0.08),
-    'hand.L': (-1, 0.05, 0.08), 'hand.R': (1, 0.05, -0.08),
+    'upperarm.L': (-0.26, 1, -0.02), 'upperarm.R': (0.26, 1, 0.2),
+    'forearm.L': (-1, 0, 0), 'forearm.R': (1, 0, 0),
+    'hand.L': (-0.3, 0, 1), 'hand.R': (0.3, 0, -1),
+}
+
+# --- Teaching layers -------------------------------------------------------
+# Guides (side view): the floor line the knees stay down on, and the floor
+# line the shoulders settle onto — the arch of the low back lives between.
+LIE_GUIDES = [
+    {'from': (0, -0.8, 0.0), 'to': (0, -0.2, 0.0)},
+    {'from': (0, 0.15, 0.0), 'to': (0, 0.75, 0.0)},
+]
+
+# Common mistake: going too deep too soon — the back reaches the floor but
+# the knees peel up and apart, the shins tilting off the floor behind them.
+LIE_GHOST = {
+    'thigh.L': (0.12, -0.92, 0.38), 'thigh.R': (-0.12, -0.92, 0.38),
+    'shin.L': (0.25, 0.9, -0.48), 'shin.R': (-0.25, 0.9, -0.48),
+    'foot.L': (0.1, 1, -0.2), 'foot.R': (-0.1, 1, -0.2),
 }
 
 POSTURE = {
@@ -81,7 +100,8 @@ POSTURE = {
         {'label': 'Kneel', 'pose': KNEEL, 'hold': 4},
         {'label': 'Sit between the heels', 'pose': SIT, 'hold': 5},
         {'label': 'Elbows down', 'pose': ELBOWS, 'hold': 5},
-        {'label': 'Lie back', 'pose': LIE, 'hold': 10},
+        {'label': 'Lie back', 'pose': LIE, 'hold': 10,
+         'guides': LIE_GUIDES, 'ghost': LIE_GHOST},
         {'label': 'Rise', 'pose': SIT, 'hold': 4},
     ],
 }
