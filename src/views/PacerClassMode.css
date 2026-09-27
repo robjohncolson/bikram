@@ -2,21 +2,24 @@
    (a hot yoga room is dim; a white screen at arm's length is a floodlight).
    It therefore uses a fixed warm-dark base + fixed cream text instead of
    theme tokens — the one sanctioned exception to the tokens-only rule.
-   The ember accent uses the dark-theme value so it reads on the dark base. */
+   The ember accent uses the dark-theme value so it reads on the dark base.
+   No clock and no numbers: the breath ring and the figure carry the time. */
 .cm {
   --cm-bg: #16110d;
   --cm-text: #f2e9dc;
   --cm-soft: rgb(242 233 220 / 0.62);
   --cm-faint: rgb(242 233 220 / 0.38);
+  --cm-line: rgb(242 233 220 / 0.16);
   --cm-ember: #e8763d;
 
   position: fixed;
   inset: 0;
   z-index: 100;
+  overflow: hidden;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: max(20px, env(safe-area-inset-top)) 24px max(20px, env(safe-area-inset-bottom));
+  padding: max(16px, env(safe-area-inset-top)) 20px max(16px, env(safe-area-inset-bottom));
   background: radial-gradient(120% 90% at 50% 0%, #201811 0%, var(--cm-bg) 60%);
   color: var(--cm-text);
   text-align: center;
@@ -27,7 +30,7 @@
 }
 
 .cm-top {
-  padding-top: 8px;
+  padding-top: 4px;
 }
 
 .cm-posture {
@@ -40,9 +43,9 @@
 
 .cm-name {
   font-family: var(--font-display);
-  font-size: clamp(24px, 4.5vw, 40px);
+  font-size: clamp(22px, 3.6vw, 34px);
   font-weight: 600;
-  margin-top: 6px;
+  margin-top: 4px;
 }
 
 .cm-sanskrit {
@@ -55,17 +58,99 @@
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 10px;
+}
+
+/* the stage: a square with the breath ring and the figure centred in it */
+.cm-stage {
+  position: relative;
+  display: grid;
+  place-items: center;
+  flex: none;
+}
+
+/* the resting outline the ring settles into on the exhale */
+.cm-ring-rest {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 1px solid var(--cm-line);
+  transform: scale(0.84);
+  pointer-events: none;
+}
+
+/* The breath ring. The phase flip drives one transition a bar long
+   (--phase-dur): it swells to the stage's edge on the inhale and settles
+   back to the resting outline on the exhale. Same easing as the pacer
+   orb. Transform only, so the dim-room palette is untouched. */
+.cm-ring {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  border: 2px solid color-mix(in srgb, var(--cm-ember) 70%, transparent);
+  box-shadow:
+    0 0 24px color-mix(in srgb, var(--cm-ember) 22%, transparent),
+    inset 0 0 40px color-mix(in srgb, var(--cm-ember) 10%, transparent);
+  transform: scale(0.84);
+  transition: transform var(--phase-dur, 6s) cubic-bezier(0.45, 0.05, 0.35, 1);
+  will-change: transform;
+  pointer-events: none;
+}
+
+.cm-ring[data-phase='in'] {
+  transform: scale(1);
+}
+
+.cm-ring[data-phase='out'] {
+  transform: scale(0.84);
+}
+
+.cm-ring[data-phase='idle'] {
+  transform: scale(0.84);
+  border-color: var(--cm-line);
+  box-shadow: none;
+}
+
+/* Kapalbhati: one sharp contraction per count — the belly snapping in */
+.cm-ring[data-phase='pulse'] {
+  transition: none;
+  animation: cm-pulse 0.9s cubic-bezier(0.2, 0.7, 0.3, 1) forwards;
+}
+
+@keyframes cm-pulse {
+  0% {
+    transform: scale(0.92);
+  }
+  18% {
+    transform: scale(0.8);
+  }
+  100% {
+    transform: scale(0.92);
+  }
 }
 
 /* the live posture's motion figure (sprite drawn in currentColor) */
 .cm-figure {
-  color: var(--cm-soft);
-  margin-bottom: 6px;
+  position: relative;
+  color: var(--cm-text);
+}
+
+.cm-figure-hidden {
+  font-family: var(--font-display);
+  font-size: clamp(64px, 12vw, 140px);
+  color: var(--cm-faint);
+}
+
+.cm-readout {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  min-height: 96px;
 }
 
 .cm-seg {
-  font-size: clamp(16px, 2.6vw, 22px);
+  font-size: clamp(16px, 2.4vw, 22px);
   font-weight: 600;
   color: var(--cm-soft);
 }
@@ -78,18 +163,71 @@
   font-weight: 500;
 }
 
-.cm-count {
-  font-family: var(--font-display);
-  font-size: clamp(96px, 24vw, 240px);
-  font-weight: 600;
-  line-height: 1;
-  font-variant-numeric: tabular-nums;
-  letter-spacing: -0.02em;
+/* one dot per breath of the segment: done, now, to come */
+.cm-breaths {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 8px;
+  max-width: min(520px, 90vw);
 }
 
-.cm-posetime {
+.cm-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  border: 1px solid var(--cm-soft);
+  background: transparent;
+  transition: background 0.4s, border-color 0.4s, transform 0.4s;
+}
+
+.cm-dot.is-done {
+  background: var(--cm-soft);
+  border-color: var(--cm-soft);
+}
+
+.cm-dot.is-now {
+  background: var(--cm-ember);
+  border-color: var(--cm-ember);
+  transform: scale(1.25);
+}
+
+.cm-phase {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  min-height: 24px;
+  font-size: 15px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--cm-soft);
+}
+
+.cm-phase[data-phase='in'] .cm-phase-word {
+  color: var(--cm-text);
+}
+
+/* the counts of the current phase, filling one pip per beat */
+.cm-counts {
+  display: inline-flex;
+  gap: 5px;
+}
+
+.cm-pip {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--cm-line);
+  transition: background 0.2s;
+}
+
+.cm-pip.is-on {
+  background: var(--cm-soft);
+}
+
+.cm-nextcue {
+  font-size: 13.5px;
   color: var(--cm-faint);
-  font-variant-numeric: tabular-nums;
 }
 
 .cm-paused {
@@ -103,7 +241,7 @@
 .cm-bottom {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
   align-items: center;
 }
 
@@ -131,15 +269,15 @@
   display: flex;
   flex-wrap: wrap;
   justify-content: center;
-  gap: 10px;
+  gap: 8px;
 }
 
 .cm-controls button {
-  padding: 10px 18px;
+  padding: 8px 16px;
   border-radius: 999px;
   border: 1px solid rgb(242 233 220 / 0.22);
   color: var(--cm-text);
-  font-size: 14.5px;
+  font-size: 14px;
   font-weight: 550;
   transition: background 0.15s, border-color 0.15s, opacity 0.15s;
 }
@@ -181,9 +319,16 @@
 
 @media (max-width: 560px) {
   .cm-name {
-    font-size: 22px;
+    font-size: 20px;
   }
-  .cm-count {
-    font-size: clamp(80px, 30vw, 140px);
+  .cm-readout {
+    min-height: 84px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .cm-ring {
+    transition: none !important;
+    animation: none !important;
   }
 }

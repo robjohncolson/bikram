@@ -25,6 +25,10 @@ import {
   programMinutes,
   programPoses,
   segmentAtBeat,
+  phaseAtBeat,
+  cueWhen,
+  poseGridSeconds,
+  DEFAULT_BAR_BEATS,
   silenceVoice,
   speak,
   speechSupported,
@@ -77,13 +81,13 @@ function initialProgram(): ClassProgram {
   return q.get('from') ? programById('full') : programById(q.get('program'));
 }
 
-/** Canonical seconds before each posture of a class, and the class total. */
-function classClock(list: Pose[]): { offsets: number[]; total: number } {
+/** Canonical seconds before each posture of a class (on the breath grid), and the class total. */
+function classClock(list: Pose[], beatsPerBar: number): { offsets: number[]; total: number } {
   const offsets: number[] = [];
   let t = 0;
   for (const p of list) {
     offsets.push(t);
-    t += p.approxTotalSeconds;
+    t += poseGridSeconds(p, beatsPerBar);
   }
   return { offsets, total: t };
 }
@@ -192,7 +196,7 @@ export function Pacer() {
   const [program, setProgram] = useState<ClassProgram>(initialProgram);
   /** The program's postures, trimmed — the class walks this list. */
   const classPoses = useMemo(() => programPoses(program), [program]);
-  const clock = useMemo(() => classClock(classPoses), [classPoses]);
+  const clock = useMemo(() => classClock(classPoses, settings.beatsPerBar), [classPoses, settings.beatsPerBar]);
   // /pace?from=<order> — a posture page's "practice from here"
   const [startIdx, setStartIdx] = useState(() => {
     const from = Number(new URLSearchParams(window.location.search).get('from'));
@@ -221,6 +225,11 @@ export function Pacer() {
   const classStartedAtRef = useRef(0);
   /** Segment whose metronome override is currently applied ("idx:segIndex"). */
   const segAppliedRef = useRef<string | null>(null);
+  /** The breath grid the running class was compiled on (the user's count at Begin). */
+  const classBarRef = useRef(DEFAULT_BAR_BEATS);
+  /** The last delivered beat: its metronome serial and class beat, so the
+   *  metronome can be told the breath phase of every beat it schedules. */
+  const anchorRef = useRef<{ serial: number; beatIdx: number; track: PoseTrack | null } | null>(null);
 
   /** setTimeout that gets cleaned up when the pacer stops or unmounts. */
   const later = useCallback((fn: () => void, ms: number) => {
@@ -255,6 +264,7 @@ export function Pacer() {
       guides: p.guides,
       rotation: dayIndex(),
       announceDelayBeats: p.rehearse ? REHEARSAL_DELAY_BEATS : 0,
+      beatsPerBar: classBarRef.current,
     });
   }, []);
 
@@ -325,6 +335,7 @@ export function Pacer() {
     setRunning(false);
     setBeatView(null);
     trackRef.current = null;
+    anchorRef.current = null;
     const journal = loadJournal();
     const endedAt = Date.now();
     const list = posesRef.current;
@@ -351,9 +362,10 @@ export function Pacer() {
    *  tab): they advance the class clock but stay silent, and the first
    *  live beat afterwards speaks one orientation cue if a hand-off went by. */
   const tickClass = useCallback(
-    (late = false) => {
+    (late = false, serial?: number) => {
       const c = classRef.current;
       if (c.phase === 'closing') {
+        if (serial !== undefined) anchorRef.current = { serial, beatIdx: c.budget - c.left, track: null };
         pacedRef.current += beatSeconds(settingsRef.current.bpm);
         const left = c.left - 1;
         if (left > 0) commitClass({ ...c, left });
@@ -364,6 +376,7 @@ export function Pacer() {
       // Current beat index into the hold — beat 0 is the posture's first
       // counted beat, so the announce lands the moment a hold begins.
       const beatIdx = c.budget - c.left;
+      if (serial !== undefined) anchorRef.current = { serial, beatIdx, track: trackRef.current };
       // a segment may ask the metronome for its own count (never its own tempo)
       const track = trackRef.current;
       const segNow = track ? segmentAtBeat(track, beatIdx) : null;
@@ -425,20 +438,43 @@ export function Pacer() {
   useEffect(() => {
     const m = createMetronome((e: BeatEvent) => {
       if (e.late) {
-        tickClass(true); // catch-up after a stall: clock moves, nothing sounds
+        tickClass(true, e.serial); // catch-up after a stall: clock moves, nothing sounds
         return;
       }
       const delay = Math.max(0, (e.time - m.now()) * 1000);
       later(() => {
         setBeatView({ beat: e.beat, bar: e.bar, beatsPerBar: e.beatsPerBar });
-        const phase = classRef.current.phase;
-        if (phase === 'running' || phase === 'closing') {
-          setBreath(breathPhaseFromBeat(e.bar, e.beatsPerBar, beatSeconds(settingsRef.current.bpm)));
-        } else if (phase !== 'paused') {
+        const c = classRef.current;
+        const bs = beatSeconds(settingsRef.current.bpm);
+        if (c.phase === 'running') {
+          // the class's own breath grid, not the metronome's bar count
+          const tr = trackRef.current;
+          const ph = tr ? phaseAtBeat(tr, c.budget - c.left) : null;
+          setBreath(ph && ph.phase !== 'pulse' && tr ? { phase: ph.phase, seconds: tr.barBeats * bs } : undefined);
+        } else if (c.phase === 'closing') {
+          setBreath(breathPhaseFromBeat(e.bar, e.beatsPerBar, bs));
+        } else if (c.phase !== 'paused') {
           setBreath(undefined);
         }
-        tickClass();
+        tickClass(false, e.serial);
       }, delay);
+    });
+    // Every beat the metronome schedules asks the class where it falls in
+    // the breath, so the ticks (high inhale, low exhale) follow the grid the
+    // cues are addressed on. No class, or paused: the metronome's own count.
+    m.setPhaseSource((serial) => {
+      const a = anchorRef.current;
+      const c = classRef.current;
+      if (!a || (c.phase !== 'running' && c.phase !== 'closing')) return null;
+      const t = a.beatIdx + (serial - a.serial);
+      if (a.track && t < a.track.totalBeats) {
+        const ph = phaseAtBeat(a.track, t);
+        return { beat: ph.beatInBar, bar: ph.bar };
+      }
+      // past the anchor's posture: the next one opens on an inhale
+      const u = a.track ? t - a.track.totalBeats : t;
+      const bpb = m.settings.beatsPerBar;
+      return { beat: u % bpb, bar: Math.floor(u / bpb) };
     });
     metRef.current = m;
     m.update(settingsRef.current);
@@ -477,6 +513,7 @@ export function Pacer() {
         guides: cues.guides,
         rotation: dayIndex(),
         announceDelayBeats: cues.rehearse ? REHEARSAL_DELAY_BEATS : 0,
+        beatsPerBar: classBarRef.current,
       });
       // switching rehearsal off mid-class shows the posture at once
       if (!cues.rehearse && !c.revealed) commitClass({ ...c, revealed: true });
@@ -545,6 +582,7 @@ export function Pacer() {
       if (idx < 0 || idx >= posesRef.current.length) return;
       silenceVoice();
       metRef.current?.chime();
+      anchorRef.current = null;
       const track = buildTrack(idx);
       trackRef.current = track;
       commitClass({
@@ -569,6 +607,8 @@ export function Pacer() {
     pacedRef.current = 0;
     stalledRef.current = false;
     stallHandoffRef.current = false;
+    anchorRef.current = null;
+    classBarRef.current = settingsRef.current.beatsPerBar;
     posesRef.current = classPoses;
     programRef.current = program;
     const from = Math.min(startIdx, classPoses.length - 1);
@@ -584,9 +624,13 @@ export function Pacer() {
     const c = classRef.current;
     if (c.phase === 'running') {
       silenceVoice();
+      anchorRef.current = null;
       commitClass({ ...c, phase: 'paused' });
     } else if (c.phase === 'paused') {
-      commitClass({ ...c, phase: 'running' });
+      // resume on an inhale: rewind to the start of the breath that was cut
+      const tr = trackRef.current;
+      const back = tr ? (c.budget - c.left) % tr.breathBeats : 0;
+      commitClass({ ...c, phase: 'running', left: Math.min(c.budget, c.left + back) });
     }
   }, [commitClass]);
 
@@ -595,6 +639,7 @@ export function Pacer() {
     metRef.current?.setQuiet(false);
     applySegmentPacer(null);
     trackRef.current = null;
+    anchorRef.current = null;
     commitClass({ phase: 'idle' });
   }, [applySegmentPacer, commitClass]);
 
@@ -657,7 +702,7 @@ export function Pacer() {
   const count = curBeat >= 0 ? Math.min(curBeat + 1, liveBeats) : null;
   const rate = breathsPerMinute(settings);
   const rateLine = `${fmtRate(rate)} ${isPulse ? 'pulses' : 'breaths'} / min`;
-  const classMinutes = programMinutes(program, settings.bpm);
+  const classMinutes = programMinutes(program, settings.bpm, settings.beatsPerBar);
 
   // What the idle card says about last time: computed once per idle spell,
   // not per beat. "Listen for" names the two shakiest hand-offs the trainer
@@ -706,7 +751,7 @@ export function Pacer() {
             >
               <span className="pc-program-head">
                 <span className="pc-program-name">{pr.name}</span>
-                <span className="pc-program-min">{programMinutes(pr, settings.bpm)} min</span>
+                <span className="pc-program-min">{programMinutes(pr, settings.bpm, settings.beatsPerBar)} min</span>
               </span>
               <span className="pc-program-blurb">{pr.blurb}</span>
             </button>
@@ -827,7 +872,6 @@ export function Pacer() {
       overlay = (
         <PacerClassMode
           pose={savasana}
-          countdown={mss(classRun.left)}
           segmentLabel="Final savasana"
           segmentKind="rest"
           paused={false}
@@ -859,12 +903,16 @@ export function Pacer() {
     const hidden = cues.rehearse && !classRun.revealed;
     const fracDone = 1 - classRun.left / classRun.budget;
     const progress =
-      (clock.offsets[classRun.idx] + fracDone * pose.approxTotalSeconds) / clock.total;
+      (clock.offsets[classRun.idx] + fracDone * classRun.budget) / clock.total;
     const remainNote =
       classRun.phase === 'paused' ? ' · paused' : !running ? ' · metronome stopped' : '';
-    const seg = trackRef.current
-      ? segmentAtBeat(trackRef.current, classRun.budget - classRun.left)
-      : null;
+    const beatIdx = classRun.budget - classRun.left;
+    const track = trackRef.current;
+    const seg = track ? segmentAtBeat(track, beatIdx) : null;
+    // the figure leads the class by one bar: it moves on the exhale the
+    // change cue is spoken on, so the new hold is shown as it begins
+    const figSeg = track ? segmentAtBeat(track, Math.min(track.totalBeats - 1, beatIdx + track.barBeats)) : null;
+    const nextCue = track ? cueWhen(track, beatIdx) : undefined;
     classBody = (
       <div className="pc-class-run">
         <div className="pc-class-pose">
@@ -891,6 +939,13 @@ export function Pacer() {
               <p className="pc-class-seg" data-kind={seg.kind}>
                 <span className="pc-seg-label">{seg.label}</span>
                 <span className="pc-seg-time">{mss(seg.beatsLeft)}</span>
+              </p>
+            )}
+            {seg && (
+              <p className="pc-class-breath text-soft">
+                Breath {seg.breath + 1} of {seg.breaths}
+                {seg.phase !== 'pulse' && <> · {seg.phase}</>}
+                {nextCue && <> · next cue {nextCue}</>}
               </p>
             )}
           </div>
@@ -954,10 +1009,10 @@ export function Pacer() {
         <PacerClassMode
           pose={pose}
           next={next}
-          countdown={seg ? mss(seg.beatsLeft) : mss(classRun.left)}
-          poseCountdown={seg ? mss(classRun.left) : undefined}
           segmentLabel={seg?.label}
           segmentKind={seg?.kind}
+          position={seg ?? undefined}
+          nextCue={nextCue}
           paused={classRun.phase === 'paused'}
           hidden={hidden}
           rehearse={cues.rehearse}
@@ -972,8 +1027,8 @@ export function Pacer() {
           onExit={exitImmersion}
           breath={breath}
           figureClock={
-            seg
-              ? { segment: seg.index, beatsIn: seg.beatsIn, beats: seg.beats, beatSeconds: beatSeconds(settings.bpm) }
+            figSeg
+              ? { segment: figSeg.index, beatsIn: figSeg.beatsIn, beats: figSeg.beats, beatSeconds: beatSeconds(settings.bpm) }
               : {
                   segment: 0,
                   beatsIn: classRun.budget - classRun.left,

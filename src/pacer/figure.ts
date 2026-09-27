@@ -33,6 +33,7 @@
  */
 import type { Pose, PoseMotion, PoseSegment } from '../data';
 import { getPose } from '../data';
+import { segmentKey } from './grid';
 
 /** frames a stage-to-stage transition takes in the sheets (6–8 by posture);
  *  the larger value so a hop never misses motion — at worst a still hold
@@ -62,13 +63,6 @@ const norm = (s: string) => s.toLowerCase().replace(/\s+/g, ' ').trim();
 const hasWord = (label: string, w: string) => new RegExp(`\\b${w}\\b`, 'i').test(label);
 const isNeutral = (m: PoseMotion, i: number) => NEUTRAL.test(m.stages[i].label.trim());
 const sideOf = (label: string): Side | undefined => SIDE_WORDS.find((w) => hasWord(label, w));
-
-/** Strip the set prefix: "Second set — right leg" → "right leg"; "First set" → "". */
-export function segmentKey(label: string): string {
-  return norm(label)
-    .replace(/^(first|second|third) set\s*[—–-]\s*/, '')
-    .replace(/^(first|second|third) set$/, '');
-}
 
 /** The last non-neutral stage of the sheet (stage 0 if nothing else). */
 export function climaxStage(m: PoseMotion): number {

@@ -29,6 +29,18 @@ export interface BeatEvent {
   beatsPerBar: number;
   /** delivered in a catch-up burst after a stall — silent, no visuals */
   late?: boolean;
+  /** running count of beats since start — the handle a phase source keys on */
+  serial: number;
+}
+
+/**
+ * Where a beat falls in the breath: `beat` within its bar and the bar's
+ * parity (even inhale, odd exhale). A class supplies one so the ticks
+ * follow the class's breath grid instead of the metronome's own count.
+ */
+export interface BeatPhase {
+  beat: number;
+  bar: number;
 }
 
 export interface Metronome {
@@ -47,6 +59,13 @@ export interface Metronome {
   cue(kind: 'warn' | 'change' | 'end'): void;
   /** silence the beat ticks (chimes, bells and cues still sound) — final savasana */
   setQuiet(quiet: boolean): void;
+  /**
+   * Let a class dictate each beat's place in the breath: called with the
+   * serial of every beat as it is scheduled; a null answer (no class, or
+   * paused) falls back to the metronome's own bar count, which then
+   * continues from wherever the source left it.
+   */
+  setPhaseSource(source: ((serial: number) => BeatPhase | null) | null): void;
   /** release audio resources */
   dispose(): void;
 }
@@ -61,6 +80,8 @@ export function createMetronome(onBeat: (e: BeatEvent) => void): Metronome {
   let nextTime = 0;
   let beat = 0;
   let bar = 0;
+  let serial = 0;
+  let phaseSource: ((serial: number) => BeatPhase | null) | null = null;
 
   /** Bring a suspended/interrupted context back while we are meant to run
    *  (screen unlock, return from another app, end of a phone call). */
@@ -115,9 +136,15 @@ export function createMetronome(onBeat: (e: BeatEvent) => void): Metronome {
     const now = ctx.currentTime;
     while (nextTime < now + LOOKAHEAD_S) {
       const late = now - nextTime > LATE_S;
+      const ph = phaseSource?.(serial) ?? null;
+      if (ph) {
+        beat = ph.beat;
+        bar = ph.bar;
+      }
       if (!late && !quiet) tickSound(nextTime, beat, bar);
-      onBeat({ time: late ? now : nextTime, beat, bar, beatsPerBar: settings.beatsPerBar, late });
+      onBeat({ time: late ? now : nextTime, beat, bar, beatsPerBar: settings.beatsPerBar, late, serial });
       nextTime += beatSeconds(settings.bpm);
+      serial += 1;
       beat += 1;
       if (beat >= settings.beatsPerBar) {
         beat = 0;
@@ -134,11 +161,18 @@ export function createMetronome(onBeat: (e: BeatEvent) => void): Metronome {
       return settings;
     },
     start() {
-      if (running || !ensureAudio() || !ctx) return;
+      // already running: a fresh gesture may still be what a suspended
+      // context (created outside one) has been waiting for
+      if (running) {
+        keepAlive();
+        return;
+      }
+      if (!ensureAudio() || !ctx) return;
       void ctx.resume();
       running = true;
       beat = 0;
       bar = 0;
+      serial = 0;
       nextTime = ctx.currentTime + 0.12;
       schedule();
       timer = setInterval(schedule, TICK_MS);
@@ -163,6 +197,9 @@ export function createMetronome(onBeat: (e: BeatEvent) => void): Metronome {
     },
     setQuiet(q) {
       quiet = q;
+    },
+    setPhaseSource(source) {
+      phaseSource = source;
     },
     chime() {
       this.cue('change');

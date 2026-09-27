@@ -483,6 +483,11 @@
 }
 
 /* live segment row: what the class is doing right now inside the posture */
+.pc-class-breath {
+  margin-top: 6px;
+  font-size: 13px;
+}
+
 .pc-class-seg {
   display: inline-flex;
   align-items: baseline;

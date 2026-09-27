@@ -1,5 +1,6 @@
 import type { Pose } from '../data';
 import { poses } from '../data';
+import { DEFAULT_BAR_BEATS, poseGridSeconds } from './grid';
 
 /**
  * Class programs: which postures the class pacer walks, and how many of
@@ -103,11 +104,11 @@ export function programPoses(program: ClassProgram): Pose[] {
 }
 
 /** Canonical class seconds of the program's postures (final savasana excluded). */
-export function programSeconds(program: ClassProgram): number {
-  return programPoses(program).reduce((s, p) => s + p.approxTotalSeconds, 0);
+export function programSeconds(program: ClassProgram, beatsPerBar = DEFAULT_BAR_BEATS): number {
+  return programPoses(program).reduce((s, p) => s + poseGridSeconds(p, beatsPerBar), 0);
 }
 
 /** Whole minutes the program's postures take at a tempo (60 BPM = class time). */
-export function programMinutes(program: ClassProgram, bpm = 60): number {
-  return Math.round((programSeconds(program) * (60 / bpm)) / 60);
+export function programMinutes(program: ClassProgram, bpm = 60, beatsPerBar = DEFAULT_BAR_BEATS): number {
+  return Math.round((programSeconds(program, beatsPerBar) * (60 / bpm)) / 60);
 }

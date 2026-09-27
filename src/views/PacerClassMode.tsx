@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import type { CSSProperties } from 'react';
 import type { Pose } from '../data';
 import { PoseMotion } from '../components/PoseMotion';
 import type { BreathPhase } from '../components/PoseMotion';
 import { figureFrameAt, figurePlan, segmentTimeline } from '../pacer';
-import type { FigurePlan } from '../pacer';
+import type { FigurePlan, SegmentPosition } from '../pacer';
 import './PacerClassMode.css';
 
 /** Where the class clock is: the live segment and the beats into it. */
@@ -21,15 +22,15 @@ export interface FigureClockProps {
 export interface PacerClassModeProps {
   pose: Pose;
   next?: Pose;
-  /** the big number: current segment countdown when available, else the posture's */
-  countdown: string;
-  /** whole-posture countdown, shown small when a segment countdown leads */
-  poseCountdown?: string;
   segmentLabel?: string;
   segmentKind?: string;
   paused: boolean;
-  /** the metronome's breath for the figure to follow; undefined = still (pulse mode) */
+  /** the class's breath for the ring and the figure; undefined = still (pulse mode) */
   breath?: BreathPhase;
+  /** the live place on the breath grid: which breath of the segment, which phase, which count */
+  position?: SegmentPosition;
+  /** where the next spoken cue lands, in words ("fourth breath, on the exhale") */
+  nextCue?: string;
   /** the class clock the figure moves with; undefined leaves the figure resting */
   figureClock?: FigureClockProps;
   /** rehearsal: the posture's identity is withheld until it is announced */
@@ -126,8 +127,33 @@ function useClassFigureFrame(
 }
 
 /**
- * Full-screen dim-room view of the running class: a countdown readable
- * from across a mat, nothing else fighting for attention. Esc leaves.
+ * Pin a CSS transition in place while paused: the computed transform is
+ * copied inline (and the transition dropped) so the ring stops where it
+ * is; on resume both are released and the transition carries on toward
+ * the phase's target.
+ */
+function usePausableTransition(paused: boolean) {
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return;
+    if (paused) {
+      const t = getComputedStyle(el).transform;
+      el.style.transform = t === 'none' ? '' : t;
+      el.style.transition = 'none';
+    } else {
+      el.style.transition = '';
+      el.style.transform = '';
+    }
+  }, [paused]);
+  return ref;
+}
+
+/**
+ * Full-screen dim-room view of the running class. No clock, no numbers:
+ * the breath ring around the figure swells on the inhale and settles on
+ * the exhale, one dot per breath of the segment fills as the breaths go
+ * by, and one line says where the next instruction lands. Esc leaves.
  */
 export function PacerClassMode(props: PacerClassModeProps) {
   const rootRef = useRef<HTMLDivElement | null>(null);
@@ -163,14 +189,16 @@ export function PacerClassMode(props: PacerClassModeProps) {
     }
   };
 
-  // the figure shares the screen with the countdown: ≤ 180 px on phones,
-  // and it shrinks on short viewports so the controls stay on screen
-  const [figSize, setFigSize] = useState(() => figureSize());
+  // the stage (ring + figure) is the hero: as large as the viewport allows
+  // once the name above and the controls below have their room
+  const [stage, setStage] = useState(() => stageSize());
   useEffect(() => {
-    const onResize = () => setFigSize(figureSize());
+    const onResize = () => setStage(stageSize());
     window.addEventListener('resize', onResize);
     return () => window.removeEventListener('resize', onResize);
   }, []);
+  const figSize = Math.round(stage * 0.78);
+
   // the figure is an identity surface: withheld with the name in rehearsal.
   // It moves with the class: the plan maps each segment onto sheet stages
   // (rests and sit-ups borrow the savasana and sit-up sheets), and the
@@ -178,12 +206,22 @@ export function PacerClassMode(props: PacerClassModeProps) {
   // while the class holds, other side when the side changes.
   const plan = useMemo(() => figurePlan(props.pose), [props.pose]);
   const frame = useClassFigureFrame(plan, props.figureClock, props.breath, props.paused);
-  const segMotion = plan && props.figureClock
-    ? plan.segments[Math.min(props.figureClock.segment, plan.segments.length - 1)]?.motion
-    : undefined;
+  const segMotion =
+    plan && props.figureClock
+      ? plan.segments[Math.min(props.figureClock.segment, plan.segments.length - 1)]?.motion
+      : undefined;
   const motion = props.hidden ? undefined : (segMotion ?? props.pose.motion);
 
-  // announce segment changes politely; the per-second countdown stays silent
+  // the breath ring: phase drives a transition one bar long; pulse mode
+  // beats a quick contraction on every count instead
+  const pos = props.position;
+  const pulse = pos?.phase === 'pulse';
+  const ringPhase = pulse ? 'pulse' : props.breath ? (props.breath.phase === 'inhale' ? 'in' : 'out') : 'idle';
+  const ringRef = usePausableTransition(props.paused);
+  const ringStyle = { '--phase-dur': `${props.breath?.seconds ?? 6}s` } as CSSProperties;
+  const phaseWord = pulse ? 'Pulse' : props.breath ? (props.breath.phase === 'inhale' ? 'Inhale' : 'Exhale') : '';
+
+  // announce segment changes politely; the beat-by-beat state stays silent
   const [announced, setAnnounced] = useState('');
   useEffect(() => {
     if (props.segmentLabel) setAnnounced(props.segmentLabel);
@@ -211,29 +249,66 @@ export function PacerClassMode(props: PacerClassModeProps) {
       </header>
 
       <main className="cm-mid">
-        {motion && figSize > 0 && (
-          <div className="cm-figure">
-            <PoseMotion
-              motion={motion}
-              size={figSize}
-              showStages={false}
-              breath={props.breath}
-              breathPaused={props.paused}
-              layers={{ guides: true, ghost: false }}
-              frame={frame}
-            />
-          </div>
-        )}
-        {props.segmentLabel && (
-          <p className="cm-seg" data-kind={props.segmentKind}>
-            {props.segmentLabel}
+        <div className="cm-stage" style={{ width: stage, height: stage }}>
+          <div
+            ref={ringRef}
+            className="cm-ring"
+            data-phase={ringPhase}
+            style={ringStyle}
+            key={pulse ? `p${pos?.beatsIn ?? 0}` : 'ring'}
+            aria-hidden="true"
+          />
+          <div className="cm-ring-rest" aria-hidden="true" />
+          {motion && figSize > 0 ? (
+            <div className="cm-figure">
+              <PoseMotion
+                motion={motion}
+                size={figSize}
+                showStages={false}
+                breath={props.breath}
+                breathPaused={props.paused}
+                layers={{ guides: true, ghost: false }}
+                frame={frame}
+              />
+            </div>
+          ) : (
+            <div className="cm-figure cm-figure-hidden" aria-hidden="true">
+              {props.hidden ? '?' : ''}
+            </div>
+          )}
+        </div>
+
+        <div className="cm-readout">
+          {props.segmentLabel && (
+            <p className="cm-seg" data-kind={props.segmentKind}>
+              {props.segmentLabel}
+            </p>
+          )}
+          {pos && (
+            <div className="cm-breaths" role="img" aria-label={`Breath ${pos.breath + 1} of ${pos.breaths}`}>
+              {Array.from({ length: pos.breaths }, (_, i) => (
+                <span
+                  key={i}
+                  className={
+                    'cm-dot' + (i < pos.breath ? ' is-done' : i === pos.breath ? ' is-now' : '')
+                  }
+                />
+              ))}
+            </div>
+          )}
+          <p className="cm-phase" data-phase={ringPhase}>
+            {phaseWord && <span className="cm-phase-word">{phaseWord}</span>}
+            {pos && !pulse && (
+              <span className="cm-counts" aria-hidden="true">
+                {Array.from({ length: pos.barBeats }, (_, i) => (
+                  <span key={i} className={'cm-pip' + (i <= pos.beatInBar ? ' is-on' : '')} />
+                ))}
+              </span>
+            )}
           </p>
-        )}
-        <p className="cm-count" aria-live="off">
-          {props.countdown}
-        </p>
-        {props.poseCountdown && <p className="cm-posetime">posture {props.poseCountdown}</p>}
-        {props.paused && <p className="cm-paused">paused</p>}
+          {props.nextCue && <p className="cm-nextcue">Next cue · {props.nextCue}</p>}
+          {props.paused && <p className="cm-paused">paused</p>}
+        </div>
       </main>
 
       <footer className="cm-bottom">
@@ -246,7 +321,7 @@ export function PacerClassMode(props: PacerClassModeProps) {
             : props.rehearse
             ? 'Rehearsal — the next posture stays hidden.'
             : props.next
-              ? `Next: #${props.next.order} ${props.next.englishName}`
+              ? `Next: ${props.next.englishName}`
               : 'Last posture — Kapalbhati closes the class.'}
         </p>
         <div className="cm-controls">
@@ -282,12 +357,12 @@ export function PacerClassMode(props: PacerClassModeProps) {
   );
 }
 
-/** Figure edge in px for the current viewport; 0 = no room, skip it. */
-function figureSize(): number {
+/** Edge of the square stage (ring + figure) in px for the current viewport. */
+function stageSize(): number {
   if (typeof window === 'undefined') return 0;
   const w = window.innerWidth;
   const h = window.innerHeight;
-  const cap = w <= 560 ? 180 : 240;
-  const size = Math.round(Math.min(cap, h * 0.24, w * 0.5));
-  return size < 72 ? 0 : size;
+  // header ≈ 120 px, readout ≈ 130 px, footer ≈ 150 px; the stage takes the rest
+  const size = Math.round(Math.min(w * 0.9, h - 400, 760));
+  return Math.max(120, size);
 }

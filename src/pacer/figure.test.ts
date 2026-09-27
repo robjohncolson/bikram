@@ -9,10 +9,10 @@ import {
   figurePlan,
   frameAt,
   pulseFrame,
-  segmentKey,
   segmentTimeline,
   stagesForLabel,
 } from './figure';
+import { segmentKey } from './grid';
 import type { FigureSegment } from './figure';
 
 const pose = (id: string) => getPose(id)!;

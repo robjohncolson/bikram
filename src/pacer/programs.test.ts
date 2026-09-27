@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { poses } from '../data';
+import { poseGridSeconds } from './grid';
 import { buildClassTrack } from './cues';
 import {
   FULL_CLASS,
@@ -20,7 +21,7 @@ const spokenTexts = (id: string) =>
 describe('class programs', () => {
   it('the full class is every posture, whole', () => {
     expect(programPoses(FULL_CLASS)).toEqual(poses);
-    const total = poses.reduce((s, p) => s + p.approxTotalSeconds, 0);
+    const total = poses.reduce((s, p) => s + poseGridSeconds(p), 0);
     expect(programSeconds(FULL_CLASS)).toBe(total);
     expect(programMinutes(FULL_CLASS)).toBe(Math.round(total / 60));
   });
@@ -58,7 +59,7 @@ describe('class programs', () => {
   it('minute math sums the trimmed holds', () => {
     const expected = SHORT_CLASS.items
       .map((i) => firstSetOnly(poses.find((p) => p.order === i.order)!))
-      .reduce((s, p) => s + p.approxTotalSeconds, 0);
+      .reduce((s, p) => s + poseGridSeconds(p), 0);
     expect(programSeconds(SHORT_CLASS)).toBe(expected);
     expect(programMinutes(SHORT_CLASS)).toBe(Math.round(expected / 60));
     expect(programMinutes(SHORT_CLASS, 30)).toBe(Math.round((expected * 2) / 60));

@@ -1,10 +1,22 @@
 import { describe, expect, it } from 'vitest';
-import { announceText, buildClassTrack, buildPoseTrack, coachingMaterial, segmentAtBeat, walkInSteps } from './cues';
+import {
+  announceText,
+  buildClassTrack,
+  buildPoseTrack,
+  coachingMaterial,
+  cueWhen,
+  lineFitsSegment,
+  phaseAtBeat,
+  segmentAtBeat,
+  walkInSteps,
+} from './cues';
+import { mentionsPhrase } from './grid';
 import { poses } from '../data';
 
 const camel = poses.find((p) => p.id === 'camel')!;
 const pranayama = poses[0];
 const balancingStick = poses.find((p) => p.id === 'balancing-stick')!;
+const halfMoon = poses.find((p) => p.id === 'half-moon')!;
 /** camel without authored segments — exercises the fallback set-cue path */
 const plainCamel = { ...camel, segments: undefined };
 
@@ -15,20 +27,90 @@ describe('cue sequencer', () => {
     expect(announceText(camel, true)).toBe('Posture 22. Camel Pose — Ustrasana.');
   });
 
-  it('opens with the announce, then walks in through every setup step', () => {
+  it('opens with the announce, then walks in on the inhales of the first segment', () => {
     const track = buildPoseTrack(camel, 60);
-    expect(track.totalBeats).toBe(camel.approxTotalSeconds); // 60 bpm: beats = seconds
+    // 40 20 10 35 20 10 → 36 24 12 36 24 12 on the twelve-count breath
+    expect(track.breathBeats).toBe(12);
+    expect(track.totalBeats).toBe(144);
     expect(track.events[0]).toMatchObject({ atBeat: 0, kind: 'announce' });
     const guides = track.events.filter((e) => e.kind === 'guide');
-    // camel's first segment is 40s — room for all five setup steps 8s apart
-    camel.setup.forEach((step, i) => {
-      expect(guides[i]).toMatchObject({ atBeat: 4 + i * 8, text: step });
-    });
-    // the walk-in never crosses the first segment boundary
+    // the first segment is three breaths: two inhales after the announce,
+    // so the walk-in keeps the first step and the last (full expression)
+    expect(guides[0]).toMatchObject({ atBeat: 12, text: camel.setup[0] });
+    expect(guides[1]).toMatchObject({ atBeat: 24, text: camel.setup[4] });
+    // the walk-in never crosses the first segment's change cue
     const firstBoundary = track.events.find((e) => e.kind === 'segment')!.atBeat;
-    camel.setup.forEach((_, i) => {
-      expect(guides[i].atBeat).toBeLessThan(firstBoundary);
-    });
+    expect(firstBoundary).toBe(30);
+    expect(guides[0].atBeat).toBeLessThan(firstBoundary);
+    expect(guides[1].atBeat).toBeLessThan(firstBoundary);
+  });
+
+  it('lands every change cue on the last exhale of the segment it closes', () => {
+    for (const track of buildClassTrack(60)) {
+      const cues = track.events.filter((e) => e.kind === 'segment');
+      cues.forEach((e, i) => {
+        const span = track.spans[i + 1];
+        expect(e.atBeat, track.pose.id).toBe(span.startBeat - track.barBeats);
+        if (track.barBeats > 1) {
+          expect(phaseAtBeat(track, e.atBeat), `${track.pose.id} ${e.text}`).toMatchObject({ phase: 'exhale', beatInBar: 0 });
+        }
+      });
+    }
+  });
+
+  it('starts every other spoken line on an inhale', () => {
+    for (const track of buildClassTrack(60)) {
+      if (track.barBeats <= 1) continue;
+      for (const e of track.events) {
+        if (e.kind !== 'guide' && e.kind !== 'announce') continue;
+        expect(e.atBeat % track.breathBeats, `${track.pose.id}: ${e.text}`).toBe(0);
+      }
+    }
+  });
+
+  it('walks Half Moon in through the segments its steps describe', () => {
+    const track = buildPoseTrack(halfMoon, 60);
+    const at = (text: string) => track.events.find((e) => e.text === text)?.atBeat;
+    const segOf = (beat: number) => segmentAtBeat(track, beat)!.label;
+    expect(segOf(at(halfMoon.setup[0])!)).toBe('First set — right side');
+    expect(segOf(at(halfMoon.setup[2])!)).toBe('First set — right side');
+    expect(segOf(at(halfMoon.setup[3])!)).toBe('First set — backbend');
+    expect(segOf(at(halfMoon.setup[4])!)).toBe('First set — hands to feet');
+  });
+
+  it('coaches each part of a posture only with lines about it', () => {
+    for (const track of buildClassTrack(60)) {
+      const phrases = [...new Set(track.spans.map((sp) => sp.phrase))];
+      for (const e of track.events) {
+        if (e.kind !== 'guide' || !e.text) continue;
+        const pos = segmentAtBeat(track, e.atBeat);
+        if (!pos) continue;
+        const span = track.spans[pos.index];
+        expect(lineFitsSegment(e.text, span, phrases), `${track.pose.id} · ${pos.label}: ${e.text}`).toBe(true);
+      }
+    }
+    // the rule itself, on Half Moon's parts
+    const hm = buildPoseTrack(halfMoon, 60);
+    const backbend = hm.spans.find((sp) => sp.phrase === 'backbend')!;
+    const side = hm.spans[0];
+    const phrases = [...new Set(hm.spans.map((sp) => sp.phrase))];
+    const backLine = halfMoon.cues.find((c) => mentionsPhrase(c, 'backbend'))!;
+    expect(lineFitsSegment(backLine, backbend, phrases)).toBe(true);
+    expect(lineFitsSegment(backLine, side, phrases)).toBe(false);
+    expect(lineFitsSegment('Keep breathing.', side, phrases)).toBe(true);
+  });
+
+  it('says where the next cue lands, in words', () => {
+    const track = buildPoseTrack(halfMoon, 60);
+    // first segment: 84 beats = 7 breaths; a walk-in step opens breath 2
+    expect(cueWhen(track, 0)).toBe('next breath, on the inhale');
+    // past the last inhale of the segment, only the change cue is left
+    const change = track.events.find((e) => e.kind === 'segment')!.atBeat;
+    expect(change).toBe(78);
+    expect(cueWhen(track, 73)).toBe('last breath, on the exhale');
+    expect(cueWhen(track, track.totalBeats - 1)).toBeUndefined();
+    const kb = buildPoseTrack(poses.find((p) => p.id === 'kapalbhati')!, 60);
+    expect(cueWhen(kb, 0)).toMatch(/end of this set/);
   });
 
   it('coaches mid-hold in later working segments, never in rests', () => {
@@ -39,18 +121,11 @@ describe('cue sequencer', () => {
     const firstBoundary = track.events.find((e) => e.kind === 'segment')!.atBeat;
     const coached = guides.filter((g) => g.atBeat > firstBoundary && material.includes(g.text ?? ''));
     expect(coached.length).toBeGreaterThan(0);
-    // rest/situp spans stay silent (walk-in lives in segment 0)
-    const segs = camel.segments!;
-    const totalSeconds = segs.reduce((s, x) => s + x.seconds, 0);
-    let elapsed = 0;
-    segs.forEach((seg, i) => {
-      const start = Math.round((elapsed / totalSeconds) * track.totalBeats);
-      elapsed += seg.seconds;
-      const end = i === segs.length - 1 ? track.totalBeats : Math.round((elapsed / totalSeconds) * track.totalBeats);
-      if (i > 0 && (seg.kind === 'rest' || seg.kind === 'situp')) {
-        // boundary cue at `start` is allowed; nothing else speaks inside
-        const inside = guides.filter((g) => g.atBeat > start && g.atBeat < end);
-        expect(inside, `${seg.label} should be silent`).toEqual([]);
+    // rest/situp spans stay silent (only the change cue closing them speaks)
+    track.spans.forEach((sp, i) => {
+      if (i > 0 && (sp.kind === 'rest' || sp.kind === 'situp')) {
+        const inside = guides.filter((g) => g.atBeat >= sp.startBeat && g.atBeat < sp.endBeat);
+        expect(inside, `${camel.segments![i].label} should be silent`).toEqual([]);
       }
     });
   });
@@ -78,11 +153,12 @@ describe('cue sequencer', () => {
     expect(track.events.some((e) => e.kind === 'segment')).toBe(true);
   });
 
-  it('marks the second-set boundary at the midpoint for two-set postures', () => {
+  it('marks the second set on the exhale before its first breath for two-set postures', () => {
     const track = buildPoseTrack(plainCamel, 60);
     const set = track.events.find((e) => e.kind === 'set');
+    const breaths = track.totalBeats / track.breathBeats;
     expect(set).toMatchObject({
-      atBeat: Math.round(track.totalBeats / 2),
+      atBeat: Math.round(breaths / 2) * track.breathBeats - track.barBeats,
       text: 'Second set.',
     });
   });
@@ -128,16 +204,18 @@ describe('cue sequencer', () => {
       ],
     };
     const track = buildPoseTrack(segmented, 60);
+    // 60 20 40 → 60 24 36: each cue one bar before its segment begins
     const segCues = track.events.filter((e) => e.kind === 'segment');
     expect(segCues).toEqual([
-      { atBeat: 60, kind: 'segment', text: 'Twenty-second savasana.' },
-      { atBeat: 80, kind: 'segment', text: 'Second set.' },
+      { atBeat: 54, kind: 'segment', text: 'Twenty-second savasana.' },
+      { atBeat: 78, kind: 'segment', text: 'Second set.' },
     ]);
     // no fallback set events when segments are authored
     expect(track.events.filter((e) => e.kind === 'set')).toHaveLength(0);
-    // at half tempo the boundaries scale with the grid
+    // at half tempo the beats halve, then snap to the breath grid again
     const half = buildPoseTrack(segmented, 30);
-    expect(half.events.filter((e) => e.kind === 'segment').map((e) => e.atBeat)).toEqual([30, 40]);
+    expect(half.spans.map((sp) => sp.endBeat - sp.startBeat)).toEqual([36, 12, 24]);
+    expect(half.events.filter((e) => e.kind === 'segment').map((e) => e.atBeat)).toEqual([30, 42]);
   });
 
   it('locates the segment under any beat with a live countdown', () => {
@@ -151,18 +229,31 @@ describe('cue sequencer', () => {
       ],
     };
     const track = buildPoseTrack(segmented, 60);
-    expect(segmentAtBeat(track, 0)).toMatchObject({ index: 0, label: 'First set', beatsLeft: 60 });
-    expect(segmentAtBeat(track, 59)).toMatchObject({ index: 0, beatsLeft: 1 });
-    expect(segmentAtBeat(track, 60)).toMatchObject({ index: 1, label: 'Savasana', beatsLeft: 20 });
+    expect(segmentAtBeat(track, 0)).toMatchObject({
+      index: 0, label: 'First set', beatsLeft: 60, beatsIn: 0, beats: 60,
+      breath: 0, breaths: 5, phase: 'inhale', beatInBar: 0, barBeats: 6,
+    });
+    expect(segmentAtBeat(track, 8)).toMatchObject({ breath: 0, phase: 'exhale', beatInBar: 2 });
+    expect(segmentAtBeat(track, 59)).toMatchObject({ index: 0, beatsLeft: 1, breath: 4, phase: 'exhale', beatInBar: 5 });
+    expect(segmentAtBeat(track, 60)).toMatchObject({ index: 1, label: 'Savasana', beatsLeft: 24, breaths: 2 });
     expect(segmentAtBeat(track, 119)).toMatchObject({ index: 2, beatsLeft: 1 });
     expect(segmentAtBeat(track, 999)).toMatchObject({ index: 2 });
     expect(segmentAtBeat(buildPoseTrack(plainCamel, 60), 5)).toBeNull();
   });
 
-  it('halves beat budgets at half tempo', () => {
-    const full = buildPoseTrack(camel, 60);
-    const half = buildPoseTrack(camel, 30);
-    expect(half.totalBeats).toBe(Math.round(full.totalBeats / 2));
+  it('quantises every segment of every posture to whole breaths', () => {
+    for (const track of buildClassTrack(60)) {
+      expect(track.totalBeats % track.breathBeats, track.pose.id).toBe(0);
+      for (const sp of track.spans) {
+        const len = sp.endBeat - sp.startBeat;
+        expect(len % track.breathBeats, track.pose.id).toBe(0);
+        expect(len).toBeGreaterThanOrEqual(track.breathBeats);
+      }
+    }
+    expect(buildPoseTrack(pranayama, 60).breathBeats).toBe(12); // holds its six-count
+    expect(buildPoseTrack(poses.find((p) => p.id === 'kapalbhati')!, 60).breathBeats).toBe(1);
+    expect(buildPoseTrack(camel, 60, { beatsPerBar: 4 }).breathBeats).toBe(8);
+    expect(buildPoseTrack(camel, 60, { beatsPerBar: 4 }).totalBeats % 8).toBe(0);
   });
 
   it('never schedules a guide over the announce on tiny holds', () => {
@@ -200,7 +291,9 @@ describe('cue sequencer', () => {
     // silence after it now carries coaching instead of nothing
     const track = buildPoseTrack(pranayama, 60);
     const firstBoundary = track.events.find((e) => e.kind === 'segment')!.atBeat;
-    const walkInEnd = 4 + (pranayama.setup.length - 1) * 8;
+    const walkInEnd = Math.max(
+      ...track.events.filter((e) => e.kind === 'guide' && pranayama.setup.includes(e.text ?? '')).map((e) => e.atBeat),
+    );
     const coached = track.events.filter(
       (e) => e.kind === 'guide' && e.atBeat > walkInEnd && e.atBeat < firstBoundary,
     );
@@ -223,15 +316,16 @@ describe('cue sequencer', () => {
       ],
     };
     const guides = buildPoseTrack(cramped, 60).events.filter((e) => e.kind === 'guide' && cramped.setup.includes(e.text ?? ''));
-    expect(guides.map((g) => g.text)).toEqual(['one', 'two', 'six']);
-    expect(guides.map((g) => g.atBeat)).toEqual([4, 12, 20]);
+    // 30 s → 36 beats = three breaths: two inhales after the announce
+    expect(guides.map((g) => g.text)).toEqual(['one', 'six']);
+    expect(guides.map((g) => g.atBeat)).toEqual([12, 24]);
   });
 
   it('holds the announce back for rehearsal and moves the walk-in with it', () => {
     const track = buildPoseTrack(camel, 60, { announceDelayBeats: 4 });
     expect(track.events.find((e) => e.kind === 'announce')!.atBeat).toBe(4);
     const guides = track.events.filter((e) => e.kind === 'guide');
-    expect(guides[0]).toMatchObject({ atBeat: 8, text: camel.setup[0] });
+    expect(guides[0]).toMatchObject({ atBeat: 12, text: camel.setup[0] });
     // clamped on a tiny hold: the announce still lands before the tail
     const tiny = { ...plainCamel, approxTotalSeconds: 10, sets: 1 };
     const t = buildPoseTrack(tiny, 60, { announceDelayBeats: 40 });

@@ -3,6 +3,7 @@ import { poses } from '../data';
 import { beatsForSeconds } from './timing';
 import type { ClassProgram } from './programs';
 import { programPoses } from './programs';
+import { DEFAULT_BAR_BEATS, breathBeats, mentionsPhrase, poseBarBeats, quantizeBeats, segmentPhrase } from './grid';
 
 /**
  * The class-cue sequencer: compiles the sequence into a per-posture
@@ -33,8 +34,14 @@ export interface CueEvent {
 
 export interface PoseTrack {
   pose: Pose;
-  /** hold length in beats at the track's tempo */
+  /** hold length in beats at the track's tempo — always whole breaths */
   totalBeats: number;
+  /** beats per bar (breath phase) on this track */
+  barBeats: number;
+  /** beats per full breath (two bars; one in pulse mode) */
+  breathBeats: number;
+  /** the segments' beat ranges, quantised to whole breaths */
+  spans: SegSpan[];
   /** events sorted by atBeat */
   events: CueEvent[];
 }
@@ -58,20 +65,16 @@ export interface CueOptions {
    * holds so the announce still lands well before the next hand-off.
    */
   announceDelayBeats?: number;
+  /** the user's beats per bar — sets the breath grid unless the posture overrides it */
+  beatsPerBar?: number;
 }
 
-/** Seconds into the hold where the setup walk-in starts. */
-const WALK_IN_START_S = 4;
-/** Spacing between walk-in steps — say it, then time to do it. */
-const WALK_IN_GAP_S = 8;
-/** Minimum silence between any two spoken lines. */
+/** Minimum silence between any two spoken lines (beats at the 60 BPM grid). */
 const SPEECH_GAP_S = 4;
-/** Working segments shorter than this get no mid-hold coaching. */
-const COACH_MIN_SEGMENT_S = 18;
-/** Segments at least this long get two coaching lines instead of one. */
-const COACH_DOUBLE_SEGMENT_S = 45;
-/** Keep the final approach clear for the warning ticks and hand-off. */
-const TAIL_CLEAR_S = 6;
+/** Working segments shorter than this many breaths get no mid-hold coaching. */
+const COACH_MIN_BREATHS = 2;
+/** Segments at least this many breaths long get two coaching lines. */
+const COACH_DOUBLE_BREATHS = 4;
 /** Warning ticks fire on the last three beats, only for holds this long. */
 const WARN_MIN_BEATS = 12;
 
@@ -111,71 +114,105 @@ export function announceText(pose: Pose, sanskrit: boolean): string {
 }
 
 /** A segment's beat range on the track grid. */
-interface SegSpan {
+export interface SegSpan {
   startBeat: number;
   endBeat: number;
   kind: string;
-}
-
-/** Nearest free beat to `target` within [lo, hi], ≥ gap from taken beats. */
-function findFreeBeat(
-  target: number,
-  lo: number,
-  hi: number,
-  taken: number[],
-  gap: number,
-): number | null {
-  for (let offset = 0; offset <= hi - lo; offset++) {
-    for (const candidate of offset === 0 ? [target] : [target + offset, target - offset]) {
-      if (candidate < lo || candidate > hi) continue;
-      if (taken.every((t) => Math.abs(t - candidate) >= gap)) return candidate;
-    }
-  }
-  return null;
+  /** what the segment is about (see grid.ts `segmentPhrase`) */
+  phrase: string;
 }
 
 /**
- * Compile a posture into its full spoken class: the announcement, a
- * walk-in through every setup step, segment-boundary cues, mid-hold
- * coaching (alignment cues then the breath line) rotated through the
- * later working segments, and warning ticks before the hand-off.
- * Rests stay silent — that's what they're for.
+ * Which setup steps belong to which segment. Steps are read in order;
+ * a step that names a later part of the posture (Half Moon's "for the
+ * backbend…", Awkward's "part two:") moves the bucket to the first
+ * segment about that part, and the steps after it follow until the next
+ * named part. Steps naming nothing stay with the current bucket.
+ */
+export function walkInBuckets(pose: Pose, spans: SegSpan[]): Map<number, string[]> {
+  const buckets = new Map<number, string[]>();
+  const firstOf = new Map<string, number>();
+  spans.forEach((sp, i) => {
+    if (sp.kind === 'rest' || sp.kind === 'situp') return;
+    if (sp.phrase && !firstOf.has(sp.phrase)) firstOf.set(sp.phrase, i);
+  });
+  let cur = 0;
+  for (const step of pose.setup) {
+    for (const [phrase, idx] of firstOf) {
+      if (idx > cur && mentionsPhrase(step, phrase)) cur = Math.max(cur, idx);
+    }
+    const list = buckets.get(cur) ?? [];
+    list.push(step);
+    buckets.set(cur, list);
+  }
+  return buckets;
+}
+
+/**
+ * May a coaching line play in this segment? A line that names one part
+ * of the posture ("in the backbend…") plays only in segments about that
+ * part; a line naming nothing plays anywhere the work is happening.
+ */
+export function lineFitsSegment(line: string, span: SegSpan, phrases: string[]): boolean {
+  const named = phrases.filter((p) => p && mentionsPhrase(line, p));
+  if (named.length === 0) return true;
+  return !span.phrase || named.includes(span.phrase);
+}
+
+/**
+ * Compile a posture into its full spoken class on the breath grid. The
+ * announcement lands on the first inhale; every other spoken line lands
+ * on the START of an inhale — except a segment's change cue ("Other
+ * side.", "Sit-up."), which lands on the start of the LAST EXHALE of the
+ * segment it closes, so the move happens on that exhale and the new hold
+ * begins with an inhale. Setup steps walk in through the segments they
+ * describe, coaching lines only where they apply; rests stay silent.
  */
 export function buildPoseTrack(pose: Pose, bpm: number, opts: CueOptions = {}): PoseTrack {
-  const totalBeats = beatsForSeconds(pose.approxTotalSeconds, bpm);
-  // beats per canonical second on this track's grid
-  const s2b = totalBeats / pose.approxTotalSeconds;
-  const beat = (seconds: number) => Math.round(seconds * s2b);
+  const barBeats = poseBarBeats(pose, opts.beatsPerBar ?? DEFAULT_BAR_BEATS);
+  const breath = breathBeats(barBeats);
+  const q = (seconds: number) => quantizeBeats(beatsForSeconds(seconds, bpm), breath);
 
-  // ——— segment spans (boundaries speak below, once the announce beat is known)
+  // ——— segment spans on the breath grid
   const spans: SegSpan[] = [];
   const boundaryCues: { atBeat: number; text: string }[] = [];
+  let totalBeats = 0;
   if (pose.segments && pose.segments.length > 0) {
-    const totalSeconds = pose.segments.reduce((s, seg) => s + seg.seconds, 0);
-    let elapsed = 0;
-    for (let i = 0; i < pose.segments.length; i++) {
-      const startBeat = Math.round((elapsed / totalSeconds) * totalBeats);
-      elapsed += pose.segments[i].seconds;
-      const endBeat =
-        i === pose.segments.length - 1
-          ? totalBeats
-          : Math.round((elapsed / totalSeconds) * totalBeats);
-      spans.push({ startBeat, endBeat, kind: pose.segments[i].kind });
-      if (i > 0) boundaryCues.push({ atBeat: Math.min(totalBeats - 1, startBeat), text: pose.segments[i].cue });
+    for (const seg of pose.segments) {
+      const beats = q(seg.seconds);
+      spans.push({
+        startBeat: totalBeats,
+        endBeat: totalBeats + beats,
+        kind: seg.kind,
+        phrase: segmentPhrase(seg.label),
+      });
+      totalBeats += beats;
+    }
+    for (let i = 1; i < spans.length; i++) {
+      boundaryCues.push({ atBeat: spans[i].startBeat - barBeats, text: pose.segments[i].cue });
     }
   } else {
-    spans.push({ startBeat: 0, endBeat: totalBeats, kind: 'set' });
+    totalBeats = q(pose.approxTotalSeconds);
+    spans.push({ startBeat: 0, endBeat: totalBeats, kind: 'set', phrase: '' });
   }
-  const firstBoundary = spans.length > 1 ? spans[1].startBeat : totalBeats;
+  const gap = Math.round(SPEECH_GAP_S * (bpm / 60));
+  // in pulse mode a "breath" is one beat, so spoken lines pace themselves
+  // by a nominal breath instead (the default six-count's twelve beats)
+  const stride = breath > 1 ? breath : breathBeats(DEFAULT_BAR_BEATS);
+  const breathsIn = (sp: SegSpan) => (sp.endBeat - sp.startBeat) / stride;
+  const inhaleStart = (sp: SegSpan, k: number) => sp.startBeat + k * stride;
+  const working = (sp: SegSpan) => sp.kind !== 'rest' && sp.kind !== 'situp';
 
-  // ——— the announce: at the hand-off, or held back for rehearsal
-  const maxDelay = Math.max(
-    0,
-    Math.min(totalBeats - beat(TAIL_CLEAR_S) - 1, firstBoundary - beat(SPEECH_GAP_S)),
-  );
+  // ——— the announce: at the hand-off, or held back for rehearsal (never
+  // into the first change cue's silence gap, nor into the final approach)
+  const firstCue = boundaryCues.length ? boundaryCues[0].atBeat : totalBeats;
+  const maxDelay = Math.max(0, Math.min(totalBeats - breath, inhaleStart(spans[0], 1) - gap, firstCue - gap));
   const delay = Math.max(0, Math.min(Math.round(opts.announceDelayBeats ?? 0), maxDelay));
-  const events: CueEvent[] = [{ atBeat: delay, kind: 'announce', text: announceText(pose, opts.sanskrit ?? false) }];
+  const events: CueEvent[] = [
+    { atBeat: delay, kind: 'announce', text: announceText(pose, opts.sanskrit ?? false) },
+  ];
   const spoken: number[] = [delay];
+  const free = (b: number) => b >= 0 && b < totalBeats && spoken.every((t) => Math.abs(t - b) >= gap);
 
   if (pose.segments && pose.segments.length > 0) {
     for (const b of boundaryCues) {
@@ -184,52 +221,61 @@ export function buildPoseTrack(pose: Pose, bpm: number, opts: CueOptions = {}): 
     }
   } else {
     for (let set = 1; set < pose.sets; set++) {
-      const atBeat = Math.round((totalBeats * set) / pose.sets);
+      // set changes sit on the grid too: the last exhale before the set's first breath
+      const setStart = Math.round((breathsIn(spans[0]) * set) / pose.sets) * breath;
+      const atBeat = Math.max(delay + gap, setStart - barBeats);
       events.push({ atBeat, kind: 'set', text: set === 1 ? 'Second set.' : `Set ${set + 1}.` });
       spoken.push(atBeat);
     }
   }
 
   if (opts.guides !== false) {
-    // ——— walk-in: the setup steps, confined to the first segment, behind
-    // the announce; when they do not all fit, drop from the middle
-    const walkInLimit = Math.min(firstBoundary - beat(SPEECH_GAP_S), totalBeats - beat(TAIL_CLEAR_S));
-    const slot = (i: number) => delay + beat(WALK_IN_START_S + i * WALK_IN_GAP_S);
-    let room = 0;
-    while (room < pose.setup.length && slot(room) <= walkInLimit) room++;
-    let lastWalkIn = delay;
-    walkInSteps(pose.setup.length, room).forEach((stepIdx, i) => {
-      const atBeat = slot(i);
-      events.push({ atBeat, kind: 'guide', text: pose.setup[stepIdx] });
-      spoken.push(atBeat);
-      lastWalkIn = atBeat;
-    });
-
-    // ——— coaching rotation: mid-segment in working segments, starting
-    // with whatever room the walk-in leaves in the first one; rests stay
-    // silent. `rotation` decides which lines lead today.
-    const material = coachingMaterial(pose, opts.rotation ?? 0);
-    let next = 0;
-    const coach = (from: number, to: number) => {
-      const len = to - from;
-      if (len < beat(COACH_MIN_SEGMENT_S)) return;
-      const slots = len >= beat(COACH_DOUBLE_SEGMENT_S) ? [0.35, 0.7] : [0.5];
-      for (const frac of slots) {
-        if (next >= material.length) break;
-        const lo = from + beat(SPEECH_GAP_S);
-        const hi = Math.min(to - beat(SPEECH_GAP_S), totalBeats - beat(TAIL_CLEAR_S));
-        const place = findFreeBeat(from + Math.round(len * frac), lo, hi, spoken, beat(SPEECH_GAP_S));
-        if (place !== null) {
-          events.push({ atBeat: place, kind: 'guide', text: material[next] });
-          spoken.push(place);
-          next++;
-        }
+    // ——— walk-in: each segment's own setup steps on its inhales, from its
+    // second breath (the first is for the announce or the change itself);
+    // when they do not all fit, drop from the middle
+    for (const [segIdx, steps] of walkInBuckets(pose, spans)) {
+      const sp = spans[segIdx];
+      const slots: number[] = [];
+      for (let k = 1; k < breathsIn(sp); k++) {
+        const b = inhaleStart(sp, k);
+        if (b > delay && free(b) && slots.every((t) => b - t >= gap)) slots.push(b);
       }
-    };
-    for (let i = 0; i < spans.length && next < material.length; i++) {
-      const span = spans[i];
-      if (span.kind === 'rest' || span.kind === 'situp') continue;
-      coach(i === 0 ? lastWalkIn : span.startBeat, span.endBeat);
+      walkInSteps(steps.length, slots.length).forEach((stepIdx, i) => {
+        events.push({ atBeat: slots[i], kind: 'guide', text: steps[stepIdx] });
+        spoken.push(slots[i]);
+      });
+    }
+
+    // ——— coaching rotation: mid-segment in working segments, on inhales,
+    // only lines that fit the segment; `rotation` decides which lead today
+    const material = coachingMaterial(pose, opts.rotation ?? 0);
+    const phrases = [...new Set(spans.map((sp) => sp.phrase))];
+    const used = new Set<string>();
+    for (const sp of spans) {
+      if (!working(sp)) continue;
+      const n = breathsIn(sp);
+      if (n < COACH_MIN_BREATHS) continue;
+      const fracs = n >= COACH_DOUBLE_BREATHS ? [0.35, 0.7] : [0.5];
+      for (const frac of fracs) {
+        const line = material.find((l) => !used.has(l) && lineFitsSegment(l, sp, phrases));
+        if (!line) break;
+        const want = Math.min(n - 1, Math.max(1, Math.round(n * frac)));
+        let place: number | null = null;
+        for (let d = 0; d < n && place === null; d++) {
+          for (const k of d === 0 ? [want] : [want + d, want - d]) {
+            if (k < 1 || k > n - 1) continue;
+            const b = inhaleStart(sp, k);
+            if (b > delay && free(b)) {
+              place = b;
+              break;
+            }
+          }
+        }
+        if (place === null) break;
+        events.push({ atBeat: place, kind: 'guide', text: line });
+        spoken.push(place);
+        used.add(line);
+      }
     }
   }
 
@@ -240,7 +286,7 @@ export function buildPoseTrack(pose: Pose, bpm: number, opts: CueOptions = {}): 
   }
 
   events.sort((a, b) => a.atBeat - b.atBeat);
-  return { pose, totalBeats, events };
+  return { pose, totalBeats, barBeats, breathBeats: breath, spans, events };
 }
 
 export interface SegmentPosition {
@@ -254,38 +300,90 @@ export interface SegmentPosition {
   beatsIn: number;
   /** the segment's full length in beats */
   beats: number;
+  /** 0-based breath within the segment */
+  breath: number;
+  /** breaths in the segment */
+  breaths: number;
+  /** where in the breath this beat falls; pulse mode has no phases */
+  phase: 'inhale' | 'exhale' | 'pulse';
+  /** 0-based beat within the current bar (phase) */
+  beatInBar: number;
+  /** beats per bar on this track */
+  barBeats: number;
 }
 
 /**
- * Which segment a given 0-based track beat falls in, on the same scaled
- * beat grid buildPoseTrack uses. Null when the pose has no segments.
+ * Which segment a given 0-based track beat falls in, with its place on
+ * the breath grid. Null when the pose has no segments.
  */
 export function segmentAtBeat(track: PoseTrack, beat: number): SegmentPosition | null {
   const segs = track.pose.segments;
   if (!segs || segs.length === 0) return null;
-  const totalSeconds = segs.reduce((s, seg) => s + seg.seconds, 0);
   const clamped = Math.min(Math.max(beat, 0), track.totalBeats - 1);
-  let elapsed = 0;
-  let start = 0;
-  for (let i = 0; i < segs.length; i++) {
-    elapsed += segs[i].seconds;
-    // the last segment always closes the track exactly
-    const end = i === segs.length - 1 ? track.totalBeats : Math.round((elapsed / totalSeconds) * track.totalBeats);
-    if (clamped < end) {
-      return {
-        index: i,
-        label: segs[i].label,
-        kind: segs[i].kind,
-        beatsLeft: end - clamped,
-        beatsIn: clamped - start,
-        beats: end - start,
-      };
-    }
-    start = end;
-  }
-  const last = segs.length - 1;
-  const beats = track.totalBeats - start;
-  return { index: last, label: segs[last].label, kind: segs[last].kind, beatsLeft: 1, beatsIn: Math.max(0, beats - 1), beats };
+  const i = Math.max(
+    0,
+    track.spans.findIndex((sp) => clamped < sp.endBeat),
+  );
+  const sp = track.spans[i];
+  const beatsIn = clamped - sp.startBeat;
+  const inBreath = beatsIn % track.breathBeats;
+  return {
+    index: i,
+    label: segs[i].label,
+    kind: segs[i].kind,
+    beatsLeft: sp.endBeat - clamped,
+    beatsIn,
+    beats: sp.endBeat - sp.startBeat,
+    breath: Math.floor(beatsIn / track.breathBeats),
+    breaths: (sp.endBeat - sp.startBeat) / track.breathBeats,
+    phase: track.barBeats <= 1 ? 'pulse' : inBreath < track.barBeats ? 'inhale' : 'exhale',
+    beatInBar: track.barBeats <= 1 ? 0 : inBreath % track.barBeats,
+    barBeats: track.barBeats,
+  };
+}
+
+/** The breath phase of any track beat, segments or not. */
+export function phaseAtBeat(
+  track: PoseTrack,
+  beat: number,
+): { phase: 'inhale' | 'exhale' | 'pulse'; beatInBar: number; bar: number } {
+  const b = Math.max(0, beat);
+  if (track.barBeats <= 1) return { phase: 'pulse', beatInBar: 0, bar: b };
+  const bar = Math.floor(b / track.barBeats);
+  return { phase: bar % 2 === 0 ? 'inhale' : 'exhale', beatInBar: b % track.barBeats, bar };
+}
+
+/** The next spoken cue after this beat (the one the practitioner is heading for). */
+export function nextSpokenCue(track: PoseTrack, beat: number): CueEvent | undefined {
+  return track.events.find((e) => e.atBeat > beat && e.text !== undefined);
+}
+
+const ORDINALS = [
+  'first', 'second', 'third', 'fourth', 'fifth', 'sixth', 'seventh', 'eighth', 'ninth', 'tenth',
+  'eleventh', 'twelfth', 'thirteenth', 'fourteenth', 'fifteenth', 'sixteenth',
+];
+
+/**
+ * Where the next spoken cue lands, in words and without digits: "fourth
+ * breath, on the exhale" within the current segment, "last breath, on the
+ * exhale" for the change that closes it, "when <segment> begins" when it
+ * belongs to a later one. Pulse mode counts pulses, not breaths, so it
+ * only says "at the end of this set". Undefined when nothing more is said.
+ */
+export function cueWhen(track: PoseTrack, beat: number): string | undefined {
+  const ev = nextSpokenCue(track, beat);
+  if (!ev) return undefined;
+  const here = segmentAtBeat(track, beat);
+  const there = segmentAtBeat(track, ev.atBeat);
+  if (!here || !there) return undefined;
+  if (there.phase === 'pulse') return 'at the end of this set';
+  const phase = `on the ${there.phase}`;
+  if (there.index !== here.index) return `when ${track.pose.segments?.[there.index]?.label.toLowerCase() ?? 'the next part'} begins`;
+  if (there.breath === there.breaths - 1) return `last breath, ${phase}`;
+  if (there.breath === here.breath) return `this breath, ${phase}`;
+  if (there.breath === here.breath + 1) return `next breath, ${phase}`;
+  const ord = ORDINALS[there.breath] ?? `${there.breath + 1}th`;
+  return `${ord} breath, ${phase}`;
 }
 
 /**
