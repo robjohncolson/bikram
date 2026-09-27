@@ -844,6 +844,12 @@ export function Pacer() {
           onTogglePause={() => {}}
           onExit={exitImmersion}
           breath={breath}
+          figureClock={{
+            segment: 0,
+            beatsIn: classRun.budget - classRun.left,
+            beats: classRun.budget,
+            beatSeconds: beatSeconds(settings.bpm),
+          }}
         />
       );
     }
@@ -965,6 +971,16 @@ export function Pacer() {
           onTogglePause={toggleClassPause}
           onExit={exitImmersion}
           breath={breath}
+          figureClock={
+            seg
+              ? { segment: seg.index, beatsIn: seg.beatsIn, beats: seg.beats, beatSeconds: beatSeconds(settings.bpm) }
+              : {
+                  segment: 0,
+                  beatsIn: classRun.budget - classRun.left,
+                  beats: classRun.budget,
+                  beatSeconds: beatSeconds(settings.bpm),
+                }
+          }
         />
       );
     }

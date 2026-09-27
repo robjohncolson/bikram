@@ -18,6 +18,8 @@ export { createMetronome } from './metronome';
 export type { BeatEvent, Metronome } from './metronome';
 export { CLOSING_LINE, CLOSING_SECONDS, announceText, buildPoseTrack, buildClassTrack, coachingMaterial, walkInSteps, segmentAtBeat } from './cues';
 export type { CueKind, CueEvent, CueOptions, PoseTrack, SegmentPosition } from './cues';
+export { figurePlan, figureFrameAt, segmentTimeline } from './figure';
+export type { FigurePlan, FigureSegment, FigureClock, FrameStep } from './figure';
 export { speechSupported, watchVoices, speak, stopSpeaking } from './voice';
 export type { VoiceChoice, SpeakOptions } from './voice';
 export { createWakeLock, wakeLockSupported } from './wakelock';

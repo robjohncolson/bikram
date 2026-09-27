@@ -250,6 +250,10 @@ export interface SegmentPosition {
   kind: string;
   /** beats remaining in this segment (including the current one) */
   beatsLeft: number;
+  /** beats already elapsed in this segment (0 on its first beat) */
+  beatsIn: number;
+  /** the segment's full length in beats */
+  beats: number;
 }
 
 /**
@@ -262,16 +266,26 @@ export function segmentAtBeat(track: PoseTrack, beat: number): SegmentPosition |
   const totalSeconds = segs.reduce((s, seg) => s + seg.seconds, 0);
   const clamped = Math.min(Math.max(beat, 0), track.totalBeats - 1);
   let elapsed = 0;
+  let start = 0;
   for (let i = 0; i < segs.length; i++) {
     elapsed += segs[i].seconds;
     // the last segment always closes the track exactly
     const end = i === segs.length - 1 ? track.totalBeats : Math.round((elapsed / totalSeconds) * track.totalBeats);
     if (clamped < end) {
-      return { index: i, label: segs[i].label, kind: segs[i].kind, beatsLeft: end - clamped };
+      return {
+        index: i,
+        label: segs[i].label,
+        kind: segs[i].kind,
+        beatsLeft: end - clamped,
+        beatsIn: clamped - start,
+        beats: end - start,
+      };
     }
+    start = end;
   }
   const last = segs.length - 1;
-  return { index: last, label: segs[last].label, kind: segs[last].kind, beatsLeft: 1 };
+  const beats = track.totalBeats - start;
+  return { index: last, label: segs[last].label, kind: segs[last].kind, beatsLeft: 1, beatsIn: Math.max(0, beats - 1), beats };
 }
 
 /**

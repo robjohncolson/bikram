@@ -96,9 +96,18 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   posture before the full render (~2 s/frame). The worker precaches
   sprites into `yoga-motion-v1` alongside the voice clips (`main.tsx`
   re-sends the list on `controllerchange` so an upgraded worker learns new
-  URLs). The pacer's class mode shows the figure as a LOOPING DEMONSTRATION
-  on its own clock — segments and sprite stages don't map 1:1, so it is
-  never scrubbed to class time; it's withheld with the name in rehearsal.
+  URLs). The pacer's class mode drives the figure IN STEP WITH THE CLASS:
+  `pacer/figure.ts` compiles each posture's segments onto sheet stages by
+  label (`figurePlan`, no authoring — `figure.test.ts` checks every segment
+  resolves; sides land on their run's deepest stage, bare sets on the
+  climax, `rest` segments borrow the savasana sheet, `situp` the sit-up
+  sheet, Pranayama scrubs Inhale/Exhale with the metronome's breath,
+  Kapalbhati pumps once per beat) and `figureFrameAt` answers the frame
+  from seconds into the segment: entry transitions at sheet speed, setup
+  stages held briefly, the target held to the segment's end. `PoseMotion`'s
+  `frame` prop is the controlled mode; `PacerClassMode` extrapolates
+  between beats on rAF (`useClassFigureFrame`) and freezes on pause. The
+  figure is withheld with the name in rehearsal.
 - `src/data/segments/` — per-posture class-time structure (sides, sets,
   the floor series' savasana/sit-up interludes) in four range files,
   merged onto `Pose.segments` by `poses/index.ts`. Segments partition

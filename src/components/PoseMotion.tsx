@@ -61,8 +61,9 @@ function useReducedMotion(): boolean {
  * through a CSS mask filled with `currentColor`, so the strokes take the
  * surrounding text colour in either theme. Plays at the sheet's fps and
  * loops with a short rest on the last frame; the stage chips scrub to a
- * held stage. It is a demonstration on its own clock — never a claim
- * about where the class is.
+ * held stage. Left to itself it is a demonstration on its own clock; a
+ * `frame` prop takes the clock away entirely (the class-mode figure is
+ * driven this way, in step with the class — see `pacer/figure.ts`).
  *
  * Reduced motion: autonomous playback stops (and stays stopped if the OS
  * preference flips while mounted) and the figure rests on its first held
@@ -91,6 +92,7 @@ export function PoseMotion({
   breath,
   breathPaused = false,
   layers,
+  frame: controlled,
 }: {
   motion: Motion;
   size?: number;
@@ -104,6 +106,8 @@ export function PoseMotion({
   breathPaused?: boolean;
   /** fixed layer choice that hides the chips and caption (class mode) */
   layers?: MotionLayers;
+  /** controlled mode: show exactly this frame and never run the player */
+  frame?: number;
 }) {
   const [stored, setStored] = useState<MotionLayers>(loadLayers);
   const active = layers ?? stored;
@@ -114,10 +118,11 @@ export function PoseMotion({
       return next;
     });
   const reduced = useReducedMotion();
-  const [frame, setFrame] = useState(0);
-  const [playing, setPlaying] = useState(autoplay && !reduced);
+  const [ownFrame, setFrame] = useState(0);
+  const [playing, setPlaying] = useState(autoplay && !reduced && controlled === undefined);
+  const frame = controlled === undefined ? ownFrame : Math.min(motion.frames - 1, Math.max(0, Math.round(controlled)));
   const frameRef = useRef(0);
-  frameRef.current = frame;
+  frameRef.current = ownFrame;
 
   // the OS preference turning on stops autonomous motion mid-play
   useEffect(() => {
@@ -125,7 +130,7 @@ export function PoseMotion({
   }, [reduced]);
 
   useEffect(() => {
-    if (!playing) return;
+    if (!playing || controlled !== undefined) return;
     let raf = 0;
     let last = performance.now();
     let rest = 0; // ms to hold on the final frame before looping
@@ -146,7 +151,7 @@ export function PoseMotion({
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [playing, motion.fps, motion.frames]);
+  }, [playing, controlled, motion.fps, motion.frames]);
 
   const rows = Math.ceil(motion.frames / motion.cols);
   const col = frame % motion.cols;
