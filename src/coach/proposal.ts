@@ -5,11 +5,11 @@
  */
 import { poses } from '../data';
 import type { ClassProgram, ProgramItem } from '../pacer';
-import { programMinutes } from '../pacer';
+import { classMinutes as programMinutes } from '../pacer';
 
 export const COACH_PROGRAM_ID = 'coach';
 export const MIN_MINUTES = 12;
-export const MAX_MINUTES = 75;
+export const MAX_MINUTES = 95;
 
 export interface Proposal {
   program: ClassProgram;

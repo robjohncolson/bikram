@@ -39,7 +39,15 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   mode), and every segment is quantised to whole breaths
   (`quantizeBeats`; `poseGridSeconds` is the honest posture length, so
   a class is a fixed number of breaths and every segment opens on an
-  inhale). `cues.ts` is the class-cue sequencer: compiles each posture
+  inhale). Every SET gets an ENTRY before its hold (`SegSpan.entryBeats`):
+  a first set's announce plus its walk-in lines, one line a BAR (a
+  teacher's pace), rounded up to whole breaths; a later set one breath;
+  rests and sit-ups none. The authored `seconds` are the hold proper, so
+  "Twenty-second savasana" never lands the moment you arrive, and the
+  full class compiles to ≈87 min + the 2-min closing — the real 90.
+  `classMinutes` (from compiled tracks) is the honest length everywhere;
+  `programMinutes` is only the grid estimate. `cues.ts` is the class-cue
+  sequencer: compiles each posture
   into beat-addressed events (announce / guide / set / segment / warn;
   pure, tested) ON THE GRID — the announce and every guide land on the
   start of an inhale; a segment's change cue lands on the start of the

@@ -212,18 +212,18 @@ describe('spoken walk-in moves', () => {
     const stage = (l: string) => m.stages.findIndex((s) => s.label === l);
     expect(label(m, seg.from)).toBe('Stand');
     expect(seg.moves).toBeDefined();
-    // the walk-in lines that name stages: "arms up" (breath 2), "bend to the right" (breath 4)
+    // the walk-in lines that name stages: "arms up" (bar 1), "bend to the right" (bar 3)
     const byStage = new Map(seg.moves!.map((mv) => [label(m, mv.stage), mv.seconds]));
-    expect(byStage.get('Arms up')).toBe(12 + track.barBeats + 2);
-    expect(byStage.get('Right side')).toBe(36 + track.barBeats + 2);
+    expect(byStage.get('Arms up')).toBe(6 + track.barBeats + 2);
+    expect(byStage.get('Right side')).toBe(18 + track.barBeats + 2);
     const seconds = track.spans[0].endBeat - track.spans[0].startBeat;
     const steps = segmentTimeline(seg, seconds);
     // Tadasana until the first line has been said, then the arms rise
     expect(frameAt(steps, 5)).toBe(m.stages[stage('Stand')].frame);
-    expect(frameAt(steps, 12 + track.barBeats + 2 + 3)).toBe(m.stages[stage('Arms up')].frame);
+    expect(frameAt(steps, 6 + track.barBeats + 2 + 3)).toBe(m.stages[stage('Arms up')].frame);
     // still arms up while the elbows line is said; bent to the right after its line
-    expect(frameAt(steps, 36 + track.barBeats)).toBe(m.stages[stage('Arms up')].frame);
-    expect(frameAt(steps, 36 + track.barBeats + 2 + 3)).toBe(m.stages[stage('Right side')].frame);
+    expect(frameAt(steps, 18 + track.barBeats)).toBe(m.stages[stage('Arms up')].frame);
+    expect(frameAt(steps, 18 + track.barBeats + 2 + 3)).toBe(m.stages[stage('Right side')].frame);
     expect(frameAt(steps, seconds - 1)).toBe(m.stages[stage('Right side')].frame);
   });
 

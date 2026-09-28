@@ -59,7 +59,7 @@ describe('coach proposals', () => {
     const tiny = { items: [{ order: 1, sets: 1 }, { order: 26, sets: 1 }] };
     const t = validateProposal(tiny);
     expect(t.ok).toBe(false);
-    if (!t.ok && 'errors' in t) expect(t.errors.join(' ')).toMatch(/between 12 and 75/);
+    if (!t.ok && 'errors' in t) expect(t.errors.join(' ')).toMatch(/between 12 and 95/);
   });
 
   it('distinguishes "no proposal yet" from a bad one', () => {

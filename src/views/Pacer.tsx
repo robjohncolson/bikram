@@ -22,7 +22,7 @@ import {
   phaseSeconds,
   playClip,
   programById,
-  programMinutes,
+  classMinutes as programMinutes,
   programPoses,
   segmentAtBeat,
   phaseAtBeat,

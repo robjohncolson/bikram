@@ -6,7 +6,7 @@
 import { chakras, muscles, poses } from '../data';
 import type { Pose } from '../data';
 import type { ClassProgram } from '../pacer';
-import { programMinutes } from '../pacer';
+import { classMinutes as programMinutes } from '../pacer';
 import type { ClassRecord, Journal, TrainerStore } from '../trainer';
 import { band, nodeP } from '../trainer';
 
@@ -37,7 +37,7 @@ Rules the app enforces (a proposal that breaks one is rejected and you will be a
 - Posture 1 (Standing Deep Breathing) opens every class and posture 26 (Blowing in Firm) closes it.
 - Posture 13 (Savasana) normally opens the floor series (14–25); leave it out only for a short class, as the built-in short class does — every floor posture already carries its own short savasana between sets.
 - "sets": 1 means first set only; omit it for both sets. Postures with one set ignore it.
-- Keep the class between 12 and 75 minutes at the practitioner's tempo.
+- Keep the class between 12 and 95 minutes at the practitioner's tempo (the full sequence is about 90).
 - Respect the cautions of every posture you include against what the practitioner told you.`;
 
 function poseLine(p: Pose): string {

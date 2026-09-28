@@ -16,7 +16,7 @@ export {
 export type { PacerSettings, PacerPreset, BreathCue } from './timing';
 export { createMetronome } from './metronome';
 export type { BeatEvent, BeatPhase, Metronome } from './metronome';
-export { CLOSING_LINE, CLOSING_SECONDS, announceText, buildPoseTrack, buildClassTrack, coachingMaterial, walkInSteps, segmentAtBeat, phaseAtBeat, nextSpokenCue, cueWhen } from './cues';
+export { CLOSING_LINE, CLOSING_SECONDS, announceText, buildPoseTrack, buildClassTrack, coachingMaterial, walkInSteps, segmentAtBeat, phaseAtBeat, nextSpokenCue, cueWhen, classMinutes } from './cues';
 export { DEFAULT_BAR_BEATS, poseBarBeats, breathBeats, quantizeBeats, poseGridSeconds } from './grid';
 export type { CueKind, CueEvent, CueOptions, PoseTrack, SegmentPosition, SegSpan } from './cues';
 export { figurePlan, figureFrameAt, segmentTimeline } from './figure';

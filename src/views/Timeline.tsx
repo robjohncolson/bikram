@@ -9,7 +9,7 @@ import {
   classOffsetSeconds,
   formatMinutes,
 } from '../data';
-import { FULL_CLASS, SHORT_CLASS, programMinutes } from '../pacer';
+import { FULL_CLASS, SHORT_CLASS, classMinutes as programMinutes } from '../pacer';
 import {
   dayKey,
   daysSince,
