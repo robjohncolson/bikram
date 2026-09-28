@@ -87,6 +87,7 @@ POSTURE = {
     'frame': {'center_z': 1.0, 'scale': 2.5},
     'transition': 7,
     'stages': [
+        {'label': 'Stand', 'pose': {}, 'hold': 4},
         {'label': 'Arms out', 'pose': OPEN, 'hold': 4},
         {'label': 'Bend right knee', 'pose': bend('R'), 'hold': 3},
         {'label': 'Right side', 'pose': triangle('R'), 'hold': 9,
@@ -95,5 +96,6 @@ POSTURE = {
         {'label': 'Left side', 'pose': triangle('L'), 'hold': 7,
          'guides': triangle_guides('L'), 'ghost': triangle_ghost('L')},
         {'label': 'Rise', 'pose': OPEN, 'hold': 3},
+        {'label': 'Stand', 'pose': {}, 'hold': 4},
     ],
 }

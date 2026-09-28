@@ -85,6 +85,7 @@ POSTURE = {
     'frame': {'center_z': 0.98, 'scale': 2.1},
     'transition': 7,
     'stages': [
+        {'label': 'Stand', 'pose': {}, 'hold': 4},
         {'label': 'Arms wide', 'pose': ARMS_WIDE, 'hold': 3, 'view': 'front'},
         {'label': 'Right side', 'pose': RIGHT, 'hold': 8,
          'guides': GUIDES, 'ghost': RIGHT_GHOST},
@@ -92,5 +93,6 @@ POSTURE = {
         {'label': 'Left side', 'pose': LEFT, 'hold': 8,
          'guides': GUIDES, 'ghost': LEFT_GHOST},
         {'label': 'Release', 'pose': {}, 'hold': 4, 'view': 'front'},
+        {'label': 'Stand', 'pose': {}, 'hold': 4},
     ],
 }

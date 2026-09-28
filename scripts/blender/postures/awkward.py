@@ -114,6 +114,7 @@ POSTURE = {
     'frame': {'center_z': 1.0, 'scale': 2.3},
     'transition': 8,
     'stages': [
+        {'label': 'Stand', 'pose': {}, 'hold': 4},
         {'label': 'Part one', 'pose': PART_1, 'hold': 7,
          'guides': PART_1_GUIDES, 'ghost': PART_1_GHOST},
         {'label': 'Rise', 'pose': STAND, 'hold': 3},
@@ -123,5 +124,6 @@ POSTURE = {
         {'label': 'Part three', 'pose': PART_3, 'hold': 8,
          'guides': PART_3_GUIDES, 'ghost': PART_3_GHOST},
         {'label': 'Rise', 'pose': STAND, 'hold': 4},
+        {'label': 'Stand', 'pose': {}, 'hold': 4},
     ],
 }

@@ -171,6 +171,7 @@ POSTURE = {
     'frame': {'center_z': 0.9, 'scale': 2.1},
     'transition': 8,
     'stages': [
+        {'label': 'Stand', 'pose': {}, 'hold': 4},
         {'label': 'Tree', 'pose': TREE, 'hold': 4},
         {'label': 'Fold', 'pose': FOLD, 'hold': 5},
         {'label': 'Sit to the heel', 'pose': SIT, 'hold': 5},
@@ -179,5 +180,6 @@ POSTURE = {
         {'label': 'Rise', 'pose': TREE, 'hold': 4},
         {'label': 'Left side', 'pose': mirror(PRAYER), 'hold': 8,
          'guides': mirror_guides(PRAYER_GUIDES), 'ghost': mirror(PRAYER_GHOST)},
+        {'label': 'Stand', 'pose': {}, 'hold': 4},
     ],
 }

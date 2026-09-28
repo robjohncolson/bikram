@@ -10,7 +10,9 @@
     "preview": "vite preview",
     "test": "vitest run",
     "motion": "node scripts/render-motion.mjs",
-    "motion:preview": "node scripts/render-motion.mjs --preview"
+    "motion:preview": "node scripts/render-motion.mjs --preview",
+    "coach": "node server/coach.mjs",
+    "voice:durations": "node scripts/clip-durations.mjs"
   },
   "dependencies": {
     "react": "^19.2.8",

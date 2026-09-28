@@ -105,6 +105,7 @@ POSTURE = {
     'frame': {'center_z': 1.0, 'scale': 2.4},
     'transition': 7,
     'stages': [
+        {'label': 'Stand', 'pose': {}, 'hold': 4},
         {'label': 'Hold the foot', 'pose': HOLD, 'hold': 4},
         {'label': 'Kick out', 'pose': KICK, 'hold': 5,
          'guides': guides(), 'ghost': KICK_GHOST},
@@ -115,5 +116,6 @@ POSTURE = {
         {'label': 'Left side', 'pose': mirror(HEAD_TO_KNEE), 'hold': 6,
          'guides': guides(-1), 'ghost': mirror(HEAD_TO_KNEE_GHOST)},
         {'label': 'Release', 'pose': {}, 'hold': 3},
+        {'label': 'Stand', 'pose': {}, 'hold': 4},
     ],
 }

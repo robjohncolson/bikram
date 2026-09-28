@@ -125,12 +125,39 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   `frame` prop is the controlled mode; `PacerClassMode` extrapolates
   between beats on rAF (`useClassFigureFrame`) and freezes on pause; the
   figure leads the class by one bar so it moves on the exhale the change
-  cue is spoken on. The figure is withheld with the name in rehearsal.
+  cue is spoken on. WHAT IS SAID IS WHAT IS SHOWN: with the posture's cue
+  track, each spoken walk-in line that names a stage becomes a
+  `FigureMove` (`stagematch.ts` scores stage labels against the line's
+  words with a small synonym table; `stagematch.test.ts` pins the mapping
+  per posture) and the figure travels there as the line ends
+  (`clipdurations.ts`, GENERATED from public/voice by ffprobe — rerun
+  `scripts/clip-durations` after generate-voice; TTS falls back to a
+  reading-pace estimate). Every standing sheet opens AND closes in
+  Tadasana (a `Stand` stage, the rig's rest pose), so standing hand-offs
+  are Tadasana to Tadasana and an entry always shows neutral becoming
+  the posture; `Stand` counts as neutral in the figure plan. The figure is withheld with the name in rehearsal.
   Class mode shows NO CLOCK AND NO NUMBERS (deliberate): a breath ring
   around the figure swells over each inhale and settles over each exhale
   (pulse mode snaps once per count), one dot per breath of the segment
   fills as breaths pass, pips count the phase, and one line says where
   the next cue lands. The stage takes the viewport minus header/footer.
+- `src/coach/` — the post-class coach (DeepSeek). `prompt.ts` builds the
+  system prompt from the app's own data (all 26 postures with chakras,
+  muscle work, cautions, timing; the practice journal; trainer mastery;
+  tonight's program) and the PROPOSAL_FORMAT the coach must answer in;
+  `proposal.ts` reads the fenced json out of a reply and validates it
+  (`validateProposal`: sequence order, #1 opens, #26 closes, savasana
+  #13 before any of 14–25, first-set flags, 12–75 min) — the model
+  proposes, the code decides; an adopted proposal is the "Coach's build"
+  program (`yoga-coach-program-v1`, `/pace?program=coach`). Views import
+  only from `src/coach/index.ts`. `server/coach.mjs` (`npm run coach`,
+  port 8787, Vite proxies `/api`) holds the key (`DEEPSEEK_API_KEY` in
+  `.env.local`, gitignored) and appends every exchange to
+  `journal/YYYY-MM-DD.md` — COMMITTED ON PURPOSE: it is the record the
+  next class is planned from. Read `journal/` before proposing a
+  sequence. `CoachDebrief` (the done screen) opens the conversation on
+  the practitioner's behalf and sends invalid proposals back with the
+  rules they broke.
 - `src/data/segments/` — per-posture class-time structure (sides, sets,
   the floor series' savasana/sit-up interludes) in four range files,
   merged onto `Pose.segments` by `poses/index.ts`. Segments partition

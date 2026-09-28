@@ -1,4 +1,5 @@
 import { voiceClips } from './voiceclips';
+import { clipDurations } from './clipdurations';
 import { stopSpeaking } from './voice';
 
 /**
@@ -22,6 +23,18 @@ export function clipsAvailable(): boolean {
 
 export function clipFor(text: string): string | undefined {
   return voiceClips[text];
+}
+
+/**
+ * How long a line takes to say: the recorded clip's length when we have
+ * one, else a reading-pace estimate for speech synthesis.
+ */
+export function clipSeconds(text: string): number {
+  const url = voiceClips[text];
+  const known = url ? clipDurations[url] : undefined;
+  if (known !== undefined) return known;
+  const words = text.trim().split(/\s+/).length;
+  return 0.4 + words * 0.42;
 }
 
 /** Every clip URL — for offline precaching. */

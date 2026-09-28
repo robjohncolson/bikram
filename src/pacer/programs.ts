@@ -17,7 +17,8 @@ export interface ProgramItem {
 }
 
 export interface ClassProgram {
-  id: 'full' | 'short';
+  /** 'full' | 'short' for the built-ins; 'coach' for a program the coach proposed */
+  id: string;
   name: string;
   /** one calm sentence for the picker */
   blurb: string;

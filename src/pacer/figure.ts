@@ -34,14 +34,22 @@
 import type { Pose, PoseMotion, PoseSegment } from '../data';
 import { getPose } from '../data';
 import { segmentKey } from './grid';
+import type { PoseTrack } from './cues';
+import { mapSteps } from './stagematch';
 
 /** frames a stage-to-stage transition takes in the sheets (6–8 by posture);
  *  the larger value so a hop never misses motion — at worst a still hold
  *  frame or two lead it */
 export const TRANSITION_FRAMES = 8;
-const NEUTRAL = /^(release|centre|center|rise|lower|change)$/i;
+const NEUTRAL = /^(release|centre|center|rise|lower|change|stand)$/i;
 const SIDE_WORDS = ['right', 'left', 'both'] as const;
 type Side = (typeof SIDE_WORDS)[number];
+
+/** A movement the spoken class asks for: reach `stage` at `seconds` into the segment. */
+export interface FigureMove {
+  seconds: number;
+  stage: number;
+}
 
 export type FigureSegment =
   | {
@@ -51,6 +59,14 @@ export type FigureSegment =
       from: number;
       /** stages to reach in turn, sharing the segment's time evenly */
       targets: number[];
+      /**
+       * when the class's own spoken walk-in drives the entry: each setup
+       * line that names a stage moves the figure there as the line ends
+       * (figure seconds, i.e. with the figure's lead over the class)
+       */
+      moves?: FigureMove[];
+      /** figure seconds when the last spoken walk-in line ends: the entry completes after it */
+      settle?: number;
     }
   | { kind: 'breath'; motion: PoseMotion; inhale: number; exhale: number }
   | { kind: 'pulse'; motion: PoseMotion; from: number; to: number };
@@ -148,12 +164,26 @@ function breathSegment(m: PoseMotion): FigureSegment | undefined {
   return undefined;
 }
 
+/** How the spoken class reaches the figure: its track and the timing to place lines. */
+export interface FigurePlanOptions {
+  /** the compiled cue track of the posture — its walk-in lines move the figure */
+  track?: PoseTrack;
+  /** real seconds per beat at the live tempo */
+  beatSeconds?: number;
+  /** how many beats the figure runs ahead of the class clock (one bar) */
+  leadBeats?: number;
+  /** how long a spoken line takes — the move starts when it ends */
+  clipSeconds?: (text: string) => number;
+}
+
 /**
  * Compile a posture's segments into figure segments. Undefined when the
  * posture has no sheet. A posture without segments gets one segment
- * landing on its climax (the closing savasana uses this).
+ * landing on its climax (the closing savasana uses this). With a track,
+ * every walk-in line that names a stage becomes a move: the figure gets
+ * there as the line finishes, so what is said is what is shown.
  */
-export function figurePlan(pose: Pose): FigurePlan | undefined {
+export function figurePlan(pose: Pose, opts: FigurePlanOptions = {}): FigurePlan | undefined {
   const own = pose.motion;
   if (!own) return undefined;
   const savasana = getPose('savasana')?.motion;
@@ -183,13 +213,61 @@ export function figurePlan(pose: Pose): FigurePlan | undefined {
     } else {
       targets = stagesForLabel(m, seg.label, cursor(m));
     }
-    out.push({ kind: 'stages', motion: m, from: cursor(m), targets });
+    const from = cursor(m);
+    // only a working segment on the posture's own sheet, entering one target,
+    // is walked in by the voice (rests and sit-ups borrow other sheets)
+    const spoken =
+      m === own && targets.length === 1 && seg.kind !== 'rest' && seg.kind !== 'situp'
+        ? walkInMoves(pose, opts, out.length, from, targets[0])
+        : undefined;
+    out.push({
+      kind: 'stages',
+      motion: m,
+      from,
+      targets,
+      ...(spoken && spoken.moves.length ? { moves: spoken.moves, settle: spoken.settle } : {}),
+    });
     // leaving a sheet (a rest, a sit-up) puts the figure down: the next set
     // on the posture's own sheet re-enters from its first stage
     cursors.clear();
     cursors.set(m, targets[targets.length - 1]);
   }
   return { segments: out };
+}
+
+/** The moves the segment's spoken setup lines ask for, in figure seconds, and when the last line ends. */
+function walkInMoves(
+  pose: Pose,
+  opts: FigurePlanOptions,
+  segIndex: number,
+  from: number,
+  target: number,
+): { moves: FigureMove[]; settle: number } | undefined {
+  const { track, beatSeconds = 1, leadBeats = 0, clipSeconds = () => 0 } = opts;
+  const span = track?.spans[segIndex];
+  if (!track || !span || !pose.motion) return undefined;
+  const lines = track.events.filter(
+    (e) =>
+      e.kind === 'guide' &&
+      e.text !== undefined &&
+      pose.setup.includes(e.text) &&
+      e.atBeat >= span.startBeat &&
+      e.atBeat < span.endBeat,
+  );
+  if (lines.length === 0) return undefined;
+  const labels = pose.motion.stages.map((s) => s.label);
+  const texts = lines.map((e) => e.text ?? '');
+  const stages = mapSteps(texts, labels, from, target);
+  const moves: FigureMove[] = [];
+  let settle = 0;
+  lines.forEach((e, i) => {
+    const ends = (e.atBeat - span.startBeat + leadBeats) * beatSeconds + clipSeconds(texts[i]);
+    settle = Math.max(settle, ends);
+    const stage = stages[i];
+    if (stage === undefined) return;
+    moves.push({ seconds: ends, stage });
+  });
+  return { moves, settle };
 }
 
 /** One step of a compiled segment: show `frame` until `until` seconds. */
@@ -215,6 +293,7 @@ function hopFrames(m: PoseMotion, b: number): number[] {
  * target holds until the slice ends.
  */
 export function segmentTimeline(seg: Extract<FigureSegment, { kind: 'stages' }>, seconds: number): FrameStep[] {
+  if (seg.moves && seg.moves.length) return spokenTimeline(seg, seconds, seg.moves);
   const m = seg.motion;
   const n = m.stages.length;
   const dt = 1 / m.fps;
@@ -249,6 +328,52 @@ export function segmentTimeline(seg: Extract<FigureSegment, { kind: 'stages' }>,
     steps.push({ frame: m.stages[target].frame, until: t });
     cur = target;
   }
+  return steps;
+}
+
+/** Seconds after the last spoken walk-in line before the figure completes the entry on its own. */
+const SETTLE_SECONDS = 1.5;
+
+/**
+ * Lay a segment out around its spoken moves: hold where the figure is
+ * until each line ends, then travel (transition frames only, no setup
+ * holds) to the stage the line named; if the lines never reach the
+ * target, finish the entry a few seconds after the last one.
+ */
+function spokenTimeline(
+  seg: Extract<FigureSegment, { kind: 'stages' }>,
+  seconds: number,
+  moves: FigureMove[],
+): FrameStep[] {
+  const m = seg.motion;
+  const n = m.stages.length;
+  const dt = 1 / m.fps;
+  const target = seg.targets[seg.targets.length - 1];
+  const steps: FrameStep[] = [];
+  let t = 0;
+  let cur = seg.from;
+  const travel = (to: number, at: number) => {
+    if (at > t) {
+      t = at;
+      steps.push({ frame: m.stages[cur].frame, until: t });
+    }
+    for (let i = cur; i !== to; ) {
+      i = (i + 1) % n;
+      for (const f of hopFrames(m, i)) {
+        t += dt;
+        steps.push({ frame: f, until: t });
+      }
+    }
+    cur = to;
+  };
+  const sorted = [...moves].sort((a, b) => a.seconds - b.seconds);
+  for (const mv of sorted) {
+    if (mv.stage === cur) continue;
+    travel(mv.stage, Math.min(mv.seconds, Math.max(0, seconds - 1)));
+  }
+  if (cur !== target) travel(target, Math.min(Math.max(t, seg.settle ?? 0) + SETTLE_SECONDS, Math.max(0, seconds - 1)));
+  t = Math.max(t, seconds);
+  steps.push({ frame: m.stages[target].frame, until: t });
   return steps;
 }
 

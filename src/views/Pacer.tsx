@@ -56,6 +56,8 @@ import {
 } from '../trainer';
 import { PoseFigure } from '../components/PoseFigure';
 import { PacerClassMode } from './PacerClassMode';
+import { CoachDebrief } from './CoachDebrief';
+import { COACH_PROGRAM_ID, loadCoachProgram } from '../coach';
 import './Pacer.css';
 
 const STORAGE_KEY = 'yoga-pacer-v1';
@@ -75,10 +77,13 @@ type ClassRun =
   | { phase: 'closing'; left: number; budget: number }
   | { phase: 'done'; pacedSeconds: number; rehearsedFrom?: number };
 
-/** `/pace?program=short` picks a program; `/pace?from=<order>` implies the full class. */
-function initialProgram(): ClassProgram {
+/** `/pace?program=short|coach` picks a program; `/pace?from=<order>` implies the full class. */
+function initialProgram(coach: ClassProgram | undefined): ClassProgram {
   const q = new URLSearchParams(window.location.search);
-  return q.get('from') ? programById('full') : programById(q.get('program'));
+  if (q.get('from')) return programById('full');
+  const id = q.get('program');
+  if (id === COACH_PROGRAM_ID && coach) return coach;
+  return programById(id);
 }
 
 /** Canonical seconds before each posture of a class (on the breath grid), and the class total. */
@@ -193,7 +198,10 @@ export function Pacer() {
   /** the class-mode figure's breath: follows bar parity while the class
    *  runs, holds (frozen) while it is paused, undefined in pulse mode */
   const [breath, setBreath] = useState<BreathCue | undefined>(undefined);
-  const [program, setProgram] = useState<ClassProgram>(initialProgram);
+  /** the class the coach proposed after the last debrief, once adopted */
+  const [coachProgram, setCoachProgram] = useState<ClassProgram | undefined>(loadCoachProgram);
+  const [program, setProgram] = useState<ClassProgram>(() => initialProgram(loadCoachProgram()));
+  const programs = useMemo(() => (coachProgram ? [...PROGRAMS, coachProgram] : PROGRAMS), [coachProgram]);
   /** The program's postures, trimmed — the class walks this list. */
   const classPoses = useMemo(() => programPoses(program), [program]);
   const clock = useMemo(() => classClock(classPoses, settings.beatsPerBar), [classPoses, settings.beatsPerBar]);
@@ -738,7 +746,7 @@ export function Pacer() {
           class slows with it.
         </p>
         <div className="pc-programs" role="group" aria-label="Class program">
-          {PROGRAMS.map((pr) => (
+          {programs.map((pr) => (
             <button
               key={pr.id}
               type="button"
@@ -834,6 +842,15 @@ export function Pacer() {
         {classRun.rehearsedFrom !== undefined && (
           <RehearsalDebrief list={classPoses} from={classRun.rehearsedFrom} />
         )}
+        <CoachDebrief
+          program={programRef.current}
+          beatsPerBar={settings.beatsPerBar}
+          onAdopt={(p) => {
+            setCoachProgram(p);
+            setProgram(p);
+            setStartIdx(0);
+          }}
+        />
         <button type="button" className="pc-btn" onClick={endClass}>
           Back to the pacer
         </button>
@@ -1013,6 +1030,7 @@ export function Pacer() {
           segmentKind={seg?.kind}
           position={seg ?? undefined}
           nextCue={nextCue}
+          track={track ?? undefined}
           paused={classRun.phase === 'paused'}
           hidden={hidden}
           rehearse={cues.rehearse}

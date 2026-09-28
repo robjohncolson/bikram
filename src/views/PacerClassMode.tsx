@@ -3,8 +3,8 @@ import type { CSSProperties } from 'react';
 import type { Pose } from '../data';
 import { PoseMotion } from '../components/PoseMotion';
 import type { BreathPhase } from '../components/PoseMotion';
-import { figureFrameAt, figurePlan, segmentTimeline } from '../pacer';
-import type { FigurePlan, SegmentPosition } from '../pacer';
+import { clipSeconds, figureFrameAt, figurePlan, segmentTimeline } from '../pacer';
+import type { FigurePlan, PoseTrack, SegmentPosition } from '../pacer';
 import './PacerClassMode.css';
 
 /** Where the class clock is: the live segment and the beats into it. */
@@ -33,6 +33,8 @@ export interface PacerClassModeProps {
   nextCue?: string;
   /** the class clock the figure moves with; undefined leaves the figure resting */
   figureClock?: FigureClockProps;
+  /** the posture's compiled cue track: its spoken walk-in drives the figure's entry */
+  track?: PoseTrack;
   /** rehearsal: the posture's identity is withheld until it is announced */
   hidden?: boolean;
   /** rehearsal is on: never show what comes next */
@@ -204,7 +206,18 @@ export function PacerClassMode(props: PacerClassModeProps) {
   // (rests and sit-ups borrow the savasana and sit-up sheets), and the
   // frame follows the class clock — into the posture on the cue, held
   // while the class holds, other side when the side changes.
-  const plan = useMemo(() => figurePlan(props.pose), [props.pose]);
+  const beatSeconds = props.figureClock?.beatSeconds ?? 1;
+  const track = props.track;
+  const plan = useMemo(
+    () =>
+      figurePlan(props.pose, {
+        track,
+        beatSeconds,
+        leadBeats: track?.barBeats ?? 0,
+        clipSeconds,
+      }),
+    [props.pose, track, beatSeconds],
+  );
   const frame = useClassFigureFrame(plan, props.figureClock, props.breath, props.paused);
   const segMotion =
     plan && props.figureClock

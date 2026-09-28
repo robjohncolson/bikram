@@ -20,13 +20,13 @@ export { CLOSING_LINE, CLOSING_SECONDS, announceText, buildPoseTrack, buildClass
 export { DEFAULT_BAR_BEATS, poseBarBeats, breathBeats, quantizeBeats, poseGridSeconds } from './grid';
 export type { CueKind, CueEvent, CueOptions, PoseTrack, SegmentPosition, SegSpan } from './cues';
 export { figurePlan, figureFrameAt, segmentTimeline } from './figure';
-export type { FigurePlan, FigureSegment, FigureClock, FrameStep } from './figure';
+export type { FigurePlan, FigurePlanOptions, FigureMove, FigureSegment, FigureClock, FrameStep } from './figure';
 export { speechSupported, watchVoices, speak, stopSpeaking } from './voice';
 export type { VoiceChoice, SpeakOptions } from './voice';
 export { createWakeLock, wakeLockSupported } from './wakelock';
 export type { WakeLock } from './wakelock';
 export { collectCueTexts } from './cue-script';
-export { clipsAvailable, clipFor, clipUrls, unlockClips, playClip, stopClips, silenceVoice } from './clips';
+export { clipsAvailable, clipFor, clipUrls, clipSeconds, unlockClips, playClip, stopClips, silenceVoice } from './clips';
 export {
   FULL_CLASS,
   SHORT_CLASS,

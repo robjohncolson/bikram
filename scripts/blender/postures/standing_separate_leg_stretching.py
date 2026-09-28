@@ -80,11 +80,13 @@ POSTURE = {
     'frame': {'center_z': 1.0, 'scale': 2.5},
     'transition': 7,
     'stages': [
+        {'label': 'Stand', 'pose': {}, 'hold': 4},
         {'label': 'Wide stance', 'pose': STANCE, 'hold': 3},
         {'label': 'Arms out', 'pose': ARMS_OUT, 'hold': 4},
         {'label': 'Fold', 'pose': HINGE, 'hold': 4},
         {'label': 'Head to floor', 'pose': FOLD, 'hold': 10,
          'guides': FOLD_GUIDES, 'ghost': FOLD_GHOST},
         {'label': 'Rise', 'pose': ARMS_OUT, 'hold': 4},
+        {'label': 'Stand', 'pose': {}, 'hold': 4},
     ],
 }

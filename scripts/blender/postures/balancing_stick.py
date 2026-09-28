@@ -77,6 +77,7 @@ POSTURE = {
     'frame': {'center_z': 1.05, 'scale': 2.6},
     'transition': 7,
     'stages': [
+        {'label': 'Stand', 'pose': {}, 'hold': 4},
         {'label': 'Arms up', 'pose': UP, 'hold': 4},
         {'label': 'Step forward', 'pose': step('R', 'L'), 'hold': 3},
         {'label': 'Tip to horizontal', 'pose': stick('R', 'L'), 'hold': 10,
@@ -85,5 +86,6 @@ POSTURE = {
         {'label': 'Left side', 'pose': stick('L', 'R'), 'hold': 6,
          'guides': stick_guides('L'), 'ghost': stick_ghost('L', 'R')},
         {'label': 'Rise', 'pose': UP, 'hold': 4},
+        {'label': 'Stand', 'pose': {}, 'hold': 4},
     ],
 }

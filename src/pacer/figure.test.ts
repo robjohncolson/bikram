@@ -14,6 +14,7 @@ import {
 } from './figure';
 import { segmentKey } from './grid';
 import type { FigureSegment } from './figure';
+import { buildPoseTrack } from './cues';
 
 const pose = (id: string) => getPose(id)!;
 const motion = (id: string) => pose(id).motion!;
@@ -94,7 +95,7 @@ describe('figurePlan', () => {
       for (const s of plan.segments) {
         if (s.kind !== 'stages') continue;
         const last = s.motion.stages[s.targets[s.targets.length - 1]].label;
-        expect(last, `${p.id}`).not.toMatch(/^(release|centre|rise|lower|change)$/i);
+        expect(last, `${p.id}`).not.toMatch(/^(release|centre|rise|lower|change|stand)$/i);
       }
     }
   });
@@ -143,33 +144,36 @@ describe('figurePlan', () => {
 describe('segmentTimeline', () => {
   it('plays the entry at sheet speed, holds setups briefly, then holds the target to the end', () => {
     const shk = pose('standing-head-to-knee');
-    const seg = stagesSeg(shk, 0); // from Hold the foot → Head to knee, 70 s
+    const seg = stagesSeg(shk, 0); // from Stand → Hold the foot → … → Head to knee, 70 s
     const steps = segmentTimeline(seg, 70);
     const m = seg.motion;
+    const at = (l: string) => m.stages[m.stages.findIndex((s) => s.label === l)].frame;
     // starts moving straight away: first steps are transition frames, 1/fps apart
     expect(steps[0].until).toBeCloseTo(1 / m.fps, 5);
     // setup holds are 12% of the slice = 8.4 s, capped at 8
-    const kickOut = steps.find((s) => s.frame === m.stages[1].frame)!;
-    const before = steps[steps.indexOf(kickOut) - 1];
-    expect(kickOut.until - before.until).toBeCloseTo(8, 5);
+    const holdFoot = steps.find((s) => s.frame === at('Hold the foot'))!;
+    const before = steps[steps.indexOf(holdFoot) - 1];
+    expect(holdFoot.until - before.until).toBeCloseTo(8, 5);
     // the target holds out the segment
     const last = steps[steps.length - 1];
-    expect(last.frame).toBe(m.stages[3].frame);
+    expect(last.frame).toBe(at('Head to knee'));
     expect(last.until).toBe(70);
-    expect(frameAt(steps, 69)).toBe(m.stages[3].frame);
-    expect(frameAt(steps, 999)).toBe(m.stages[3].frame);
+    expect(frameAt(steps, 69)).toBe(at('Head to knee'));
+    expect(frameAt(steps, 999)).toBe(at('Head to knee'));
     // and before the first transition frame we are on its first frame
-    expect(frameAt(steps, 0)).toBe(Math.max(1, m.stages[1].frame - TRANSITION_FRAMES));
+    expect(frameAt(steps, 0)).toBe(Math.max(1, at('Hold the foot') - TRANSITION_FRAMES));
   });
 
   it('cuts across the sheet end and shares time evenly between several targets', () => {
-    const hm = stagesSeg(pose('half-moon'), 4); // Hands to feet → Rise → (cut) Arms up → Right side, 35 s
-    const hmSteps = segmentTimeline(hm, 35);
+    const hm = stagesSeg(pose('half-moon'), 4); // Hands to feet → Rise → Stand → (cut) Stand → Arms up → Right side, 36 s
+    const hmSteps = segmentTimeline(hm, 36);
     const hmM = hm.motion;
-    // the cut lands on Arms up (frame 0), held as a setup, then the bend
-    expect(hmSteps.some((s) => s.frame === 0)).toBe(true);
+    const armsUp = hmM.stages.findIndex((s) => s.label === 'Arms up');
+    const rightSide = hmM.stages.findIndex((s) => s.label === 'Right side');
+    // the cut lands in Tadasana, Arms up is held as a setup, then the bend
+    expect(hmSteps.some((s) => s.frame === hmM.stages[armsUp].frame)).toBe(true);
     expect(hmSteps.some((s) => s.frame === hmM.frames - 1)).toBe(false); // no path back through the sheet's tail
-    expect(hmSteps[hmSteps.length - 1]).toEqual({ frame: hmM.stages[1].frame, until: 35 });
+    expect(hmSteps[hmSteps.length - 1]).toEqual({ frame: hmM.stages[rightSide].frame, until: 36 });
     const cobra = pose('cobra');
     const second = stagesSeg(cobra, 3); // Lie prone → Hands under shoulders → Lift, 20 s
     const steps = segmentTimeline(second, 20);
@@ -189,9 +193,63 @@ describe('segmentTimeline', () => {
     const seg = stagesSeg(shk, 2); // second set right leg, 30 s, three setups
     const steps = segmentTimeline(seg, 30);
     const m = seg.motion;
-    const headToKnee = steps.find((s) => s.frame === m.stages[3].frame)!;
+    const headToKnee = steps.find((s) => s.frame === m.stages[m.stages.findIndex((x) => x.label === 'Head to knee')].frame)!;
     // setup (holds + transitions) never eats more than 60% of the slice
     expect(steps[steps.indexOf(headToKnee) - 1].until).toBeLessThanOrEqual(18.001);
+  });
+});
+
+describe('spoken walk-in moves', () => {
+  it('moves the figure to each stage as its line ends, then settles into the hold', () => {
+    const hm = pose('half-moon');
+    const track = buildPoseTrack(hm, 60);
+    const clip = () => 2; // every line takes two seconds
+    const plan = figurePlan(hm, { track, beatSeconds: 1, leadBeats: track.barBeats, clipSeconds: clip })!;
+    const seg = plan.segments[0];
+    expect(seg.kind).toBe('stages');
+    if (seg.kind !== 'stages') return;
+    const m = seg.motion;
+    const stage = (l: string) => m.stages.findIndex((s) => s.label === l);
+    expect(label(m, seg.from)).toBe('Stand');
+    expect(seg.moves).toBeDefined();
+    // the walk-in lines that name stages: "arms up" (breath 2), "bend to the right" (breath 4)
+    const byStage = new Map(seg.moves!.map((mv) => [label(m, mv.stage), mv.seconds]));
+    expect(byStage.get('Arms up')).toBe(12 + track.barBeats + 2);
+    expect(byStage.get('Right side')).toBe(36 + track.barBeats + 2);
+    const seconds = track.spans[0].endBeat - track.spans[0].startBeat;
+    const steps = segmentTimeline(seg, seconds);
+    // Tadasana until the first line has been said, then the arms rise
+    expect(frameAt(steps, 5)).toBe(m.stages[stage('Stand')].frame);
+    expect(frameAt(steps, 12 + track.barBeats + 2 + 3)).toBe(m.stages[stage('Arms up')].frame);
+    // still arms up while the elbows line is said; bent to the right after its line
+    expect(frameAt(steps, 36 + track.barBeats)).toBe(m.stages[stage('Arms up')].frame);
+    expect(frameAt(steps, 36 + track.barBeats + 2 + 3)).toBe(m.stages[stage('Right side')].frame);
+    expect(frameAt(steps, seconds - 1)).toBe(m.stages[stage('Right side')].frame);
+  });
+
+  it('settles to the target after the last line when no line names it', () => {
+    const shk = pose('standing-head-to-knee');
+    const track = buildPoseTrack(shk, 60);
+    const plan = figurePlan(shk, { track, beatSeconds: 1, leadBeats: track.barBeats, clipSeconds: () => 3 })!;
+    const seg = plan.segments[0];
+    if (seg.kind !== 'stages') throw new Error('stages expected');
+    const m = seg.motion;
+    const target = m.stages[seg.targets[0]];
+    expect(target.label).toBe('Head to knee');
+    expect(seg.moves!.map((mv) => label(m, mv.stage))).not.toContain('Head to knee');
+    const seconds = track.spans[0].endBeat - track.spans[0].startBeat;
+    const steps = segmentTimeline(seg, seconds);
+    expect(frameAt(steps, seg.settle! + 1)).not.toBe(target.frame);
+    expect(frameAt(steps, seg.settle! + 1.5 + 2)).toBe(target.frame);
+  });
+
+  it('leaves second sets and borrowed sheets to the segment-fraction entry', () => {
+    const cobra = pose('cobra');
+    const track = buildPoseTrack(cobra, 60);
+    const plan = figurePlan(cobra, { track, beatSeconds: 1, leadBeats: 6, clipSeconds: () => 2 })!;
+    expect((plan.segments[1] as { moves?: unknown }).moves).toBeUndefined(); // savasana sheet
+    expect((plan.segments[2] as { moves?: unknown }).moves).toBeUndefined(); // sit-up sheet
+    expect((plan.segments[3] as { moves?: unknown }).moves).toBeUndefined(); // second set: no walk-in
   });
 });
 

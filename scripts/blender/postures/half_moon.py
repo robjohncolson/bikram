@@ -95,6 +95,7 @@ POSTURE = {
     'frame': {'center_z': 1.05, 'scale': 2.5},
     'transition': 7,
     'stages': [
+        {'label': 'Stand', 'pose': {}, 'hold': 4},
         {'label': 'Arms up', 'pose': UP, 'hold': 4},
         {'label': 'Right side', 'pose': RIGHT, 'hold': 8,
          'guides': RIGHT_GUIDES, 'ghost': RIGHT_GHOST},
@@ -105,5 +106,6 @@ POSTURE = {
         {'label': 'Centre', 'pose': UP, 'hold': 3, 'view': 'side'},
         {'label': 'Hands to feet', 'pose': FOLD, 'hold': 8, 'view': 'quarter'},
         {'label': 'Rise', 'pose': UP, 'hold': 4, 'view': 'front'},
+        {'label': 'Stand', 'pose': {}, 'hold': 4},
     ],
 }

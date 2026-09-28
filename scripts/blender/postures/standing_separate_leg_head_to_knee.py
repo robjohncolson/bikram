@@ -80,6 +80,7 @@ POSTURE = {
     'frame': {'center_z': 1.0, 'scale': 2.5},
     'transition': 7,
     'stages': [
+        {'label': 'Stand', 'pose': {}, 'hold': 4},
         {'label': 'Arms up', 'pose': UP, 'hold': 3},
         {'label': 'Face the right foot', 'pose': split('R', 'L'), 'hold': 4},
         {'label': 'Head to knee', 'pose': fold('R', 'L'), 'hold': 10,
@@ -88,5 +89,6 @@ POSTURE = {
         {'label': 'Left side', 'pose': fold('L', 'R'), 'hold': 6,
          'guides': fold_guides('L'), 'ghost': fold_ghost('L', 'R')},
         {'label': 'Rise', 'pose': UP, 'hold': 3},
+        {'label': 'Stand', 'pose': {}, 'hold': 4},
     ],
 }

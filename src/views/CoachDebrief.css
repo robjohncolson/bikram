@@ -1,0 +1,123 @@
+/* The post-class debrief with the coach: a small chat that ends in a class. */
+
+.coach {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  background: var(--bg-raised);
+  text-align: left;
+}
+
+.coach-title {
+  margin: 0 0 10px;
+  font-family: var(--font-display);
+  font-size: 18px;
+}
+
+.coach-log {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-height: 46vh;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.coach-turn {
+  max-width: 92%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  line-height: 1.5;
+  font-size: 15px;
+}
+
+.coach-turn--assistant {
+  align-self: flex-start;
+  background: var(--bg);
+  border: 1px solid var(--border);
+}
+
+.coach-turn--user {
+  align-self: flex-end;
+  background: var(--ember-soft);
+  color: var(--ember-text);
+}
+
+.coach-text {
+  margin: 0;
+  white-space: pre-wrap;
+}
+
+.coach-proposal {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px dashed var(--border-strong);
+}
+
+.coach-proposal-head {
+  margin: 0;
+}
+
+.coach-proposal-blurb {
+  margin: 2px 0 8px;
+  font-size: 14px;
+}
+
+.coach-proposal-list {
+  margin: 0 0 12px;
+  padding-left: 20px;
+  font-size: 14px;
+}
+
+.coach-proposal-list li {
+  margin-bottom: 4px;
+}
+
+.coach-proposal-name {
+  font-weight: 600;
+}
+
+.coach-errors {
+  margin-top: 10px;
+  font-size: 14px;
+}
+
+.coach-errors ul {
+  margin: 4px 0 10px;
+  padding-left: 18px;
+}
+
+.coach-busy,
+.coach-error {
+  margin: 0;
+  font-size: 14px;
+}
+
+.coach-error {
+  color: var(--ember-text);
+}
+
+.coach-compose {
+  display: flex;
+  gap: 8px;
+  margin-top: 12px;
+  align-items: flex-end;
+}
+
+.coach-compose textarea {
+  flex: 1;
+  resize: vertical;
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid var(--border-strong);
+  background: var(--bg);
+  color: var(--text);
+  font: inherit;
+  font-size: 15px;
+}
+
+.coach-compose textarea:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 1px;
+}
