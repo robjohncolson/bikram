@@ -57,7 +57,7 @@ import {
 import { PoseFigure } from '../components/PoseFigure';
 import { PacerClassMode } from './PacerClassMode';
 import { CoachDebrief } from './CoachDebrief';
-import { COACH_PROGRAM_ID, loadCoachProgram } from '../coach';
+import { COACH_PROGRAM_ID, loadCoachProgram, saveCoachProgram, validateProposal } from '../coach';
 import './Pacer.css';
 
 const STORAGE_KEY = 'yoga-pacer-v1';
@@ -77,9 +77,27 @@ type ClassRun =
   | { phase: 'closing'; left: number; budget: number }
   | { phase: 'done'; pacedSeconds: number; rehearsedFrom?: number };
 
-/** `/pace?program=short|coach` picks a program; `/pace?from=<order>` implies the full class. */
+/**
+ * `/pace?program=short|coach` picks a program; `/pace?from=<order>` implies
+ * the full class; `/pace?build=<base64 json>` carries a proposed class in
+ * the coach's format (a link handed over after a debrief elsewhere) — it
+ * is validated like any proposal and, when it holds, saved as the coach's
+ * build and started from.
+ */
 function initialProgram(coach: ClassProgram | undefined): ClassProgram {
   const q = new URLSearchParams(window.location.search);
+  const build = q.get('build');
+  if (build) {
+    try {
+      const r = validateProposal(JSON.parse(atob(build.replace(/-/g, '+').replace(/_/g, '/'))));
+      if (r.ok) {
+        saveCoachProgram(r.proposal.program);
+        return r.proposal.program;
+      }
+    } catch {
+      /* not a build link: fall through */
+    }
+  }
   if (q.get('from')) return programById('full');
   const id = q.get('program');
   if (id === COACH_PROGRAM_ID && coach) return coach;
