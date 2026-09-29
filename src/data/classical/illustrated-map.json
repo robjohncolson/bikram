@@ -1,0 +1,240 @@
+[
+  {
+    "pose": "pranayama",
+    "nearestAsana": null,
+    "asana": null,
+    "note": "No photograph depicts the standing breathing exercise and its elbow movement."
+  },
+  {
+    "pose": "half-moon",
+    "nearestAsana": "Padahastasana",
+    "asana": "padahastasana",
+    "pdfPage": 68,
+    "figures": [
+      24
+    ],
+    "note": "Forward-fold segment only. Hands are beneath the feet; the standing side bends and backbend have no matching photograph here."
+  },
+  {
+    "pose": "awkward",
+    "nearestAsana": "Utkatasana",
+    "asana": null,
+    "note": "Utkatasana is absent from the selected posture entries; no comparable squat photograph was identified."
+  },
+  {
+    "pose": "eagle",
+    "nearestAsana": "Garudasana",
+    "asana": null,
+    "note": "Garudasana is absent; the selected photographs do not show its standing leg and arm wraps."
+  },
+  {
+    "pose": "standing-head-to-knee",
+    "nearestAsana": "Utthita Hasta Padangusthasana",
+    "asana": "supta-padangusthasana",
+    "pdfPage": 125,
+    "figures": [
+      130
+    ],
+    "note": "Reclining analogue for the straight leg and head-to-knee relation. It does not document a standing balance."
+  },
+  {
+    "pose": "standing-bow",
+    "nearestAsana": "Natarajasana",
+    "asana": null,
+    "note": "Natarajasana is absent; no standing ankle-held balance is pictured in the selection."
+  },
+  {
+    "pose": "balancing-stick",
+    "nearestAsana": "Virabhadrasana III",
+    "asana": null,
+    "note": "Virabhadrasana III is absent; the selection has no comparable horizontal standing balance."
+  },
+  {
+    "pose": "standing-separate-leg-stretching",
+    "nearestAsana": "Prasarita Padottanasana",
+    "asana": "prasarita-padottanasana",
+    "pdfPage": 66,
+    "figures": [
+      17,
+      18
+    ],
+    "note": "Wide standing fold. The photographs place palms on the floor; the app uses a foot grip."
+  },
+  {
+    "pose": "triangle",
+    "nearestAsana": "Utthita Parsvakonasana",
+    "asana": "utthita-parsvakonasana",
+    "pdfPage": 60,
+    "figures": [
+      5,
+      6
+    ],
+    "note": "Bent front knee matches the base. The upper arm reaches diagonally overhead in this edition."
+  },
+  {
+    "pose": "standing-separate-leg-head-to-knee",
+    "nearestAsana": "Parsvottanasana",
+    "asana": "parsvottanasana",
+    "pdfPage": 64,
+    "figures": [
+      13,
+      14
+    ],
+    "note": "Staggered standing fold; the book uses a behind-back hand position."
+  },
+  {
+    "pose": "tree",
+    "nearestAsana": "Vrksasana",
+    "asana": null,
+    "note": "Vrksasana is absent; seated lotus photographs do not capture the standing balance."
+  },
+  {
+    "pose": "toe-stand",
+    "nearestAsana": null,
+    "asana": null,
+    "note": "No comparable half-lotus toe balance was identified."
+  },
+  {
+    "pose": "savasana",
+    "nearestAsana": "Savasana",
+    "asana": "savasana",
+    "pdfPage": 133,
+    "figures": [
+      146
+    ],
+    "note": "Supine resting form."
+  },
+  {
+    "pose": "wind-removing",
+    "nearestAsana": null,
+    "asana": "salamba-sarvangasana-i",
+    "pdfPage": 108,
+    "figures": [
+      99
+    ],
+    "note": "Only the shoulderstand entry phase is a close shape: both knees approach the trunk while the back stays down. Arms remain beside the body. Do not use the inverted photographs for this lookup."
+  },
+  {
+    "pose": "situp",
+    "nearestAsana": null,
+    "asana": "paschimottanasana",
+    "pdfPage": 98,
+    "figures": [
+      81
+    ],
+    "note": "End-position comparison only. This photograph does not depict the sit-up transition."
+  },
+  {
+    "pose": "cobra",
+    "nearestAsana": "Bhujangasana I",
+    "asana": "bhujangasana-i",
+    "pdfPage": 72,
+    "figures": [
+      31
+    ],
+    "note": "The pictured cobra has extended elbows and a higher trunk than the app form."
+  },
+  {
+    "pose": "locust",
+    "nearestAsana": "Salabhasana",
+    "asana": "salabhasana",
+    "pdfPage": 70,
+    "figures": [
+      26
+    ],
+    "note": "Prone leg lift comparison; the photograph also raises the chest and keeps the arms alongside."
+  },
+  {
+    "pose": "full-locust",
+    "nearestAsana": "Salabhasana",
+    "asana": "salabhasana",
+    "pdfPage": 70,
+    "figures": [
+      26
+    ],
+    "note": "Prone chest-and-leg lift; the photograph keeps arms back instead of extending them sideways."
+  },
+  {
+    "pose": "bow",
+    "nearestAsana": "Dhanurasana",
+    "asana": "dhanurasana",
+    "pdfPage": 71,
+    "figures": [
+      28
+    ],
+    "note": "Prone ankle-held backbend."
+  },
+  {
+    "pose": "fixed-firm",
+    "nearestAsana": "Supta Virasana",
+    "asana": "supta-virasana",
+    "pdfPage": 81,
+    "figures": [
+      49
+    ],
+    "note": "Reclining kneeling form with arms overhead."
+  },
+  {
+    "pose": "half-tortoise",
+    "nearestAsana": null,
+    "asana": "virasana",
+    "pdfPage": 80,
+    "figures": [
+      45
+    ],
+    "note": "Folded Virasana is the nearest kneeling shape; its arms point back and the knees stay together."
+  },
+  {
+    "pose": "camel",
+    "nearestAsana": "Ustrasana",
+    "asana": "ustrasana",
+    "pdfPage": 67,
+    "figures": [
+      20
+    ],
+    "note": "Kneeling backbend with hands at the heels."
+  },
+  {
+    "pose": "rabbit",
+    "nearestAsana": null,
+    "asana": null,
+    "note": "No matching raised-hip kneeling curl was identified. Folded Virasana keeps the hips low and is not a crown-supported rabbit."
+  },
+  {
+    "pose": "head-to-knee-stretching",
+    "nearestAsana": "Janu Sirsasana and Paschimottanasana",
+    "asana": "janu-sirsasana",
+    "pdfPage": 89,
+    "figures": [
+      63
+    ],
+    "note": "First seated segment. The second segment is recorded in additionalMatches.",
+    "additionalMatches": [
+      {
+        "asana": "paschimottanasana",
+        "pdfPage": 98,
+        "figures": [
+          81
+        ],
+        "note": "Second seated segment."
+      }
+    ]
+  },
+  {
+    "pose": "spine-twisting",
+    "nearestAsana": "Ardha Matsyendrasana I",
+    "asana": "ardha-matsyendrasana",
+    "pdfPage": 130,
+    "figures": [
+      139,
+      140
+    ],
+    "note": "Seated twist with a bent lower leg; the photographs include a behind-back bind."
+  },
+  {
+    "pose": "kapalbhati",
+    "nearestAsana": null,
+    "asana": null,
+    "note": "The selection has no Kapalbhati entry or photograph of its seated pumping action."
+  }
+]

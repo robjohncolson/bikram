@@ -1,0 +1,1198 @@
+[
+  {
+    "sanskrit": "Tāḍāsana",
+    "romanised": "tadasana",
+    "english": "mountain",
+    "page": 41,
+    "pdfPage": 58,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "tada",
+      "sama",
+      "sthiti"
+    ],
+    "bookNumber": 1,
+    "grade": 1,
+    "figures": [
+      1
+    ]
+  },
+  {
+    "sanskrit": "Utthita Trikoṇāsana",
+    "romanised": "utthita-trikonasana",
+    "english": "extended triangle",
+    "page": 42,
+    "pdfPage": 59,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "utthita",
+      "tri",
+      "kona"
+    ],
+    "bookNumber": 2,
+    "grade": 3,
+    "figures": [
+      2,
+      3,
+      4
+    ]
+  },
+  {
+    "sanskrit": "Utthita Pārśvakoṇāsana",
+    "romanised": "utthita-parsvakonasana",
+    "english": "extended side angle",
+    "page": 43,
+    "pdfPage": 60,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "parsva",
+      "kona"
+    ],
+    "bookNumber": 3,
+    "grade": 4,
+    "figures": [
+      5,
+      6
+    ]
+  },
+  {
+    "sanskrit": "Vīrabhadrāsana I",
+    "romanised": "virabhadrasana-i",
+    "english": "warrior I",
+    "page": 44,
+    "pdfPage": 61,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "virabhadra"
+    ],
+    "bookNumber": 4,
+    "grade": 3,
+    "figures": [
+      7,
+      8,
+      9
+    ]
+  },
+  {
+    "sanskrit": "Vīrabhadrāsana II",
+    "romanised": "virabhadrasana-ii",
+    "english": "warrior II",
+    "page": 45,
+    "pdfPage": 62,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [],
+    "bookNumber": 5,
+    "grade": 1,
+    "figures": [
+      10
+    ],
+    "note": "No separate name-root explanation accompanies entry 5."
+  },
+  {
+    "sanskrit": "Pārśvottānāsana",
+    "romanised": "parsvottanasana",
+    "english": "intense side stretch",
+    "page": 46,
+    "pdfPage": 63,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "parsva",
+      "uttana",
+      "ut",
+      "tan"
+    ],
+    "bookNumber": 6,
+    "grade": 6,
+    "figures": [
+      11,
+      12,
+      13,
+      14
+    ]
+  },
+  {
+    "sanskrit": "Prasārita Pādottānāsana",
+    "romanised": "prasarita-padottanasana",
+    "english": "wide stance forward fold",
+    "page": 48,
+    "pdfPage": 65,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "prasarita",
+      "pada"
+    ],
+    "bookNumber": 7,
+    "grade": 4,
+    "figures": [
+      15,
+      16,
+      17,
+      18
+    ]
+  },
+  {
+    "sanskrit": "Uṣṭrāsana",
+    "romanised": "ustrasana",
+    "english": "camel",
+    "page": 50,
+    "pdfPage": 67,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "ustra"
+    ],
+    "bookNumber": 8,
+    "grade": 3,
+    "figures": [
+      19,
+      20
+    ]
+  },
+  {
+    "sanskrit": "Pādāṅguṣṭhāsana",
+    "romanised": "padangusthasana",
+    "english": "standing toe hold",
+    "page": 50,
+    "pdfPage": 67,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "pada",
+      "angustha"
+    ],
+    "bookNumber": 9,
+    "grade": 3,
+    "figures": [
+      21,
+      22
+    ]
+  },
+  {
+    "sanskrit": "Pādahastāsana",
+    "romanised": "padahastasana",
+    "english": "standing hand-under-foot fold",
+    "page": 51,
+    "pdfPage": 68,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "pada",
+      "hasta"
+    ],
+    "bookNumber": 10,
+    "grade": 6,
+    "figures": [
+      23,
+      24
+    ]
+  },
+  {
+    "sanskrit": "Uttānāsana",
+    "romanised": "uttanasana",
+    "english": "standing forward fold",
+    "page": 52,
+    "pdfPage": 69,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "ut",
+      "tan"
+    ],
+    "bookNumber": 11,
+    "grade": 8,
+    "figures": [
+      25
+    ]
+  },
+  {
+    "sanskrit": "Śalabhāsana",
+    "romanised": "salabhasana",
+    "english": "locust",
+    "page": 53,
+    "pdfPage": 70,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "salabha"
+    ],
+    "bookNumber": 12,
+    "grade": 1,
+    "figures": [
+      26,
+      27
+    ]
+  },
+  {
+    "sanskrit": "Dhanurāsana",
+    "romanised": "dhanurasana",
+    "english": "bow",
+    "page": 54,
+    "pdfPage": 71,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "dhanu"
+    ],
+    "bookNumber": 13,
+    "grade": 4,
+    "figures": [
+      28
+    ]
+  },
+  {
+    "sanskrit": "Chaturaṅga Daṇḍāsana",
+    "romanised": "chaturanga-dandasana",
+    "english": "four limb staff",
+    "page": 54,
+    "pdfPage": 71,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "chatur",
+      "anga",
+      "danda"
+    ],
+    "bookNumber": 14,
+    "grade": 1,
+    "figures": [
+      29,
+      30
+    ]
+  },
+  {
+    "sanskrit": "Bhujaṅgāsana I",
+    "romanised": "bhujangasana-i",
+    "english": "cobra I",
+    "page": 55,
+    "pdfPage": 72,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "bhujanga"
+    ],
+    "bookNumber": 15,
+    "grade": 1,
+    "figures": [
+      31
+    ],
+    "note": "The photograph table omits the I used in the posture heading."
+  },
+  {
+    "sanskrit": "Ūrdhva Mukha Śvānāsana",
+    "romanised": "urdhva-mukha-svanasana",
+    "english": "upward dog",
+    "page": 56,
+    "pdfPage": 73,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "urdhva",
+      "mukha",
+      "svana"
+    ],
+    "bookNumber": 16,
+    "grade": 1,
+    "figures": [
+      32
+    ]
+  },
+  {
+    "sanskrit": "Adho Mukha Śvānāsana",
+    "romanised": "adho-mukha-svanasana",
+    "english": "downward dog",
+    "page": 56,
+    "pdfPage": 73,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "adho",
+      "mukha",
+      "svana"
+    ],
+    "bookNumber": 17,
+    "grade": 5,
+    "figures": [
+      33,
+      34
+    ]
+  },
+  {
+    "sanskrit": "Daṇḍāsana",
+    "romanised": "dandasana",
+    "english": "staff",
+    "page": 57,
+    "pdfPage": 74,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "danda"
+    ],
+    "bookNumber": 18,
+    "grade": 2,
+    "figures": [
+      35
+    ]
+  },
+  {
+    "sanskrit": "Paripūrṇa Nāvāsana",
+    "romanised": "paripurna-navasana",
+    "english": "full boat",
+    "page": 58,
+    "pdfPage": 75,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "paripurna"
+    ],
+    "bookNumber": 19,
+    "grade": 2,
+    "figures": [
+      36
+    ],
+    "note": "Only paripurna is explicitly identified as a Sanskrit component here."
+  },
+  {
+    "sanskrit": "Ardha Nāvāsana",
+    "romanised": "ardha-navasana",
+    "english": "half boat",
+    "page": 59,
+    "pdfPage": 76,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "ardha",
+      "nava"
+    ],
+    "bookNumber": 20,
+    "grade": 2,
+    "figures": [
+      37
+    ]
+  },
+  {
+    "sanskrit": "Siddhāsana",
+    "romanised": "siddhasana",
+    "english": "adept seat",
+    "page": 60,
+    "pdfPage": 77,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "siddha"
+    ],
+    "bookNumber": 21,
+    "grade": 1,
+    "figures": [
+      38
+    ]
+  },
+  {
+    "sanskrit": "Vīrāsana",
+    "romanised": "virasana",
+    "english": "hero",
+    "page": 62,
+    "pdfPage": 79,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "vira"
+    ],
+    "bookNumber": 22,
+    "grade": 1,
+    "figures": [
+      39,
+      40,
+      41,
+      42,
+      43,
+      44,
+      45
+    ]
+  },
+  {
+    "sanskrit": "Supta Vīrāsana",
+    "romanised": "supta-virasana",
+    "english": "reclining hero",
+    "page": 64,
+    "pdfPage": 81,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "supta"
+    ],
+    "bookNumber": 23,
+    "grade": 2,
+    "figures": [
+      46,
+      47,
+      48,
+      49
+    ]
+  },
+  {
+    "sanskrit": "Baddha Koṇāsana",
+    "romanised": "baddha-konasana",
+    "english": "bound angle",
+    "page": 65,
+    "pdfPage": 82,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "baddha",
+      "kona"
+    ],
+    "bookNumber": 24,
+    "grade": 3,
+    "figures": [
+      50,
+      51,
+      52
+    ]
+  },
+  {
+    "sanskrit": "Padmāsana",
+    "romanised": "padmasana",
+    "english": "lotus",
+    "page": 66,
+    "pdfPage": 83,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "padma"
+    ],
+    "bookNumber": 25,
+    "grade": 4,
+    "figures": [
+      53
+    ]
+  },
+  {
+    "sanskrit": "Parvatāsana",
+    "romanised": "parvatasana",
+    "english": "mountain arms in lotus",
+    "page": 68,
+    "pdfPage": 85,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "parvata"
+    ],
+    "bookNumber": 26,
+    "grade": 4,
+    "figures": [
+      54
+    ]
+  },
+  {
+    "sanskrit": "Matsyāsana",
+    "romanised": "matsyasana",
+    "english": "fish",
+    "page": 68,
+    "pdfPage": 85,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "matsya"
+    ],
+    "bookNumber": 27,
+    "grade": 5,
+    "figures": [
+      55,
+      56,
+      57
+    ]
+  },
+  {
+    "sanskrit": "Baddha Padmāsana",
+    "romanised": "baddha-padmasana",
+    "english": "bound lotus",
+    "page": 70,
+    "pdfPage": 87,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "baddha"
+    ],
+    "bookNumber": 28,
+    "grade": 6,
+    "figures": [
+      58,
+      59
+    ]
+  },
+  {
+    "sanskrit": "Yoga Mudrāsana",
+    "romanised": "yoga-mudrasana",
+    "english": "lotus seal",
+    "page": 70,
+    "pdfPage": 87,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [],
+    "bookNumber": 29,
+    "grade": 6,
+    "figures": [
+      60
+    ],
+    "note": "No name-root explanation accompanies this entry. The photograph table spells Yoga as Yaga."
+  },
+  {
+    "sanskrit": "Mahā Mudrā",
+    "romanised": "maha-mudra",
+    "english": "great seal",
+    "page": 70,
+    "pdfPage": 87,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "maha",
+      "mudra"
+    ],
+    "bookNumber": 30,
+    "grade": 5,
+    "figures": [
+      61
+    ]
+  },
+  {
+    "sanskrit": "Jānu Śīrṣāsana",
+    "romanised": "janu-sirsasana",
+    "english": "head to knee",
+    "page": 72,
+    "pdfPage": 89,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "janu",
+      "sirsa"
+    ],
+    "bookNumber": 31,
+    "grade": 5,
+    "figures": [
+      62,
+      63
+    ]
+  },
+  {
+    "sanskrit": "Ardha Baddha Padma Paschimottānāsana",
+    "romanised": "ardha-baddha-padma-paschimottanasana",
+    "english": "bound half lotus forward fold",
+    "page": 73,
+    "pdfPage": 90,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "ardha",
+      "baddha",
+      "padma"
+    ],
+    "bookNumber": 32,
+    "grade": 8,
+    "figures": [
+      64,
+      65,
+      66,
+      67
+    ]
+  },
+  {
+    "sanskrit": "Triangā Mukhaikapāda Paschimottānāsana",
+    "romanised": "trianga-mukhaikapada-paschimottanasana",
+    "english": "one leg folded back forward fold",
+    "page": 75,
+    "pdfPage": 92,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "trianga",
+      "mukha",
+      "eka",
+      "pada"
+    ],
+    "bookNumber": 33,
+    "grade": 5,
+    "figures": [
+      68,
+      69
+    ],
+    "note": "The heading uses Trianga; the photograph table uses Triang. Mukhaikapada is split into mukha, eka and pada in the introduction."
+  },
+  {
+    "sanskrit": "Marīchyāsana I",
+    "romanised": "marichyasana-i",
+    "english": "Marichi forward fold",
+    "page": 76,
+    "pdfPage": 93,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "marichi"
+    ],
+    "bookNumber": 34,
+    "grade": 5,
+    "figures": [
+      70,
+      71
+    ]
+  },
+  {
+    "sanskrit": "Upaviṣṭha Koṇāsana",
+    "romanised": "upavistha-konasana",
+    "english": "seated wide angle",
+    "page": 78,
+    "pdfPage": 95,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "upavistha",
+      "kona"
+    ],
+    "bookNumber": 35,
+    "grade": 9,
+    "figures": [
+      72,
+      73,
+      74
+    ]
+  },
+  {
+    "sanskrit": "Paschimottānāsana",
+    "romanised": "paschimottanasana",
+    "english": "seated forward fold",
+    "page": 79,
+    "pdfPage": 96,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "paschima",
+      "ugra",
+      "brahmacharya"
+    ],
+    "bookNumber": 36,
+    "grade": 6,
+    "figures": [
+      75,
+      76,
+      77,
+      78,
+      79,
+      80,
+      81
+    ]
+  },
+  {
+    "sanskrit": "Pūrvottānāsana",
+    "romanised": "purvottanasana",
+    "english": "upward plank",
+    "page": 82,
+    "pdfPage": 99,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "purva",
+      "uttana"
+    ],
+    "bookNumber": 37,
+    "grade": 1,
+    "figures": [
+      82
+    ]
+  },
+  {
+    "sanskrit": "Sālamba Śīrṣāsana I",
+    "romanised": "salamba-sirsasana-i",
+    "english": "supported headstand",
+    "page": 82,
+    "pdfPage": 99,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "salamba",
+      "sirsa"
+    ],
+    "bookNumber": 38,
+    "grade": 4,
+    "figures": [
+      83,
+      84,
+      85,
+      86,
+      87,
+      88,
+      89,
+      90,
+      91,
+      92,
+      93,
+      94,
+      95,
+      96,
+      97
+    ],
+    "note": "The opening grade is 4. A later method on printed page 86 has grade 8. Figure 94 is also indexed separately as Urdhva Dandasana."
+  },
+  {
+    "sanskrit": "Ūrdhvā Daṇḍāsana",
+    "romanised": "urdhva-dandasana",
+    "english": "headstand with horizontal legs",
+    "page": 87,
+    "pdfPage": 104,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "urdhva",
+      "dand"
+    ],
+    "bookNumber": 39,
+    "grade": 8,
+    "figures": [
+      94
+    ],
+    "note": "The heading prints Urdhva with a final long vowel; the etymology prints dand."
+  },
+  {
+    "sanskrit": "Sālamba Sarvāṅgāsana I",
+    "romanised": "salamba-sarvangasana-i",
+    "english": "supported shoulderstand",
+    "page": 90,
+    "pdfPage": 107,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "alamba",
+      "sa",
+      "salamba",
+      "sarva",
+      "anga"
+    ],
+    "bookNumber": 40,
+    "grade": 2,
+    "figures": [
+      98,
+      99,
+      100,
+      101,
+      102,
+      103,
+      104,
+      105,
+      106,
+      107,
+      108
+    ]
+  },
+  {
+    "sanskrit": "Halāsana",
+    "romanised": "halasana",
+    "english": "plough",
+    "page": 95,
+    "pdfPage": 112,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "hala"
+    ],
+    "bookNumber": 41,
+    "grade": 4,
+    "figures": [
+      109,
+      110,
+      111,
+      112,
+      113
+    ]
+  },
+  {
+    "sanskrit": "Karṇapīḍāsana",
+    "romanised": "karnapidasana",
+    "english": "ear pressure",
+    "page": 98,
+    "pdfPage": 115,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "karna",
+      "pida"
+    ],
+    "bookNumber": 42,
+    "grade": 1,
+    "figures": [
+      114
+    ],
+    "note": "Photograph 114 has lettered views; figures retains its numeric identifier."
+  },
+  {
+    "sanskrit": "Supta Koṇāsana",
+    "romanised": "supta-konasana",
+    "english": "reclining angle",
+    "page": 99,
+    "pdfPage": 116,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "supta",
+      "kona"
+    ],
+    "bookNumber": 43,
+    "grade": 2,
+    "figures": [
+      115
+    ]
+  },
+  {
+    "sanskrit": "Pārśva Halāsana",
+    "romanised": "parsva-halasana",
+    "english": "side plough",
+    "page": 99,
+    "pdfPage": 116,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [],
+    "bookNumber": 44,
+    "grade": 4,
+    "figures": [
+      116
+    ],
+    "note": "No separate name-root explanation accompanies this entry."
+  },
+  {
+    "sanskrit": "Eka Pāda Sarvāṅgāsana",
+    "romanised": "eka-pada-sarvangasana",
+    "english": "one leg shoulderstand",
+    "page": 100,
+    "pdfPage": 117,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "eka",
+      "pada"
+    ],
+    "bookNumber": 45,
+    "grade": 5,
+    "figures": [
+      117
+    ]
+  },
+  {
+    "sanskrit": "Pārśvaika Pāda Sarvāṅgāsana",
+    "romanised": "parsvaika-pada-sarvangasana",
+    "english": "side leg shoulderstand",
+    "page": 101,
+    "pdfPage": 118,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "parsva"
+    ],
+    "bookNumber": 46,
+    "grade": 6,
+    "figures": [
+      118
+    ]
+  },
+  {
+    "sanskrit": "Setu Bandha Sarvāṅgāsana",
+    "romanised": "setu-bandha-sarvangasana",
+    "english": "supported bridge",
+    "page": 102,
+    "pdfPage": 119,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "setu",
+      "bandha",
+      "ut",
+      "tan",
+      "mayura"
+    ],
+    "bookNumber": 47,
+    "grade": 10,
+    "figures": [
+      119,
+      120,
+      121
+    ]
+  },
+  {
+    "sanskrit": "Ūrdhva Padmāsana in Sarvāṅgāsana",
+    "romanised": "urdhva-padmasana-in-sarvangasana",
+    "english": "lotus shoulderstand",
+    "page": 103,
+    "pdfPage": 120,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "urdhva",
+      "padma"
+    ],
+    "bookNumber": 48,
+    "grade": 4,
+    "figures": [
+      122
+    ]
+  },
+  {
+    "sanskrit": "Piṇḍāsana in Sarvāṅgāsana",
+    "romanised": "pindasana-in-sarvangasana",
+    "english": "folded lotus shoulderstand",
+    "page": 103,
+    "pdfPage": 120,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "pinda"
+    ],
+    "bookNumber": 49,
+    "grade": 5,
+    "figures": [
+      123
+    ]
+  },
+  {
+    "sanskrit": "Pārśva Piṇḍāsana in Sarvāṅgāsana",
+    "romanised": "parsva-pindasana-in-sarvangasana",
+    "english": "side folded lotus shoulderstand",
+    "page": 104,
+    "pdfPage": 121,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "parsva"
+    ],
+    "bookNumber": 50,
+    "grade": 8,
+    "figures": [
+      124,
+      125
+    ]
+  },
+  {
+    "sanskrit": "Jaṭara Parivartanāsana",
+    "romanised": "jatara-parivartanasana",
+    "english": "reclining abdominal twist",
+    "page": 106,
+    "pdfPage": 123,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "jatara",
+      "parivartana"
+    ],
+    "bookNumber": 51,
+    "grade": 5,
+    "figures": [
+      126,
+      127,
+      128
+    ],
+    "note": "The posture heading uses Jatara; the photograph table uses Jathara. The id follows the posture heading."
+  },
+  {
+    "sanskrit": "Supta Pādāṅguṣṭhāsana",
+    "romanised": "supta-padangusthasana",
+    "english": "reclining toe hold",
+    "page": 108,
+    "pdfPage": 125,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "supta",
+      "pada",
+      "angustha"
+    ],
+    "bookNumber": 52,
+    "grade": 13,
+    "figures": [
+      129,
+      130
+    ]
+  },
+  {
+    "sanskrit": "Bharadvājāsana",
+    "romanised": "bharadvajasana",
+    "english": "Bharadvaja twist",
+    "page": 109,
+    "pdfPage": 126,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "bharadvaja"
+    ],
+    "bookNumber": 53,
+    "grade": 1,
+    "figures": [
+      131,
+      132
+    ]
+  },
+  {
+    "sanskrit": "Marīchyāsana II",
+    "romanised": "marichyasana-ii",
+    "english": "Marichi seated twist",
+    "page": 110,
+    "pdfPage": 127,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [],
+    "bookNumber": 54,
+    "grade": 10,
+    "figures": [
+      133,
+      134,
+      135,
+      136
+    ],
+    "note": "The heading and photograph table label this twist II. Printed page 113 refers back to it as III. No separate name-root explanation accompanies entry 54."
+  },
+  {
+    "sanskrit": "Ardha Matsyendrāsana",
+    "romanised": "ardha-matsyendrasana",
+    "english": "half Matsyendra twist",
+    "page": 112,
+    "pdfPage": 129,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "ardha",
+      "matsyendra"
+    ],
+    "bookNumber": 55,
+    "grade": 8,
+    "figures": [
+      137,
+      138,
+      139,
+      140
+    ],
+    "note": "The heading has no Roman numeral."
+  },
+  {
+    "sanskrit": "Ūrdhva Dhanurāsana",
+    "romanised": "urdhva-dhanurasana",
+    "english": "upward bow",
+    "page": 114,
+    "pdfPage": 131,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "urdhva",
+      "dhanu"
+    ],
+    "bookNumber": 56,
+    "grade": 7,
+    "figures": [
+      141,
+      142,
+      143,
+      144,
+      145
+    ]
+  },
+  {
+    "sanskrit": "Śavāsana",
+    "romanised": "savasana",
+    "english": "corpse",
+    "page": 116,
+    "pdfPage": 133,
+    "section": "Yogāsanas",
+    "kind": "asana",
+    "roots": [
+      "sava",
+      "mrta"
+    ],
+    "bookNumber": 57,
+    "figures": [
+      146
+    ],
+    "note": "No numbered difficulty is printed beside this heading."
+  },
+  {
+    "sanskrit": "Ujjāyī Prāṇāyāma",
+    "romanised": "ujjayi-pranayama",
+    "english": "victorious breath",
+    "page": 123,
+    "pdfPage": 140,
+    "section": "Prāṇāyāma",
+    "kind": "pranayama",
+    "roots": [
+      "ud",
+      "jaya"
+    ],
+    "bookNumber": 58,
+    "figures": [
+      147
+    ],
+    "note": "No numbered difficulty is printed beside this heading."
+  },
+  {
+    "sanskrit": "Sūrya Bhedana Prāṇāyāma",
+    "romanised": "surya-bhedana-pranayama",
+    "english": "sun piercing breath",
+    "page": 124,
+    "pdfPage": 141,
+    "section": "Prāṇāyāma",
+    "kind": "pranayama",
+    "roots": [
+      "surya",
+      "bhedana",
+      "bhid"
+    ],
+    "bookNumber": 59,
+    "figures": [
+      148,
+      149
+    ],
+    "note": "No numbered difficulty is printed beside this heading."
+  },
+  {
+    "sanskrit": "Nāḍī Śodhana Prāṇāyāma",
+    "romanised": "nadi-sodhana-pranayama",
+    "english": "alternate nostril breath",
+    "page": 126,
+    "pdfPage": 143,
+    "section": "Prāṇāyāma",
+    "kind": "pranayama",
+    "roots": [
+      "nadi",
+      "sodhana"
+    ],
+    "bookNumber": 60,
+    "note": "No numbered difficulty or dedicated photograph is assigned in the table. The instructions refer to photograph 149 under Surya Bhedana."
+  },
+  {
+    "sanskrit": "Viloma Prāṇāyāma",
+    "romanised": "viloma-pranayama",
+    "english": "interrupted breath",
+    "page": 128,
+    "pdfPage": 145,
+    "section": "Prāṇāyāma",
+    "kind": "pranayama",
+    "roots": [
+      "loma",
+      "vi"
+    ],
+    "bookNumber": 61,
+    "note": "No numbered difficulty or dedicated photograph is assigned in the table."
+  },
+  {
+    "sanskrit": "Dhyāna",
+    "romanised": "dhyana",
+    "english": "meditation",
+    "page": 129,
+    "pdfPage": 146,
+    "section": "Prāṇāyāma",
+    "kind": "meditation",
+    "roots": [],
+    "figures": [
+      150
+    ],
+    "note": "Unnumbered meditation photograph in the Pranayama section and photograph table. No difficulty or name-root explanation accompanies it."
+  }
+]

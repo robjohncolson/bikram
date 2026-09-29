@@ -1,0 +1,2953 @@
+[
+  {
+    "id": "weeks-1-2",
+    "sourcePage": 131,
+    "sourcePdfPage": 148,
+    "steps": [
+      {
+        "asana": "tadasana",
+        "page": 41
+      },
+      {
+        "asana": "utthita-trikonasana",
+        "page": 42
+      },
+      {
+        "asana": "utthita-parsvakonasana",
+        "page": 43
+      },
+      {
+        "asana": "salamba-sarvangasana-i",
+        "page": 90
+      },
+      {
+        "asana": "halasana",
+        "page": 95
+      },
+      {
+        "asana": "savasana",
+        "page": 116
+      }
+    ],
+    "weekStart": 1,
+    "weekEnd": 2
+  },
+  {
+    "id": "weeks-3-4",
+    "sourcePage": 131,
+    "sourcePdfPage": 148,
+    "steps": [
+      {
+        "asana": "utthita-trikonasana",
+        "page": 42
+      },
+      {
+        "asana": "utthita-parsvakonasana",
+        "page": 43
+      },
+      {
+        "asana": "virabhadrasana-i",
+        "page": 44
+      },
+      {
+        "asana": "virabhadrasana-ii",
+        "page": 45
+      },
+      {
+        "asana": "parsvottanasana",
+        "page": 46
+      },
+      {
+        "asana": "salamba-sarvangasana-i",
+        "page": 90
+      },
+      {
+        "asana": "halasana",
+        "page": 95
+      },
+      {
+        "asana": "savasana",
+        "page": 116
+      }
+    ],
+    "weekStart": 3,
+    "weekEnd": 4,
+    "note": "The Halasana reference is printed as 115 here; the posture table assigns 113 to Halasana. Sequence identity follows the printed name."
+  },
+  {
+    "id": "weeks-5-6",
+    "sourcePage": 131,
+    "sourcePdfPage": 148,
+    "steps": [
+      {
+        "asana": "utthita-trikonasana",
+        "page": 42,
+        "seconds": 30,
+        "perSide": true
+      },
+      {
+        "asana": "utthita-parsvakonasana",
+        "page": 43,
+        "seconds": 30,
+        "perSide": true
+      },
+      {
+        "asana": "virabhadrasana-i",
+        "page": 44,
+        "seconds": 30,
+        "perSide": true
+      },
+      {
+        "asana": "virabhadrasana-ii",
+        "page": 45,
+        "seconds": 30,
+        "perSide": true
+      },
+      {
+        "asana": "parsvottanasana",
+        "page": 46,
+        "seconds": 30,
+        "perSide": true
+      },
+      {
+        "asana": "prasarita-padottanasana",
+        "page": 48,
+        "seconds": 30,
+        "perSide": true
+      },
+      {
+        "asana": "paripurna-navasana",
+        "page": 58
+      },
+      {
+        "asana": "salamba-sarvangasana-i",
+        "page": 90
+      },
+      {
+        "asana": "halasana",
+        "page": 95
+      },
+      {
+        "asana": "paschimottanasana",
+        "page": 79
+      },
+      {
+        "asana": "savasana",
+        "page": 116
+      }
+    ],
+    "weekStart": 5,
+    "weekEnd": 6,
+    "note": "The collective half-minute instruction includes Prasarita Padottanasana and says each side; that scope is retained."
+  },
+  {
+    "id": "weeks-7-8",
+    "sourcePage": 131,
+    "sourcePdfPage": 148,
+    "steps": [
+      {
+        "asana": "utthita-trikonasana",
+        "page": 42
+      },
+      {
+        "asana": "utthita-parsvakonasana",
+        "page": 43
+      },
+      {
+        "asana": "virabhadrasana-i",
+        "page": 44
+      },
+      {
+        "asana": "virabhadrasana-ii",
+        "page": 45
+      },
+      {
+        "asana": "parsvottanasana",
+        "page": 46
+      },
+      {
+        "asana": "prasarita-padottanasana",
+        "page": 48
+      },
+      {
+        "asana": "padangusthasana",
+        "page": 50
+      },
+      {
+        "asana": "padahastasana",
+        "page": 51
+      },
+      {
+        "asana": "uttanasana",
+        "page": 52
+      },
+      {
+        "asana": "salamba-sarvangasana-i",
+        "page": 90
+      },
+      {
+        "asana": "halasana",
+        "page": 95
+      },
+      {
+        "asana": "karnapidasana",
+        "page": 98
+      },
+      {
+        "asana": "dandasana",
+        "page": 57
+      },
+      {
+        "asana": "paripurna-navasana",
+        "page": 58
+      },
+      {
+        "asana": "ardha-navasana",
+        "page": 59
+      },
+      {
+        "asana": "paschimottanasana",
+        "page": 79
+      },
+      {
+        "asana": "purvottanasana",
+        "page": 82
+      },
+      {
+        "asana": "savasana",
+        "page": 116
+      }
+    ],
+    "weekStart": 7,
+    "weekEnd": 8
+  },
+  {
+    "id": "weeks-9-9",
+    "sourcePage": 131,
+    "sourcePdfPage": 148,
+    "steps": [
+      {
+        "asana": "utthita-trikonasana",
+        "page": 42
+      },
+      {
+        "asana": "utthita-parsvakonasana",
+        "page": 43
+      },
+      {
+        "asana": "virabhadrasana-i",
+        "page": 44
+      },
+      {
+        "asana": "virabhadrasana-ii",
+        "page": 45
+      },
+      {
+        "asana": "parsvottanasana",
+        "page": 46
+      },
+      {
+        "asana": "prasarita-padottanasana",
+        "page": 48
+      },
+      {
+        "asana": "padangusthasana",
+        "page": 50
+      },
+      {
+        "asana": "padahastasana",
+        "page": 51
+      },
+      {
+        "asana": "uttanasana",
+        "page": 52
+      },
+      {
+        "asana": "salamba-sarvangasana-i",
+        "page": 90
+      },
+      {
+        "asana": "halasana",
+        "page": 95
+      },
+      {
+        "asana": "karnapidasana",
+        "page": 98
+      },
+      {
+        "asana": "dandasana",
+        "page": 57
+      },
+      {
+        "asana": "paripurna-navasana",
+        "page": 58
+      },
+      {
+        "asana": "ardha-navasana",
+        "page": 59
+      },
+      {
+        "asana": "paschimottanasana",
+        "page": 79
+      },
+      {
+        "asana": "purvottanasana",
+        "page": 82
+      },
+      {
+        "asana": "savasana",
+        "page": 116
+      }
+    ],
+    "weekStart": 9,
+    "weekEnd": 9,
+    "inherits": "weeks-7-8",
+    "note": "Reuses the preceding sequence. Longer holds are requested without numeric durations."
+  },
+  {
+    "id": "weeks-10-10",
+    "sourcePage": 131,
+    "sourcePdfPage": 148,
+    "steps": [
+      {
+        "asana": "utthita-trikonasana",
+        "page": 42
+      },
+      {
+        "asana": "utthita-parsvakonasana",
+        "page": 43
+      },
+      {
+        "asana": "virabhadrasana-i",
+        "page": 44
+      },
+      {
+        "asana": "virabhadrasana-ii",
+        "page": 45
+      },
+      {
+        "asana": "parsvottanasana",
+        "page": 46
+      },
+      {
+        "asana": "prasarita-padottanasana",
+        "page": 48
+      },
+      {
+        "asana": "padangusthasana",
+        "page": 50
+      },
+      {
+        "asana": "padahastasana",
+        "page": 51
+      },
+      {
+        "asana": "uttanasana",
+        "page": 52
+      },
+      {
+        "asana": "salamba-sarvangasana-i",
+        "page": 90
+      },
+      {
+        "asana": "halasana",
+        "page": 95
+      },
+      {
+        "asana": "karnapidasana",
+        "page": 98
+      },
+      {
+        "asana": "dandasana",
+        "page": 57
+      },
+      {
+        "asana": "paripurna-navasana",
+        "page": 58
+      },
+      {
+        "asana": "ardha-navasana",
+        "page": 59
+      },
+      {
+        "asana": "paschimottanasana",
+        "page": 79
+      },
+      {
+        "asana": "purvottanasana",
+        "page": 82
+      },
+      {
+        "asana": "savasana",
+        "page": 116
+      },
+      {
+        "asana": "ujjayi-pranayama",
+        "page": 123,
+        "seconds": 300,
+        "note": "The printed sentence negates sitting, yet also names Siddhasana. Posture and retention are unresolved; no correction is inferred."
+      },
+      {
+        "asana": "savasana",
+        "page": 116,
+        "seconds": 300
+      }
+    ],
+    "weekStart": 10,
+    "weekEnd": 10,
+    "inherits": "weeks-7-8"
+  },
+  {
+    "id": "weeks-11-12",
+    "sourcePage": 131,
+    "sourcePdfPage": 148,
+    "steps": [
+      {
+        "asana": "utthita-trikonasana",
+        "page": 42
+      },
+      {
+        "asana": "utthita-parsvakonasana",
+        "page": 43
+      },
+      {
+        "asana": "virabhadrasana-i",
+        "page": 44
+      },
+      {
+        "asana": "virabhadrasana-ii",
+        "page": 45
+      },
+      {
+        "asana": "parsvottanasana",
+        "page": 46
+      },
+      {
+        "asana": "prasarita-padottanasana",
+        "page": 48
+      },
+      {
+        "asana": "padangusthasana",
+        "page": 50
+      },
+      {
+        "asana": "padahastasana",
+        "page": 51
+      },
+      {
+        "asana": "uttanasana",
+        "page": 52
+      },
+      {
+        "asana": "dandasana",
+        "page": 57
+      },
+      {
+        "asana": "paripurna-navasana",
+        "page": 58
+      },
+      {
+        "asana": "ardha-navasana",
+        "page": 59
+      },
+      {
+        "asana": "maha-mudra",
+        "page": 70
+      },
+      {
+        "asana": "janu-sirsasana",
+        "page": 72
+      },
+      {
+        "asana": "paschimottanasana",
+        "page": 79
+      },
+      {
+        "asana": "purvottanasana",
+        "page": 82
+      },
+      {
+        "asana": "chaturanga-dandasana",
+        "page": 54
+      },
+      {
+        "asana": "bhujangasana-i",
+        "page": 55
+      },
+      {
+        "asana": "salabhasana",
+        "page": 53
+      },
+      {
+        "asana": "dhanurasana",
+        "page": 54
+      },
+      {
+        "asana": "urdhva-mukha-svanasana",
+        "page": 56
+      },
+      {
+        "asana": "ustrasana",
+        "page": 50
+      },
+      {
+        "asana": "adho-mukha-svanasana",
+        "page": 56
+      },
+      {
+        "asana": "baddha-konasana",
+        "page": 65
+      },
+      {
+        "asana": "salamba-sarvangasana-i",
+        "page": 90
+      },
+      {
+        "asana": "halasana",
+        "page": 95
+      },
+      {
+        "asana": "karnapidasana",
+        "page": 98
+      },
+      {
+        "asana": "supta-konasana",
+        "page": 99
+      },
+      {
+        "asana": "parsva-halasana",
+        "page": 99
+      },
+      {
+        "asana": "savasana",
+        "page": 116,
+        "seconds": 300
+      },
+      {
+        "asana": "ujjayi-pranayama",
+        "page": 123,
+        "seconds": 300,
+        "retention": "none",
+        "postureOptions": [
+          {
+            "asana": "siddhasana",
+            "page": 60
+          }
+        ]
+      }
+    ],
+    "weekStart": 11,
+    "weekEnd": 12,
+    "sourcePageEnd": 132
+  },
+  {
+    "id": "weeks-13-13",
+    "sourcePage": 132,
+    "sourcePdfPage": 149,
+    "steps": [
+      {
+        "asana": "utthita-trikonasana",
+        "page": 42
+      },
+      {
+        "asana": "utthita-parsvakonasana",
+        "page": 43
+      },
+      {
+        "asana": "virabhadrasana-i",
+        "page": 44
+      },
+      {
+        "asana": "virabhadrasana-ii",
+        "page": 45
+      },
+      {
+        "asana": "parsvottanasana",
+        "page": 46
+      },
+      {
+        "asana": "prasarita-padottanasana",
+        "page": 48
+      },
+      {
+        "asana": "padangusthasana",
+        "page": 50
+      },
+      {
+        "asana": "padahastasana",
+        "page": 51
+      },
+      {
+        "asana": "uttanasana",
+        "page": 52
+      },
+      {
+        "asana": "dandasana",
+        "page": 57
+      },
+      {
+        "asana": "paripurna-navasana",
+        "page": 58
+      },
+      {
+        "asana": "ardha-navasana",
+        "page": 59
+      },
+      {
+        "asana": "maha-mudra",
+        "page": 70
+      },
+      {
+        "asana": "janu-sirsasana",
+        "page": 72
+      },
+      {
+        "asana": "paschimottanasana",
+        "page": 79
+      },
+      {
+        "asana": "purvottanasana",
+        "page": 82
+      },
+      {
+        "asana": "chaturanga-dandasana",
+        "page": 54
+      },
+      {
+        "asana": "bhujangasana-i",
+        "page": 55
+      },
+      {
+        "asana": "salabhasana",
+        "page": 53
+      },
+      {
+        "asana": "dhanurasana",
+        "page": 54
+      },
+      {
+        "asana": "urdhva-mukha-svanasana",
+        "page": 56
+      },
+      {
+        "asana": "ustrasana",
+        "page": 50
+      },
+      {
+        "asana": "adho-mukha-svanasana",
+        "page": 56
+      },
+      {
+        "asana": "baddha-konasana",
+        "page": 65
+      },
+      {
+        "asana": "salamba-sarvangasana-i",
+        "page": 90
+      },
+      {
+        "asana": "halasana",
+        "page": 95
+      },
+      {
+        "asana": "karnapidasana",
+        "page": 98
+      },
+      {
+        "asana": "supta-konasana",
+        "page": 99
+      },
+      {
+        "asana": "parsva-halasana",
+        "page": 99
+      },
+      {
+        "asana": "savasana",
+        "page": 116,
+        "seconds": 300
+      },
+      {
+        "asana": "ujjayi-pranayama",
+        "page": 123,
+        "retention": "inhalation",
+        "postureOptions": [
+          {
+            "asana": "siddhasana",
+            "page": 60
+          },
+          {
+            "asana": "savasana",
+            "page": 116
+          }
+        ],
+        "note": "The repeat instruction supplies the sequence; this paragraph does not restate a duration."
+      }
+    ],
+    "weekStart": 13,
+    "weekEnd": 13,
+    "inherits": "weeks-11-12"
+  },
+  {
+    "id": "weeks-14-18",
+    "sourcePage": 132,
+    "sourcePdfPage": 149,
+    "steps": [
+      {
+        "asana": "salamba-sirsasana-i",
+        "page": 82
+      },
+      {
+        "asana": "utthita-trikonasana",
+        "page": 42
+      },
+      {
+        "asana": "utthita-parsvakonasana",
+        "page": 43
+      },
+      {
+        "asana": "virabhadrasana-i",
+        "page": 44
+      },
+      {
+        "asana": "virabhadrasana-ii",
+        "page": 45
+      },
+      {
+        "asana": "parsvottanasana",
+        "page": 46
+      },
+      {
+        "asana": "prasarita-padottanasana",
+        "page": 48
+      },
+      {
+        "asana": "padangusthasana",
+        "page": 50
+      },
+      {
+        "asana": "padahastasana",
+        "page": 51
+      },
+      {
+        "asana": "uttanasana",
+        "page": 52
+      },
+      {
+        "asana": "maha-mudra",
+        "page": 70
+      },
+      {
+        "asana": "janu-sirsasana",
+        "page": 72
+      },
+      {
+        "asana": "ardha-baddha-padma-paschimottanasana",
+        "page": 73
+      },
+      {
+        "asana": "paschimottanasana",
+        "page": 79
+      },
+      {
+        "asana": "paripurna-navasana",
+        "page": 58
+      },
+      {
+        "asana": "ardha-navasana",
+        "page": 59
+      },
+      {
+        "asana": "purvottanasana",
+        "page": 82
+      },
+      {
+        "asana": "ustrasana",
+        "page": 50
+      },
+      {
+        "asana": "salabhasana",
+        "page": 53
+      },
+      {
+        "asana": "dhanurasana",
+        "page": 54
+      },
+      {
+        "asana": "chaturanga-dandasana",
+        "page": 54
+      },
+      {
+        "asana": "bhujangasana-i",
+        "page": 55
+      },
+      {
+        "asana": "urdhva-mukha-svanasana",
+        "page": 56
+      },
+      {
+        "asana": "adho-mukha-svanasana",
+        "page": 56
+      },
+      {
+        "asana": "virasana",
+        "page": 62
+      },
+      {
+        "asana": "baddha-konasana",
+        "page": 65
+      },
+      {
+        "asana": "salamba-sarvangasana-i",
+        "page": 90
+      },
+      {
+        "asana": "halasana",
+        "page": 95
+      },
+      {
+        "asana": "karnapidasana",
+        "page": 98
+      },
+      {
+        "asana": "supta-konasana",
+        "page": 99
+      },
+      {
+        "asana": "parsva-halasana",
+        "page": 99
+      },
+      {
+        "asana": "eka-pada-sarvangasana",
+        "page": 100
+      },
+      {
+        "asana": "parsvaika-pada-sarvangasana",
+        "page": 101
+      },
+      {
+        "asana": "jatara-parivartanasana",
+        "page": 106
+      },
+      {
+        "asana": "savasana",
+        "page": 116
+      },
+      {
+        "asana": "ujjayi-pranayama",
+        "page": 123,
+        "retention": "none",
+        "postureOptions": [
+          {
+            "asana": "siddhasana",
+            "page": 60
+          },
+          {
+            "asana": "virasana",
+            "page": 62
+          },
+          {
+            "asana": "baddha-konasana",
+            "page": 65
+          }
+        ]
+      }
+    ],
+    "weekStart": 14,
+    "weekEnd": 18
+  },
+  {
+    "id": "weeks-19-20",
+    "sourcePage": 132,
+    "sourcePdfPage": 149,
+    "steps": [
+      {
+        "asana": "salamba-sirsasana-i",
+        "page": 82
+      },
+      {
+        "asana": "utthita-trikonasana",
+        "page": 42
+      },
+      {
+        "asana": "utthita-parsvakonasana",
+        "page": 43
+      },
+      {
+        "asana": "virabhadrasana-i",
+        "page": 44
+      },
+      {
+        "asana": "virabhadrasana-ii",
+        "page": 45
+      },
+      {
+        "asana": "parsvottanasana",
+        "page": 46
+      },
+      {
+        "asana": "prasarita-padottanasana",
+        "page": 48
+      },
+      {
+        "asana": "padangusthasana",
+        "page": 50
+      },
+      {
+        "asana": "padahastasana",
+        "page": 51
+      },
+      {
+        "asana": "uttanasana",
+        "page": 52
+      },
+      {
+        "asana": "maha-mudra",
+        "page": 70
+      },
+      {
+        "asana": "janu-sirsasana",
+        "page": 72
+      },
+      {
+        "asana": "ardha-baddha-padma-paschimottanasana",
+        "page": 73
+      },
+      {
+        "asana": "paschimottanasana",
+        "page": 79
+      },
+      {
+        "asana": "paripurna-navasana",
+        "page": 58
+      },
+      {
+        "asana": "ardha-navasana",
+        "page": 59
+      },
+      {
+        "asana": "purvottanasana",
+        "page": 82
+      },
+      {
+        "asana": "ustrasana",
+        "page": 50
+      },
+      {
+        "asana": "salabhasana",
+        "page": 53
+      },
+      {
+        "asana": "dhanurasana",
+        "page": 54
+      },
+      {
+        "asana": "chaturanga-dandasana",
+        "page": 54
+      },
+      {
+        "asana": "bhujangasana-i",
+        "page": 55
+      },
+      {
+        "asana": "urdhva-mukha-svanasana",
+        "page": 56
+      },
+      {
+        "asana": "adho-mukha-svanasana",
+        "page": 56
+      },
+      {
+        "asana": "virasana",
+        "page": 62
+      },
+      {
+        "asana": "baddha-konasana",
+        "page": 65
+      },
+      {
+        "asana": "salamba-sarvangasana-i",
+        "page": 90
+      },
+      {
+        "asana": "halasana",
+        "page": 95
+      },
+      {
+        "asana": "karnapidasana",
+        "page": 98
+      },
+      {
+        "asana": "supta-konasana",
+        "page": 99
+      },
+      {
+        "asana": "parsva-halasana",
+        "page": 99
+      },
+      {
+        "asana": "eka-pada-sarvangasana",
+        "page": 100
+      },
+      {
+        "asana": "parsvaika-pada-sarvangasana",
+        "page": 101
+      },
+      {
+        "asana": "jatara-parivartanasana",
+        "page": 106
+      },
+      {
+        "asana": "savasana",
+        "page": 116
+      },
+      {
+        "asana": "ujjayi-pranayama",
+        "page": 123,
+        "retention": "none",
+        "postureOptions": [
+          {
+            "asana": "siddhasana",
+            "page": 60
+          },
+          {
+            "asana": "virasana",
+            "page": 62
+          },
+          {
+            "asana": "baddha-konasana",
+            "page": 65
+          }
+        ]
+      }
+    ],
+    "weekStart": 19,
+    "weekEnd": 20,
+    "inherits": "weeks-14-18",
+    "standingFrequency": {
+      "alternateDays": true,
+      "alternativeTimesPerWeek": 2
+    },
+    "alternateSteps": [
+      {
+        "asana": "ujjayi-pranayama",
+        "page": 123,
+        "seconds": 300,
+        "retention": "none"
+      },
+      {
+        "asana": "ujjayi-pranayama",
+        "page": 123,
+        "seconds": 300,
+        "retention": "inhalation"
+      },
+      {
+        "asana": "ujjayi-pranayama",
+        "page": 123,
+        "seconds": 300,
+        "retention": "inhalation"
+      }
+    ],
+    "note": "The printed paragraph repeats the retained five-minute block twice. Both occurrences are recorded; whether this is a printing error is unresolved."
+  },
+  {
+    "id": "weeks-21-23",
+    "sourcePage": 132,
+    "sourcePdfPage": 149,
+    "steps": [
+      {
+        "asana": "salamba-sirsasana-i",
+        "page": 82
+      },
+      {
+        "asana": "urdhva-dandasana",
+        "page": 87,
+        "optional": true
+      },
+      {
+        "asana": "salamba-sarvangasana-i",
+        "page": 90
+      },
+      {
+        "asana": "halasana",
+        "page": 95
+      },
+      {
+        "asana": "karnapidasana",
+        "page": 98
+      },
+      {
+        "asana": "supta-konasana",
+        "page": 99
+      },
+      {
+        "asana": "parsva-halasana",
+        "page": 99
+      },
+      {
+        "asana": "eka-pada-sarvangasana",
+        "page": 100
+      },
+      {
+        "asana": "parsvaika-pada-sarvangasana",
+        "page": 101
+      },
+      {
+        "asana": "supta-padangusthasana",
+        "page": 108
+      },
+      {
+        "asana": "jatara-parivartanasana",
+        "page": 106
+      },
+      {
+        "asana": "janu-sirsasana",
+        "page": 72
+      },
+      {
+        "asana": "ardha-baddha-padma-paschimottanasana",
+        "page": 73
+      },
+      {
+        "asana": "trianga-mukhaikapada-paschimottanasana",
+        "page": 75
+      },
+      {
+        "asana": "marichyasana-i",
+        "page": 76
+      },
+      {
+        "asana": "paschimottanasana",
+        "page": 79
+      },
+      {
+        "asana": "upavistha-konasana",
+        "page": 78
+      },
+      {
+        "asana": "baddha-konasana",
+        "page": 65
+      },
+      {
+        "asana": "purvottanasana",
+        "page": 82
+      },
+      {
+        "asana": "bharadvajasana",
+        "page": 109
+      },
+      {
+        "asana": "virasana",
+        "page": 62
+      },
+      {
+        "asana": "chaturanga-dandasana",
+        "page": 54
+      },
+      {
+        "asana": "bhujangasana-i",
+        "page": 55
+      },
+      {
+        "asana": "urdhva-mukha-svanasana",
+        "page": 56
+      },
+      {
+        "asana": "adho-mukha-svanasana",
+        "page": 56
+      },
+      {
+        "asana": "salabhasana",
+        "page": 53
+      },
+      {
+        "asana": "dhanurasana",
+        "page": 54
+      },
+      {
+        "asana": "ustrasana",
+        "page": 50
+      },
+      {
+        "asana": "uttanasana",
+        "page": 52
+      },
+      {
+        "asana": "savasana",
+        "page": 116
+      },
+      {
+        "asana": "ujjayi-pranayama",
+        "page": 123,
+        "seconds": 300,
+        "retention": "none",
+        "postureOptions": [
+          {
+            "asana": "savasana",
+            "page": 116
+          }
+        ]
+      },
+      {
+        "asana": "ujjayi-pranayama",
+        "page": 123,
+        "retention": "inhalation",
+        "postureOptions": [
+          {
+            "asana": "siddhasana",
+            "page": 60
+          },
+          {
+            "asana": "padmasana",
+            "page": 66
+          },
+          {
+            "asana": "virasana",
+            "page": 62
+          },
+          {
+            "asana": "baddha-konasana",
+            "page": 65
+          }
+        ]
+      }
+    ],
+    "weekStart": 21,
+    "weekEnd": 23,
+    "sourcePageEnd": 133,
+    "printedWeeks": [
+      21,
+      23
+    ],
+    "note": "The heading joins weeks 21 and 23 with and; the range fields describe its endpoints only. Week 22 is not named. The following course also begins at week 23."
+  },
+  {
+    "id": "weeks-23-25",
+    "sourcePage": 133,
+    "sourcePdfPage": 150,
+    "steps": [
+      {
+        "asana": "parvatasana",
+        "page": 68
+      },
+      {
+        "asana": "matsyasana",
+        "page": 68
+      },
+      {
+        "asana": "virasana",
+        "page": 62
+      },
+      {
+        "asana": "supta-virasana",
+        "page": 64
+      },
+      {
+        "asana": "bharadvajasana",
+        "page": 109
+      },
+      {
+        "asana": "marichyasana-ii",
+        "page": 110
+      },
+      {
+        "asana": "purvottanasana",
+        "page": 82
+      },
+      {
+        "asana": "chaturanga-dandasana",
+        "page": 54
+      },
+      {
+        "asana": "urdhva-mukha-svanasana",
+        "page": 56
+      },
+      {
+        "asana": "adho-mukha-svanasana",
+        "page": 56
+      },
+      {
+        "asana": "salabhasana",
+        "page": 53
+      },
+      {
+        "asana": "dhanurasana",
+        "page": 54
+      },
+      {
+        "asana": "ustrasana",
+        "page": 50
+      },
+      {
+        "asana": "urdhva-dhanurasana",
+        "page": 114
+      },
+      {
+        "asana": "savasana",
+        "page": 116
+      },
+      {
+        "asana": "viloma-pranayama",
+        "page": 128,
+        "seconds": 300,
+        "stage": 1,
+        "postureOptions": [
+          {
+            "asana": "siddhasana",
+            "page": 60
+          },
+          {
+            "asana": "padmasana",
+            "page": 66
+          }
+        ]
+      },
+      {
+        "asana": "viloma-pranayama",
+        "page": 128,
+        "seconds": 300,
+        "stage": 2,
+        "postureOptions": [
+          {
+            "asana": "siddhasana",
+            "page": 60
+          },
+          {
+            "asana": "padmasana",
+            "page": 66
+          }
+        ]
+      }
+    ],
+    "weekStart": 23,
+    "weekEnd": 25,
+    "unresolvedPrefix": {
+      "course": "weeks-21-23",
+      "through": {
+        "asana": "padmasana",
+        "page": 66
+      }
+    },
+    "note": "Only the explicit continuation is listed in steps. The prefix points to Padmasana in the earlier course, where Padmasana is a breathing-seat option rather than a sequence step. Its insertion point is unresolved. On standing-practice days the shoulderstand variations are omitted."
+  },
+  {
+    "id": "weeks-26-30",
+    "sourcePage": 133,
+    "sourcePdfPage": 150,
+    "steps": [
+      {
+        "asana": "salamba-sirsasana-i",
+        "page": 82
+      },
+      {
+        "asana": "urdhva-dandasana",
+        "page": 87
+      },
+      {
+        "asana": "salamba-sarvangasana-i",
+        "page": 90
+      },
+      {
+        "asana": "halasana",
+        "page": 95
+      },
+      {
+        "asana": "karnapidasana",
+        "page": 98
+      },
+      {
+        "asana": "supta-konasana",
+        "page": 99
+      },
+      {
+        "asana": "parsva-halasana",
+        "page": 99
+      },
+      {
+        "asana": "eka-pada-sarvangasana",
+        "page": 100
+      },
+      {
+        "asana": "parsvaika-pada-sarvangasana",
+        "page": 101
+      },
+      {
+        "asana": "urdhva-padmasana-in-sarvangasana",
+        "page": 103
+      },
+      {
+        "asana": "pindasana-in-sarvangasana",
+        "page": 103
+      },
+      {
+        "asana": "setu-bandha-sarvangasana",
+        "page": 102
+      },
+      {
+        "asana": "jatara-parivartanasana",
+        "page": 106
+      },
+      {
+        "asana": "paripurna-navasana",
+        "page": 58
+      },
+      {
+        "asana": "ardha-navasana",
+        "page": 59
+      },
+      {
+        "asana": "janu-sirsasana",
+        "page": 72
+      },
+      {
+        "asana": "ardha-baddha-padma-paschimottanasana",
+        "page": 73
+      },
+      {
+        "asana": "trianga-mukhaikapada-paschimottanasana",
+        "page": 75
+      },
+      {
+        "asana": "marichyasana-i",
+        "page": 76
+      },
+      {
+        "asana": "paschimottanasana",
+        "page": 79
+      },
+      {
+        "asana": "upavistha-konasana",
+        "page": 78
+      },
+      {
+        "asana": "baddha-konasana",
+        "page": 65
+      },
+      {
+        "asana": "padmasana",
+        "page": 66
+      },
+      {
+        "asana": "parvatasana",
+        "page": 68
+      },
+      {
+        "asana": "baddha-padmasana",
+        "page": 70
+      },
+      {
+        "asana": "yoga-mudrasana",
+        "page": 70
+      },
+      {
+        "asana": "matsyasana",
+        "page": 68
+      },
+      {
+        "asana": "virasana",
+        "page": 62
+      },
+      {
+        "asana": "supta-virasana",
+        "page": 64
+      },
+      {
+        "asana": "bharadvajasana",
+        "page": 109
+      },
+      {
+        "asana": "marichyasana-ii",
+        "page": 110
+      },
+      {
+        "asana": "ardha-matsyendrasana",
+        "page": 112
+      },
+      {
+        "asana": "adho-mukha-svanasana",
+        "page": 56
+      },
+      {
+        "asana": "urdhva-mukha-svanasana",
+        "page": 56
+      },
+      {
+        "asana": "chaturanga-dandasana",
+        "page": 54
+      },
+      {
+        "asana": "salabhasana",
+        "page": 53
+      },
+      {
+        "asana": "dhanurasana",
+        "page": 54
+      },
+      {
+        "asana": "bhujangasana-i",
+        "page": 55
+      },
+      {
+        "asana": "purvottanasana",
+        "page": 82
+      },
+      {
+        "asana": "ustrasana",
+        "page": 50
+      },
+      {
+        "asana": "urdhva-dhanurasana",
+        "page": 114,
+        "repetitions": 4
+      },
+      {
+        "asana": "savasana",
+        "page": 116
+      },
+      {
+        "asana": "ujjayi-pranayama",
+        "page": 123,
+        "retention": "inhalation",
+        "postureOptions": [
+          {
+            "asana": "siddhasana",
+            "page": 60
+          },
+          {
+            "asana": "virasana",
+            "page": 62
+          },
+          {
+            "asana": "padmasana",
+            "page": 66
+          }
+        ]
+      },
+      {
+        "asana": "viloma-pranayama",
+        "page": 128,
+        "postureOptions": [
+          {
+            "asana": "siddhasana",
+            "page": 60
+          },
+          {
+            "asana": "virasana",
+            "page": 62
+          },
+          {
+            "asana": "padmasana",
+            "page": 66
+          }
+        ]
+      }
+    ],
+    "weekStart": 26,
+    "weekEnd": 30
+  },
+  {
+    "id": "weeks-31-32",
+    "sourcePage": 133,
+    "sourcePdfPage": 150,
+    "steps": [
+      {
+        "asana": "salamba-sirsasana-i",
+        "page": 82
+      },
+      {
+        "asana": "urdhva-dandasana",
+        "page": 87
+      },
+      {
+        "asana": "salamba-sarvangasana-i",
+        "page": 90
+      },
+      {
+        "asana": "halasana",
+        "page": 95
+      },
+      {
+        "asana": "karnapidasana",
+        "page": 98
+      },
+      {
+        "asana": "supta-konasana",
+        "page": 99
+      },
+      {
+        "asana": "parsva-halasana",
+        "page": 99
+      },
+      {
+        "asana": "eka-pada-sarvangasana",
+        "page": 100
+      },
+      {
+        "asana": "parsvaika-pada-sarvangasana",
+        "page": 101
+      },
+      {
+        "asana": "urdhva-padmasana-in-sarvangasana",
+        "page": 103
+      },
+      {
+        "asana": "pindasana-in-sarvangasana",
+        "page": 103
+      },
+      {
+        "asana": "setu-bandha-sarvangasana",
+        "page": 102
+      },
+      {
+        "asana": "jatara-parivartanasana",
+        "page": 106
+      },
+      {
+        "asana": "paripurna-navasana",
+        "page": 58
+      },
+      {
+        "asana": "ardha-navasana",
+        "page": 59
+      },
+      {
+        "asana": "janu-sirsasana",
+        "page": 72,
+        "seconds": 60
+      },
+      {
+        "asana": "ardha-baddha-padma-paschimottanasana",
+        "page": 73,
+        "seconds": 60
+      },
+      {
+        "asana": "trianga-mukhaikapada-paschimottanasana",
+        "page": 75,
+        "seconds": 60
+      },
+      {
+        "asana": "marichyasana-i",
+        "page": 76,
+        "seconds": 60
+      },
+      {
+        "asana": "paschimottanasana",
+        "page": 79,
+        "seconds": 300
+      },
+      {
+        "asana": "upavistha-konasana",
+        "page": 78,
+        "seconds": 60
+      },
+      {
+        "asana": "baddha-konasana",
+        "page": 65
+      },
+      {
+        "asana": "padmasana",
+        "page": 66
+      },
+      {
+        "asana": "parvatasana",
+        "page": 68
+      },
+      {
+        "asana": "baddha-padmasana",
+        "page": 70
+      },
+      {
+        "asana": "yoga-mudrasana",
+        "page": 70,
+        "seconds": 60
+      },
+      {
+        "asana": "matsyasana",
+        "page": 68
+      },
+      {
+        "asana": "virasana",
+        "page": 62
+      },
+      {
+        "asana": "supta-virasana",
+        "page": 64
+      },
+      {
+        "asana": "bharadvajasana",
+        "page": 109
+      },
+      {
+        "asana": "marichyasana-ii",
+        "page": 110
+      },
+      {
+        "asana": "ardha-matsyendrasana",
+        "page": 112
+      },
+      {
+        "asana": "adho-mukha-svanasana",
+        "page": 56
+      },
+      {
+        "asana": "urdhva-mukha-svanasana",
+        "page": 56
+      },
+      {
+        "asana": "chaturanga-dandasana",
+        "page": 54
+      },
+      {
+        "asana": "salabhasana",
+        "page": 53
+      },
+      {
+        "asana": "dhanurasana",
+        "page": 54
+      },
+      {
+        "asana": "bhujangasana-i",
+        "page": 55
+      },
+      {
+        "asana": "purvottanasana",
+        "page": 82
+      },
+      {
+        "asana": "ustrasana",
+        "page": 50
+      },
+      {
+        "asana": "urdhva-dhanurasana",
+        "page": 114,
+        "repetitions": 4
+      },
+      {
+        "asana": "savasana",
+        "page": 116
+      },
+      {
+        "asana": "ujjayi-pranayama",
+        "page": 123,
+        "retention": "inhalation",
+        "postureOptions": [
+          {
+            "asana": "siddhasana",
+            "page": 60
+          },
+          {
+            "asana": "virasana",
+            "page": 62
+          },
+          {
+            "asana": "padmasana",
+            "page": 66
+          }
+        ]
+      },
+      {
+        "asana": "viloma-pranayama",
+        "page": 128,
+        "postureOptions": [
+          {
+            "asana": "siddhasana",
+            "page": 60
+          },
+          {
+            "asana": "virasana",
+            "page": 62
+          },
+          {
+            "asana": "padmasana",
+            "page": 66
+          }
+        ]
+      }
+    ],
+    "weekStart": 31,
+    "weekEnd": 32,
+    "inherits": "weeks-26-30",
+    "note": "Forward-fold timings are expanded onto the seated folds of the inherited sequence; Paschimottanasana gets five minutes. The source states a category rule rather than enumerating the affected names."
+  },
+  {
+    "id": "weeks-32-35",
+    "sourcePage": 134,
+    "sourcePdfPage": 151,
+    "steps": [
+      {
+        "asana": "salamba-sirsasana-i",
+        "page": 82
+      },
+      {
+        "asana": "urdhva-dandasana",
+        "page": 87
+      },
+      {
+        "asana": "salamba-sarvangasana-i",
+        "page": 90
+      },
+      {
+        "asana": "halasana",
+        "page": 95
+      },
+      {
+        "asana": "karnapidasana",
+        "page": 98
+      },
+      {
+        "asana": "supta-konasana",
+        "page": 99
+      },
+      {
+        "asana": "parsva-halasana",
+        "page": 99
+      },
+      {
+        "asana": "eka-pada-sarvangasana",
+        "page": 100
+      },
+      {
+        "asana": "parsvaika-pada-sarvangasana",
+        "page": 101
+      },
+      {
+        "asana": "urdhva-padmasana-in-sarvangasana",
+        "page": 103
+      },
+      {
+        "asana": "pindasana-in-sarvangasana",
+        "page": 103
+      },
+      {
+        "asana": "parsva-pindasana-in-sarvangasana",
+        "page": 104
+      },
+      {
+        "asana": "setu-bandha-sarvangasana",
+        "page": 102
+      },
+      {
+        "asana": "jatara-parivartanasana",
+        "page": 106
+      },
+      {
+        "asana": "paripurna-navasana",
+        "page": 58
+      },
+      {
+        "asana": "ardha-navasana",
+        "page": 59
+      },
+      {
+        "asana": "janu-sirsasana",
+        "page": 72
+      },
+      {
+        "asana": "ardha-baddha-padma-paschimottanasana",
+        "page": 73
+      },
+      {
+        "asana": "trianga-mukhaikapada-paschimottanasana",
+        "page": 75
+      },
+      {
+        "asana": "marichyasana-i",
+        "page": 76
+      },
+      {
+        "asana": "paschimottanasana",
+        "page": 79
+      },
+      {
+        "asana": "upavistha-konasana",
+        "page": 78
+      },
+      {
+        "asana": "baddha-konasana",
+        "page": 65
+      },
+      {
+        "asana": "padmasana",
+        "page": 66
+      },
+      {
+        "asana": "parvatasana",
+        "page": 68
+      },
+      {
+        "asana": "baddha-padmasana",
+        "page": 70
+      },
+      {
+        "asana": "yoga-mudrasana",
+        "page": 70
+      },
+      {
+        "asana": "matsyasana",
+        "page": 68
+      },
+      {
+        "asana": "virasana",
+        "page": 62
+      },
+      {
+        "asana": "supta-virasana",
+        "page": 64
+      },
+      {
+        "asana": "bharadvajasana",
+        "page": 109
+      },
+      {
+        "asana": "marichyasana-ii",
+        "page": 110
+      },
+      {
+        "asana": "ardha-matsyendrasana",
+        "page": 112
+      },
+      {
+        "asana": "adho-mukha-svanasana",
+        "page": 56
+      },
+      {
+        "asana": "urdhva-mukha-svanasana",
+        "page": 56
+      },
+      {
+        "asana": "chaturanga-dandasana",
+        "page": 54
+      },
+      {
+        "asana": "salabhasana",
+        "page": 53
+      },
+      {
+        "asana": "dhanurasana",
+        "page": 54
+      },
+      {
+        "asana": "bhujangasana-i",
+        "page": 55
+      },
+      {
+        "asana": "purvottanasana",
+        "page": 82
+      },
+      {
+        "asana": "ustrasana",
+        "page": 50
+      },
+      {
+        "asana": "urdhva-dhanurasana",
+        "page": 114,
+        "repetitions": 4
+      },
+      {
+        "asana": "savasana",
+        "page": 116
+      },
+      {
+        "asana": "surya-bhedana-pranayama",
+        "page": 124,
+        "seconds": 300
+      },
+      {
+        "asana": "nadi-sodhana-pranayama",
+        "page": 126,
+        "cycles": 8,
+        "retention": "none"
+      },
+      {
+        "asana": "dhyana",
+        "page": 129,
+        "secondsMin": 180,
+        "secondsMax": 300
+      }
+    ],
+    "weekStart": 32,
+    "weekEnd": 35,
+    "inherits": "weeks-26-30",
+    "note": "The start at week 32 overlaps the preceding heading. The new breathing and meditation tail replaces the earlier tail."
+  },
+  {
+    "id": "day-1",
+    "sourcePage": 134,
+    "sourcePdfPage": 151,
+    "steps": [
+      {
+        "asana": "salamba-sirsasana-i",
+        "page": 82,
+        "seconds": 600
+      },
+      {
+        "asana": "urdhva-dandasana",
+        "page": 87,
+        "seconds": 60
+      },
+      {
+        "asana": "salamba-sarvangasana-i",
+        "page": 90,
+        "seconds": 600
+      },
+      {
+        "asana": "halasana",
+        "page": 95,
+        "seconds": 300
+      },
+      {
+        "asana": "utthita-trikonasana",
+        "page": 42,
+        "seconds": 30,
+        "perSide": true
+      },
+      {
+        "asana": "utthita-parsvakonasana",
+        "page": 43,
+        "seconds": 30,
+        "perSide": true
+      },
+      {
+        "asana": "virabhadrasana-i",
+        "page": 44,
+        "seconds": 20,
+        "perSide": true
+      },
+      {
+        "asana": "virabhadrasana-ii",
+        "page": 45,
+        "seconds": 20,
+        "perSide": true
+      },
+      {
+        "asana": "parsvottanasana",
+        "page": 46,
+        "seconds": 60,
+        "perSide": true
+      },
+      {
+        "asana": "prasarita-padottanasana",
+        "page": 48,
+        "seconds": 60
+      },
+      {
+        "asana": "padangusthasana",
+        "page": 50,
+        "seconds": 30
+      },
+      {
+        "asana": "padahastasana",
+        "page": 51,
+        "seconds": 30
+      },
+      {
+        "asana": "uttanasana",
+        "page": 52,
+        "seconds": 60
+      },
+      {
+        "asana": "paschimottanasana",
+        "page": 79,
+        "seconds": 300
+      },
+      {
+        "asana": "purvottanasana",
+        "page": 82,
+        "seconds": 30
+      },
+      {
+        "asana": "marichyasana-ii",
+        "page": 110,
+        "seconds": 30,
+        "perSide": true
+      },
+      {
+        "asana": "ardha-matsyendrasana",
+        "page": 112,
+        "seconds": 30,
+        "perSide": true
+      },
+      {
+        "asana": "urdhva-dhanurasana",
+        "page": 114,
+        "seconds": 15,
+        "repetitionsMin": 8,
+        "repetitionsMax": 10
+      },
+      {
+        "asana": "savasana",
+        "page": 116,
+        "seconds": 300
+      },
+      {
+        "asana": "ujjayi-pranayama",
+        "page": 123,
+        "seconds": 900,
+        "retention": "inhalation"
+      },
+      {
+        "asana": "dhyana",
+        "page": 129,
+        "toCapacity": true
+      },
+      {
+        "asana": "savasana",
+        "page": 116,
+        "seconds": 300
+      }
+    ],
+    "day": 1,
+    "note": "The shoulderstand parenthesis is malformed in print. Its ten-minute duration is legible; no photograph reference is inferred from that parenthesis."
+  },
+  {
+    "id": "day-2",
+    "sourcePage": 134,
+    "sourcePdfPage": 151,
+    "steps": [
+      {
+        "asana": "salamba-sirsasana-i",
+        "page": 82,
+        "seconds": 600
+      },
+      {
+        "asana": "urdhva-dandasana",
+        "page": 87,
+        "secondsMin": 30,
+        "secondsMax": 60
+      },
+      {
+        "asana": "salamba-sarvangasana-i",
+        "page": 90,
+        "seconds": 600
+      },
+      {
+        "asana": "halasana",
+        "page": 95,
+        "seconds": 300
+      },
+      {
+        "asana": "jatara-parivartanasana",
+        "page": 106,
+        "seconds": 30,
+        "perSide": true
+      },
+      {
+        "asana": "supta-padangusthasana",
+        "page": 108,
+        "seconds": 20,
+        "perSide": true
+      },
+      {
+        "asana": "paripurna-navasana",
+        "page": 58,
+        "seconds": 60
+      },
+      {
+        "asana": "ardha-navasana",
+        "page": 59,
+        "secondsMin": 20,
+        "secondsMax": 30
+      },
+      {
+        "asana": "paschimottanasana",
+        "page": 79,
+        "seconds": 300
+      },
+      {
+        "asana": "bharadvajasana",
+        "page": 109,
+        "seconds": 30,
+        "perSide": true
+      },
+      {
+        "asana": "marichyasana-ii",
+        "page": 110,
+        "seconds": 30,
+        "perSide": true
+      },
+      {
+        "asana": "ardha-matsyendrasana",
+        "page": 112,
+        "seconds": 30,
+        "perSide": true
+      },
+      {
+        "asana": "parvatasana",
+        "page": 68,
+        "seconds": 60
+      },
+      {
+        "asana": "virasana",
+        "page": 62,
+        "seconds": 60
+      },
+      {
+        "asana": "supta-virasana",
+        "page": 64,
+        "seconds": 60
+      },
+      {
+        "asana": "ustrasana",
+        "page": 50,
+        "seconds": 30
+      },
+      {
+        "asana": "salabhasana",
+        "page": 53,
+        "secondsMin": 20,
+        "secondsMax": 30
+      },
+      {
+        "asana": "dhanurasana",
+        "page": 54,
+        "seconds": 30
+      },
+      {
+        "asana": "urdhva-mukha-svanasana",
+        "page": 56,
+        "secondsMin": 20,
+        "secondsMax": 30
+      },
+      {
+        "asana": "adho-mukha-svanasana",
+        "page": 56,
+        "seconds": 60
+      },
+      {
+        "asana": "uttanasana",
+        "page": 52,
+        "secondsMin": 60,
+        "secondsMax": 120
+      },
+      {
+        "asana": "savasana",
+        "page": 116,
+        "seconds": 300
+      },
+      {
+        "asana": "surya-bhedana-pranayama",
+        "page": 124,
+        "seconds": 300,
+        "postureOptions": [
+          {
+            "asana": "padmasana",
+            "page": 66
+          },
+          {
+            "asana": "siddhasana",
+            "page": 60
+          },
+          {
+            "asana": "virasana",
+            "page": 62
+          }
+        ]
+      },
+      {
+        "asana": "nadi-sodhana-pranayama",
+        "page": 126,
+        "seconds": 600,
+        "retention": "none"
+      },
+      {
+        "asana": "dhyana",
+        "page": 129,
+        "seconds": 120
+      },
+      {
+        "asana": "savasana",
+        "page": 116,
+        "seconds": 300
+      }
+    ],
+    "day": 2
+  },
+  {
+    "id": "day-3",
+    "sourcePage": 135,
+    "sourcePdfPage": 152,
+    "steps": [
+      {
+        "asana": "salamba-sirsasana-i",
+        "page": 82,
+        "seconds": 600
+      },
+      {
+        "asana": "urdhva-dandasana",
+        "page": 87,
+        "seconds": 60
+      },
+      {
+        "asana": "salamba-sarvangasana-i",
+        "page": 90,
+        "seconds": 600
+      },
+      {
+        "asana": "halasana",
+        "page": 95,
+        "seconds": 300
+      },
+      {
+        "asana": "karnapidasana",
+        "page": 98,
+        "seconds": 30
+      },
+      {
+        "asana": "supta-konasana",
+        "page": 99,
+        "seconds": 30
+      },
+      {
+        "asana": "parsva-halasana",
+        "page": 99,
+        "seconds": 30,
+        "perSide": true
+      },
+      {
+        "asana": "eka-pada-sarvangasana",
+        "page": 100,
+        "seconds": 30,
+        "perSide": true
+      },
+      {
+        "asana": "parsvaika-pada-sarvangasana",
+        "page": 101,
+        "seconds": 30,
+        "perSide": true
+      },
+      {
+        "asana": "setu-bandha-sarvangasana",
+        "page": 102,
+        "secondsMin": 30,
+        "secondsMax": 120
+      },
+      {
+        "asana": "urdhva-padmasana-in-sarvangasana",
+        "page": 103,
+        "seconds": 30
+      },
+      {
+        "asana": "pindasana-in-sarvangasana",
+        "page": 103,
+        "seconds": 30
+      },
+      {
+        "asana": "parsva-pindasana-in-sarvangasana",
+        "page": 104,
+        "seconds": 30,
+        "perSide": true
+      },
+      {
+        "asana": "jatara-parivartanasana",
+        "page": 106,
+        "seconds": 30,
+        "perSide": true,
+        "repetitions": 2
+      },
+      {
+        "asana": "supta-padangusthasana",
+        "page": 108,
+        "seconds": 30,
+        "perSide": true
+      },
+      {
+        "asana": "marichyasana-ii",
+        "page": 110,
+        "secondsMin": 30,
+        "secondsMax": 60,
+        "perSide": true
+      },
+      {
+        "asana": "ardha-matsyendrasana",
+        "page": 112,
+        "secondsMin": 30,
+        "secondsMax": 60,
+        "perSide": true
+      },
+      {
+        "asana": "paschimottanasana",
+        "page": 79,
+        "seconds": 300
+      },
+      {
+        "asana": "savasana",
+        "page": 116,
+        "seconds": 300
+      },
+      {
+        "asana": "nadi-sodhana-pranayama",
+        "page": 126,
+        "seconds": 600,
+        "retention": "none"
+      },
+      {
+        "asana": "surya-bhedana-pranayama",
+        "page": 124,
+        "cycles": 10
+      },
+      {
+        "asana": "dhyana",
+        "page": 129,
+        "seconds": 300
+      }
+    ],
+    "day": 3
+  },
+  {
+    "id": "day-4",
+    "sourcePage": 135,
+    "sourcePdfPage": 152,
+    "steps": [
+      {
+        "asana": "salamba-sirsasana-i",
+        "page": 82,
+        "seconds": 300
+      },
+      {
+        "asana": "urdhva-dandasana",
+        "page": 87,
+        "seconds": 60
+      },
+      {
+        "asana": "salamba-sarvangasana-i",
+        "page": 90,
+        "seconds": 300
+      },
+      {
+        "asana": "halasana",
+        "page": 95,
+        "seconds": 300
+      },
+      {
+        "asana": "maha-mudra",
+        "page": 70,
+        "seconds": 30,
+        "perSide": true
+      },
+      {
+        "asana": "janu-sirsasana",
+        "page": 72,
+        "seconds": 60,
+        "perSide": true
+      },
+      {
+        "asana": "ardha-baddha-padma-paschimottanasana",
+        "page": 73,
+        "seconds": 60,
+        "perSide": true
+      },
+      {
+        "asana": "trianga-mukhaikapada-paschimottanasana",
+        "page": 75,
+        "seconds": 60,
+        "perSide": true
+      },
+      {
+        "asana": "marichyasana-i",
+        "page": 76,
+        "seconds": 60,
+        "perSide": true
+      },
+      {
+        "asana": "upavistha-konasana",
+        "page": 78,
+        "seconds": 60
+      },
+      {
+        "asana": "virasana",
+        "page": 62,
+        "seconds": 60
+      },
+      {
+        "asana": "supta-virasana",
+        "page": 64,
+        "seconds": 60
+      },
+      {
+        "asana": "baddha-padmasana",
+        "page": 70,
+        "seconds": 60
+      },
+      {
+        "asana": "yoga-mudrasana",
+        "page": 70,
+        "seconds": 60
+      },
+      {
+        "asana": "parvatasana",
+        "page": 68,
+        "seconds": 30
+      },
+      {
+        "asana": "baddha-konasana",
+        "page": 65,
+        "seconds": 60
+      },
+      {
+        "asana": "paschimottanasana",
+        "page": 79,
+        "seconds": 300
+      },
+      {
+        "asana": "ujjayi-pranayama",
+        "page": 123,
+        "retention": "inhalation",
+        "repetitions": 8,
+        "toCapacity": true
+      },
+      {
+        "asana": "viloma-pranayama",
+        "page": 128,
+        "seconds": 300,
+        "stage": 1,
+        "postureOptions": [
+          {
+            "asana": "savasana",
+            "page": 116
+          }
+        ]
+      }
+    ],
+    "day": 4
+  },
+  {
+    "id": "day-5",
+    "sourcePage": 135,
+    "sourcePdfPage": 152,
+    "steps": [
+      {
+        "asana": "salamba-sirsasana-i",
+        "page": 82,
+        "seconds": 600
+      },
+      {
+        "asana": "urdhva-dandasana",
+        "page": 87,
+        "seconds": 60
+      },
+      {
+        "asana": "salamba-sarvangasana-i",
+        "page": 90,
+        "seconds": 600
+      },
+      {
+        "asana": "halasana",
+        "page": 95,
+        "seconds": 300
+      },
+      {
+        "asana": "paschimottanasana",
+        "page": 79,
+        "seconds": 300
+      },
+      {
+        "asana": "bharadvajasana",
+        "page": 109,
+        "seconds": 30,
+        "perSide": true
+      },
+      {
+        "asana": "marichyasana-ii",
+        "page": 110,
+        "seconds": 30,
+        "perSide": true
+      },
+      {
+        "asana": "ardha-matsyendrasana",
+        "page": 112,
+        "seconds": 30,
+        "perSide": true
+      },
+      {
+        "asana": "baddha-padmasana",
+        "page": 70,
+        "seconds": 60
+      },
+      {
+        "asana": "matsyasana",
+        "page": 68,
+        "seconds": 30
+      },
+      {
+        "asana": "supta-virasana",
+        "page": 64,
+        "seconds": 60
+      },
+      {
+        "asana": "salabhasana",
+        "page": 53,
+        "seconds": 15,
+        "repetitions": 3
+      },
+      {
+        "asana": "dhanurasana",
+        "page": 54,
+        "seconds": 20
+      },
+      {
+        "asana": "bhujangasana-i",
+        "page": 55,
+        "seconds": 30
+      },
+      {
+        "asana": "urdhva-mukha-svanasana",
+        "page": 56,
+        "seconds": 30
+      },
+      {
+        "asana": "urdhva-dhanurasana",
+        "page": 114,
+        "repetitions": 15,
+        "toCapacity": true
+      },
+      {
+        "asana": "viloma-pranayama",
+        "page": 128,
+        "seconds": 300,
+        "stage": 1,
+        "postureOptions": [
+          {
+            "asana": "savasana",
+            "page": 116
+          }
+        ]
+      },
+      {
+        "asana": "viloma-pranayama",
+        "page": 128,
+        "seconds": 300,
+        "stage": 2,
+        "postureOptions": [
+          {
+            "asana": "savasana",
+            "page": 116
+          }
+        ]
+      },
+      {
+        "asana": "dhyana",
+        "page": 129,
+        "seconds": 300
+      }
+    ],
+    "day": 5
+  },
+  {
+    "id": "day-6",
+    "sourcePage": 136,
+    "sourcePdfPage": 153,
+    "steps": [
+      {
+        "asana": "salamba-sirsasana-i",
+        "page": 82,
+        "seconds": 300
+      },
+      {
+        "asana": "utthita-trikonasana",
+        "page": 42,
+        "seconds": 15,
+        "perSide": true
+      },
+      {
+        "asana": "utthita-parsvakonasana",
+        "page": 43,
+        "seconds": 15,
+        "perSide": true
+      },
+      {
+        "asana": "virabhadrasana-i",
+        "page": 44,
+        "seconds": 10,
+        "perSide": true
+      },
+      {
+        "asana": "virabhadrasana-ii",
+        "page": 45,
+        "seconds": 10,
+        "perSide": true
+      },
+      {
+        "asana": "parsvottanasana",
+        "page": 46,
+        "seconds": 10,
+        "perSide": true
+      },
+      {
+        "asana": "prasarita-padottanasana",
+        "page": 48,
+        "seconds": 15
+      },
+      {
+        "asana": "uttanasana",
+        "page": 52,
+        "seconds": 20
+      },
+      {
+        "asana": "salamba-sarvangasana-i",
+        "page": 90,
+        "seconds": 300
+      },
+      {
+        "asana": "halasana",
+        "page": 95,
+        "seconds": 300
+      },
+      {
+        "asana": "karnapidasana",
+        "page": 98,
+        "seconds": 15
+      },
+      {
+        "asana": "supta-konasana",
+        "page": 99,
+        "seconds": 15
+      },
+      {
+        "asana": "parsva-halasana",
+        "page": 99,
+        "seconds": 15,
+        "perSide": true
+      },
+      {
+        "asana": "eka-pada-sarvangasana",
+        "page": 100,
+        "seconds": 15,
+        "perSide": true
+      },
+      {
+        "asana": "parsvaika-pada-sarvangasana",
+        "page": 101,
+        "seconds": 15,
+        "perSide": true
+      },
+      {
+        "asana": "setu-bandha-sarvangasana",
+        "page": 102,
+        "seconds": 60
+      },
+      {
+        "asana": "urdhva-padmasana-in-sarvangasana",
+        "page": 103,
+        "seconds": 15
+      },
+      {
+        "asana": "pindasana-in-sarvangasana",
+        "page": 103,
+        "seconds": 15
+      },
+      {
+        "asana": "parsva-pindasana-in-sarvangasana",
+        "page": 104,
+        "seconds": 15,
+        "perSide": true
+      },
+      {
+        "asana": "janu-sirsasana",
+        "page": 72,
+        "seconds": 15,
+        "perSide": true
+      },
+      {
+        "asana": "ardha-baddha-padma-paschimottanasana",
+        "page": 73,
+        "seconds": 15,
+        "perSide": true
+      },
+      {
+        "asana": "trianga-mukhaikapada-paschimottanasana",
+        "page": 75,
+        "seconds": 15,
+        "perSide": true
+      },
+      {
+        "asana": "marichyasana-i",
+        "page": 76,
+        "seconds": 15,
+        "perSide": true
+      },
+      {
+        "asana": "upavistha-konasana",
+        "page": 78,
+        "seconds": 15
+      },
+      {
+        "asana": "paripurna-navasana",
+        "page": 58,
+        "seconds": 30
+      },
+      {
+        "asana": "ardha-navasana",
+        "page": 59,
+        "seconds": 30
+      },
+      {
+        "asana": "baddha-konasana",
+        "page": 65,
+        "seconds": 30
+      },
+      {
+        "asana": "paschimottanasana",
+        "page": 79,
+        "seconds": 60
+      },
+      {
+        "asana": "purvottanasana",
+        "page": 82,
+        "seconds": 15
+      },
+      {
+        "asana": "virasana",
+        "page": 62,
+        "seconds": 15
+      },
+      {
+        "asana": "supta-virasana",
+        "page": 64,
+        "seconds": 15
+      },
+      {
+        "asana": "parvatasana",
+        "page": 68,
+        "seconds": 30
+      },
+      {
+        "asana": "marichyasana-ii",
+        "page": 110,
+        "seconds": 30,
+        "perSide": true
+      },
+      {
+        "asana": "ardha-matsyendrasana",
+        "page": 112,
+        "seconds": 30,
+        "perSide": true
+      },
+      {
+        "asana": "urdhva-dhanurasana",
+        "page": 114,
+        "repetitions": 3,
+        "toCapacity": true
+      },
+      {
+        "asana": "savasana",
+        "page": 116,
+        "seconds": 300
+      },
+      {
+        "asana": "nadi-sodhana-pranayama",
+        "page": 126,
+        "cycles": 8,
+        "retention": "inhalation"
+      },
+      {
+        "asana": "dhyana",
+        "page": 129,
+        "seconds": 180
+      }
+    ],
+    "day": 6,
+    "note": "Urdhva Dhanurasana is paired with 114 in print, while the photograph table assigns its final form 144. Identity follows the posture name."
+  },
+  {
+    "id": "day-7",
+    "sourcePage": 137,
+    "sourcePdfPage": 154,
+    "steps": [
+      {
+        "asana": "nadi-sodhana-pranayama",
+        "page": 126,
+        "seconds": 900,
+        "retention": "inhalation"
+      },
+      {
+        "asana": "viloma-pranayama",
+        "page": 128,
+        "seconds": 600,
+        "stages": [
+          1,
+          2
+        ],
+        "postureOptions": [
+          {
+            "asana": "savasana",
+            "page": 116
+          }
+        ],
+        "note": "Ten minutes covers the two stages together; a per-stage duration is not specified."
+      },
+      {
+        "asana": "savasana",
+        "page": 116
+      }
+    ],
+    "day": 7,
+    "note": "Sunday breathing sequence; the final Savasana follows the general closing instruction below it."
+  },
+  {
+    "id": "sun-salutation",
+    "sourcePage": 137,
+    "sourcePdfPage": 154,
+    "steps": [
+      {
+        "asana": "tadasana",
+        "page": 41,
+        "breathing": [
+          "inhale"
+        ]
+      },
+      {
+        "asana": "uttanasana",
+        "page": 52,
+        "breathing": [
+          "exhale",
+          "inhale"
+        ],
+        "note": "Inhalation accompanies the head-up phase."
+      },
+      {
+        "asana": "chaturanga-dandasana",
+        "page": 54,
+        "breathing": [
+          "exhale"
+        ]
+      },
+      {
+        "asana": "urdhva-mukha-svanasana",
+        "page": 56,
+        "breathing": [
+          "inhale"
+        ]
+      },
+      {
+        "asana": "chaturanga-dandasana",
+        "page": 54,
+        "breathing": [
+          "exhale",
+          "inhale"
+        ]
+      },
+      {
+        "asana": "adho-mukha-svanasana",
+        "page": 56,
+        "breathing": [
+          "exhale"
+        ]
+      },
+      {
+        "asana": "uttanasana",
+        "page": 52,
+        "breathing": [
+          "inhale"
+        ]
+      },
+      {
+        "asana": "tadasana",
+        "page": 41,
+        "breathing": [
+          "exhale"
+        ]
+      }
+    ],
+    "initialRounds": 6,
+    "note": "Round count may increase; the source gives no fixed upper bound."
+  }
+]
