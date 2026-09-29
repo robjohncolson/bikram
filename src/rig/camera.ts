@@ -5,6 +5,10 @@
  * to bottom. `render_motion.py` keyframes these per stage and eases
  * between them (bezier ease-in-out); `orbitBetween` does the same with
  * smoothstep, turning the SHORT way round like `orbit_camera`.
+ *
+ * `elevation` is the hand orbit's tilt (posture pages only): the sheets'
+ * views are all level, so it is optional and absent means 0 — an authored
+ * camera stays exactly what the sheet says.
  */
 import type { RigData, RigFrame } from '../data/types';
 import { smoothstep } from './math';
@@ -16,7 +20,23 @@ export interface CameraState {
   centerZ: number;
   /** ortho height in metres */
   scale: number;
+  /** radians above the level view (positive looks down on the figure); absent = 0 */
+  elevation?: number;
 }
+
+/** A hand orbit laid over the authored camera. */
+export interface ViewOffset {
+  azimuth: number;
+  elevation: number;
+}
+
+/**
+ * The tilt limit either way. A tilt changes what the figure projects to
+ * (its height and depth mix), but by choice the stage's framing is kept
+ * (no refit): clamped to ±60°, the figure stays inside the disc for the
+ * authored framings.
+ */
+export const MAX_ELEVATION = (60 * Math.PI) / 180;
 
 /** the renderer's framing defaults (`stage_frame`) */
 const DEFAULT_FRAME: RigFrame = { center_z: 0.9, scale: 2.0 };
@@ -38,9 +58,29 @@ export function orbitBetween(a: CameraState, b: CameraState, s: number): CameraS
   let to = b.azimuth;
   while (to - a.azimuth > Math.PI) to -= 2 * Math.PI;
   while (to - a.azimuth < -Math.PI) to += 2 * Math.PI;
-  return {
+  const cam: CameraState = {
     azimuth: a.azimuth + (to - a.azimuth) * e,
     centerZ: a.centerZ + (b.centerZ - a.centerZ) * e,
     scale: a.scale + (b.scale - a.scale) * e,
+  };
+  // carried only when a side has one, so a level sheet's camera keeps its shape
+  if (a.elevation !== undefined || b.elevation !== undefined) {
+    const ea = a.elevation ?? 0;
+    cam.elevation = ea + ((b.elevation ?? 0) - ea) * e;
+  }
+  return cam;
+}
+
+/** An elevation held to ±`MAX_ELEVATION`. */
+export function clampElevation(e: number): number {
+  return Math.min(MAX_ELEVATION, Math.max(-MAX_ELEVATION, e));
+}
+
+/** The authored camera with a hand orbit added: the turn on top of the stage's, the tilt clamped. */
+export function withOffset(cam: CameraState, offset: ViewOffset): CameraState {
+  return {
+    ...cam,
+    azimuth: cam.azimuth + offset.azimuth,
+    elevation: clampElevation((cam.elevation ?? 0) + offset.elevation),
   };
 }

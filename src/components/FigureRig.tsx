@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { RigData } from '../data';
-import { breathe, cubicBezier, guideSegments, orbitBetween, sheetPose, stageCamera, stageGhost, unsmoothstep } from '../rig';
+import { breathe, cubicBezier, guideSegments, orbitBetween, sheetPose, stageCamera, stageGhost, unsmoothstep, withOffset } from '../rig';
+import type { ViewOffset } from '../rig';
 import type { RigColors, RigScene, RGBA } from './figureRigScene';
 import './FigureRig.css';
 
@@ -22,6 +23,8 @@ export interface FigureRigProps {
   breath?: { phase: 'inhale' | 'exhale'; progress: number };
   /** keep the layer canvases drawn and toggle `data-on`, so CSS fades them (class mode) */
   fadeLayers?: boolean;
+  /** a hand orbit added to the authored camera (posture pages; never in class mode) */
+  viewOffset?: ViewOffset;
   /** the first frame has been drawn (the sprite can step aside) */
   onReady?: () => void;
   /** WebGL unavailable, the context lost, or three failed to load: the sprite takes over */
@@ -82,7 +85,7 @@ function useMedia(query: string): boolean {
  * change: a held stage is one render, and there is no loop of its own.
  * Reduced motion snaps to the target stage and drops the breath.
  */
-export default function FigureRig({ data, size, pose, layers, breath, fadeLayers = false, onReady, onUnavailable }: FigureRigProps) {
+export default function FigureRig({ data, size, pose, layers, breath, fadeLayers = false, viewOffset, onReady, onUnavailable }: FigureRigProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const figureRef = useRef<HTMLCanvasElement>(null);
   const ghostRef = useRef<HTMLCanvasElement>(null);
@@ -134,6 +137,9 @@ export default function FigureRig({ data, size, pose, layers, breath, fadeLayers
   const drawGuides = Boolean(guides?.length) && (fadeLayers || layers.guides);
   // one segment list per stage's guides, so the scene sees an unchanged layer
   const guideLines = useMemo(() => (drawGuides ? guideSegments(guides) : undefined), [drawGuides, guides]);
+  // by value, so an unchanged offset in a new object is not a render
+  const offAz = viewOffset?.azimuth;
+  const offEl = viewOffset?.elevation;
 
   useEffect(() => {
     const out = { figure: figureRef.current, ghost: ghostRef.current, guides: guidesRef.current };
@@ -143,7 +149,9 @@ export default function FigureRig({ data, size, pose, layers, breath, fadeLayers
       const figure = breathe(sheetPose(sheet, from, pose.to, t), amount);
       const ghost = drawGhost && holdStage !== undefined ? stageGhost(sheet, holdStage) : undefined;
       // the camera eases like the sheets' (smoothstep on the linear fraction)
-      const cam = orbitBetween(stageCamera(sheet, from), stageCamera(sheet, pose.to), unsmoothstep(t));
+      const authored = orbitBetween(stageCamera(sheet, from), stageCamera(sheet, pose.to), unsmoothstep(t));
+      // the hand orbit rides on top, so the choreography's own turns still play
+      const cam = offAz === undefined || offEl === undefined ? authored : withOffset(authored, { azimuth: offAz, elevation: offEl });
       scene.render(
         { figure, ghost, guides: guideLines },
         cam,
@@ -158,7 +166,7 @@ export default function FigureRig({ data, size, pose, layers, breath, fadeLayers
     } catch {
       unavailable.current?.();
     }
-  }, [scene, colors, size, sheet, from, pose.to, t, amount, drawGhost, holdStage, guideLines]);
+  }, [scene, colors, size, sheet, from, pose.to, t, amount, drawGhost, holdStage, guideLines, offAz, offEl]);
 
   const style = { width: size, height: size };
   return (

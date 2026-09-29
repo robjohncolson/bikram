@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useId, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import type { PoseMotion as Motion, RigData } from '../data';
 import { loadRigData, motionId, rigDataIfLoaded } from '../data';
@@ -9,6 +9,7 @@ import type { SheetBlend } from '../rig';
 import { RigBoundary } from './RigBoundary';
 import { rigShows, rigStatusAfter } from './rigFallback';
 import type { RigStatus } from './rigFallback';
+import { useOrbit } from './useOrbit';
 import './PoseMotion.css';
 
 // three.js and the rig renderer load only when a rig figure first mounts
@@ -107,6 +108,11 @@ function useReducedMotion(): boolean {
  * itself the rig walks the stages on the sheet's clock (`playAt`); the
  * chips, play/pause, layer chips and breath all work the same, except that
  * the rig breathes by opening its chest instead of the CSS swell.
+ *
+ * Hand orbit (the rig on a posture page only — never with a `layers` prop,
+ * so never in class mode): the disc becomes a focusable "Figure view" group
+ * that drags or arrow-keys the camera round and up (`useOrbit`), added to
+ * the authored views; "Reset view" shows while it is off them.
  */
 export function PoseMotion({
   motion,
@@ -315,6 +321,10 @@ export function PoseMotion({
   const guides = active.guides ? motion.guides : undefined;
   const interactive = !layers;
   const rigBlend: SheetBlend = pose ? { from: pose.from, to: pose.to, t: pose.t } : ownBlend;
+  const discRef = useRef<HTMLDivElement>(null);
+  const orbitable = rigShown && interactive;
+  const orbit = useOrbit(discRef, { enabled: orbitable, reduced });
+  const hintId = useId();
 
   const current = useRig
     ? rigBlend.t >= 0.5
@@ -324,7 +334,19 @@ export function PoseMotion({
 
   return (
     <div className="pose-motion">
-      <div className={'pose-motion-frame' + (frameClassName ? ` ${frameClassName}` : '')} aria-hidden>
+      <div
+        ref={discRef}
+        className={'pose-motion-frame' + (frameClassName ? ` ${frameClassName}` : '')}
+        {...(orbitable
+          ? {
+              tabIndex: 0,
+              role: 'group',
+              'aria-label': 'Figure view',
+              'aria-describedby': hintId,
+              'data-orbit': orbit.dragging ? 'dragging' : 'ready',
+            }
+          : { 'aria-hidden': true })}
+      >
         <div
           ref={stackRef}
           className="pose-motion-stack"
@@ -365,6 +387,7 @@ export function PoseMotion({
                     pose={rigBlend}
                     layers={active}
                     fadeLayers={fadeLayers}
+                    viewOffset={orbitable ? orbit.offset : undefined}
                     breath={breathing ? { phase: breathing.phase, progress: breathProgress ?? ownBreathP } : undefined}
                     onReady={() => setRigStatus((st) => rigStatusAfter(st, 'ready'))}
                     onUnavailable={rigUnavailable}
@@ -410,6 +433,19 @@ export function PoseMotion({
               )}
             </div>
           )}
+          {orbitable && orbit.off && (
+            <button
+              type="button"
+              className="pose-motion-reset"
+              onClick={() => {
+                orbit.reset();
+                // the button goes when the view is back: keep keyboard users on the figure
+                discRef.current?.focus({ preventScroll: true });
+              }}
+            >
+              Reset view
+            </button>
+          )}
           <div className="pose-motion-stages" role="group" aria-label="Stages">
             {motion.stages.map((s, i) => (
               <button
@@ -434,6 +470,11 @@ export function PoseMotion({
       {interactive && showStages && (guides || ghost) && (
         <p className="pose-motion-caption">
           Blue lines mark the alignment the cue asks for · orange is the common mistake
+        </p>
+      )}
+      {orbitable && (
+        <p id={hintId} className="pose-motion-hint text-faint">
+          Drag to turn · arrows to orbit
         </p>
       )}
     </div>

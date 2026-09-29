@@ -389,7 +389,24 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   stage 0 over `TRANSITION_FRAMES/fps`), `poseAt`, `figurePoseAt`.
   `PacerClassMode`'s hook computes frame and pose together and preloads
   every posture's and bridge's rig JSON. `PoseDetail` shows sprite and
-  live side by side for `RIG_LIVE` postures (all of them).
+  live side by side for `RIG_LIVE` postures (all of them). HAND ORBIT
+  (posture pages only): when the rig shows and there is no `layers` prop
+  (so never in class mode, which keeps the authored views), the disc is a
+  focusable `role="group"` "Figure view" and `components/useOrbit.ts`
+  turns pointer drags (π across the disc's width; down = the camera
+  rises; no inertia; `touch-action: none` only on that disc) and arrow
+  keys (15° / 10°; `0`/Home reset) into a `ViewOffset` that `FigureRig`
+  adds to the authored camera (`camera.ts withOffset`; `elevation` is
+  optional on `CameraState`, absent = level, clamped ±60°; the scene
+  tilts about the pivot's local X after the azimuth). The offset rides
+  on the demonstration's own orbits and survives stages and chip scrubs;
+  only "Reset view" (shown while off the authored view; smoothstep over
+  400 ms, instant under reduced motion) clears it. The sprite never orbits.
+  ONE OWNER: every change goes through the pure `orbitReducer` (drag
+  session + eased reset in one state); a key or reset during a drag ENDS
+  the drag (capture released), a new grab stops a reset where it is, and
+  a pointer that cannot be captured never starts a drag. `createOrbit`
+  wires events to it outside React (tests mount it on an `EventTarget`).
 - `src/components/` — shared `PoseFigure` (figure or numbered-badge fallback)
   and `BodyMap` (front/back silhouettes, tintable muscle regions; its props
   contract is load-bearing for PoseDetail and Explorer).

@@ -365,10 +365,14 @@ export class RigScene {
     this.camera.top = h;
     this.camera.bottom = -h;
     // the camera hangs on the pivot's -Y at 10 m and orbits it about +Z
-    // (render_motion.py build_camera / orbit_camera)
+    // (render_motion.py build_camera / orbit_camera); a hand tilt then turns
+    // it about the pivot's local X, up over the figure for a positive
+    // elevation. Up stays +Z: the tilt is clamped well short of overhead
     const s = Math.sin(cam.azimuth);
     const c = Math.cos(cam.azimuth);
-    this.camera.position.set(10 * s, -10 * c, cam.centerZ);
+    const el = cam.elevation ?? 0;
+    const flat = 10 * Math.cos(el);
+    this.camera.position.set(flat * s, -flat * c, cam.centerZ + 10 * Math.sin(el));
     this.camera.lookAt(0, 0, cam.centerZ);
     this.camera.updateProjectionMatrix();
     this.camera.updateMatrixWorld();
@@ -410,7 +414,7 @@ export class RigScene {
     const t0 = performance.now();
     const r = this.renderer;
     this.aim(cam);
-    const view = `${cam.azimuth},${cam.centerZ},${cam.scale},${this.size},${this.dpr}`;
+    const view = `${cam.azimuth},${cam.elevation ?? 0},${cam.centerZ},${cam.scale},${this.size},${this.dpr}`;
 
     // the teaching layers are static through a hold (the breath moves only
     // the figure): each is redrawn only when its content, the camera, the

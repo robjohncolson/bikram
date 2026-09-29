@@ -18,6 +18,13 @@ sheets; `rig-data.test.ts` pins it = the 26 manifest postures, no bridges, and t
 posture of the sequence draws the rig in class mode). Posture pages show sprite + live side
 by side for all 26.
 
++ 2026-09-29 (evening, uncommitted): HAND ORBIT on posture pages (`docs/live-figure-orbit-spec.md`)
+— drag/arrow keys turn and tilt the live figure (`useOrbit.ts`, `camera.ts withOffset`,
+elevation ±60°), "Reset view" eases back; class mode unchanged (no orbit, authored views).
+`camera.test.ts` + `useOrbit.test.ts` (+18 tests); screenshots in the session scratchpad.
+Codex review fixed: one owner of the view (`orbitReducer`; a key/reset mid-drag ends the
+drag), no drag without pointer capture, camera.ts tilt comment reworded.
+
 Proof: a scratchpad Playwright script screenshotted sprite and live at every stage chip of
 all 26 postures and 8 bridges (layers off, then on where a stage has guides/ghost), one sheet
 per id, each looked at; the table Robert reads is `docs/live-figure-rollout.md`:

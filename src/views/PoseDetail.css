@@ -129,6 +129,12 @@
   color: var(--text);
 }
 
+/* the live disc is focusable (the hand orbit): keep it round under the
+   global focus ring's 4px corners */
+.pd-figurewrap:focus-visible {
+  border-radius: 50%;
+}
+
 .pd-header .pose-motion {
   max-width: 260px;
 }

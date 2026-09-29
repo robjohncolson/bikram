@@ -148,8 +148,52 @@
   color: var(--text-faint);
 }
 
+/* the hand orbit (posture pages' live figure): the disc is the handle.
+   touch-action none only while it can orbit, so a sprite disc (or class
+   mode) still scrolls the page under a finger */
+.pose-motion-frame[data-orbit] {
+  touch-action: none;
+  cursor: grab;
+  -webkit-user-select: none;
+  user-select: none;
+}
+
+.pose-motion-frame[data-orbit='dragging'] {
+  cursor: grabbing;
+}
+
+.pose-motion-frame[data-orbit]:focus-visible {
+  outline: 2px solid var(--focus-ring);
+  outline-offset: 3px;
+}
+
+.pose-motion-reset {
+  flex: none;
+  padding: 4px 6px;
+  border: 0;
+  background: transparent;
+  color: var(--text-soft);
+  font-size: 12px;
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+
+.pose-motion-reset:hover {
+  color: var(--text);
+}
+
+.pose-motion-hint {
+  margin: 0;
+  text-align: center;
+  font-size: 12px;
+  line-height: 1.4;
+}
+
 .pose-motion-play:focus-visible,
 .pose-motion-layer:focus-visible,
+.pose-motion-reset:focus-visible,
 .pose-motion-stage:focus-visible {
   outline: 2px solid var(--focus-ring);
   outline-offset: 2px;
