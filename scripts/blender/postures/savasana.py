@@ -5,6 +5,10 @@ Lying recipe from the README: head toward -Y, pelvis bone and spine point
 -Y, legs point +Y, pelvis.location drops the body so the tubes rest at the
 floor. Nearly still: the motion is the knees sliding long and the arms and
 feet letting go.
+
+Refined after the reference photograph (2026-09-29): in Stillness the hands
+rest a little away from the thighs, the legs lie a touch apart and the
+feet fall well open.
 """
 
 
@@ -54,12 +58,15 @@ SETTLE = {
     'foot.L': (0, 0.3, 1), 'foot.R': (0, 0.3, 1),
 }
 
+# After the reference photograph: the hands rest a little away from the
+# thighs (arms ~17° off the body, not tucked against it), the legs lie a
+# touch apart and the feet fall well open to the sides.
 STILL = {
     **TORSO,
-    **arms(0.16),
-    'thigh.L': (0.06, 1, 0), 'thigh.R': (-0.06, 1, 0),
-    'shin.L': (0.06, 1, 0), 'shin.R': (-0.06, 1, 0),
-    'foot.L': (0.35, 0.45, 0.8), 'foot.R': (-0.35, 0.45, 0.8),
+    **arms(0.3),
+    'thigh.L': (0.08, 1, 0), 'thigh.R': (-0.08, 1, 0),
+    'shin.L': (0.08, 1, 0), 'shin.R': (-0.08, 1, 0),
+    'foot.L': (0.6, 0.4, 0.7), 'foot.R': (-0.6, 0.4, 0.7),
 }
 
 # Guide: one line — the floor under the body, which from the side is also

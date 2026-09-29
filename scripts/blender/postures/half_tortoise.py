@@ -8,6 +8,11 @@ z≈0.06; sitting on the heels puts the hip a thigh's length behind and above
 the knee, just over the ankles. The mannequin faces -Y, so the fold goes
 forward toward -Y and down; the figure is nudged +Y so the folded body stays
 centred.
+
+Refined after the reference photograph (2026-09-29): the fold hooked the
+neck steeply down so the head tucked under the shoulders; the upper back
+and neck now stay longer, the forehead lands further forward on the
+floor and the spine reads long, as the cues ask.
 """
 
 
@@ -81,10 +86,10 @@ HINGE = {
 FOLD = {
     **SEATED,
     'pelvis': (0, -0.7, 0.35),
-    'spine.lower': (0, -1, 0),
-    'spine.upper': (0, -0.9, -0.4),
-    'neck': (0, -0.5, -0.86),
-    'head': (0, -0.94, -0.35),
+    'spine.lower': (0, -1, 0.02),
+    'spine.upper': (0, -0.95, -0.3),
+    'neck': (0, -0.62, -0.78),
+    'head': (0, -0.97, -0.25),
     **reach(),
 }
 

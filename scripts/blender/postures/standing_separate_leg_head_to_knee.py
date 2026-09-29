@@ -6,6 +6,11 @@ the front leg (drawn as a front/back split along the facing axis, so the side
 view shows it), then chin tucked and the body folds until the forehead meets
 the front knee and the steepled hands touch the floor in front of the foot.
 The mannequin faces -Y (screen-right in the side view). Right side first.
+
+Refined after the reference photograph (2026-09-29): the fold drew torso,
+arms and front leg along one line (a solid band); the steepled arms now
+hang steeper than the leg, past the head to the floor by the front ankle,
+so the three read apart.
 """
 
 
@@ -78,8 +83,11 @@ def fold(front, back):
         'spine.lower': (0, -0.75, -0.66),
         'spine.upper': (0, -0.6, -0.8),
         'neck': (0, -0.3, -0.95), 'head': (0, 0.25, -0.97),
-        # steepled hands reach the floor just in front of the front foot
-        **arms_along((0, -0.55, -0.83), (0, -0.2, -0.3), squeeze=0.15),
+        # the steepled arms hang from the shoulders past the head to the
+        # floor beside the front ankle (after the reference photograph: the
+        # arms fall steeper than the leg, so torso, arms and front leg no
+        # longer lie along one line and blur into a single band)
+        **arms_along((0, -0.3, -0.95), (0, -0.2, -0.3), squeeze=0.15),
     }
 
 

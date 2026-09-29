@@ -10,6 +10,56 @@ push to `main` via Vercel's Git integration**; the CLI token on this machine is 
 
 ---
 
+## ✔ 2026-09-29 (night) — POSTURES REFINED AFTER THE REFERENCE PHOTOGRAPHS (uncommitted)
+
+`docs/posing-refinement-spec.md`, as uncommitted working-tree changes (Codex-reviewed, fixes
+below; not committed). The changes are all in `scripts/blender/postures/*.py` (plus
+`bridges/_canon.py`'s reach warning): stage directions and rolls, but also small reach/grip
+solvers (cobra's LIFT hint, standing-separate-leg-stretching `two_bone`/`grip_heels`/ghost
+solver, half-moon `_reach`/`_fold_arms`, head-to-knee `fold_clavs`/`arms_to(clavs, short)`),
+two stage camera `view` strings (locust, half-moon), re-aimed guides (locust leg line,
+standing-separate-leg floor line) and docstrings. Stage labels and order are untouched, and the
+canonical poses PRONE/KNEEL/SIT are untouched, so no bridge changed. The reference pages were
+only looked at; nothing from them is in the repo. Per posture (each module's docstring says
+what and why):
+- cobra — Lift: flat pelvis, curl from the low back reaching forward (shoulders over wrists),
+  head back, elbows back beside the ribs (was an upright stub with flared elbows).
+- locust — Right leg / Left leg: `quarter-back` view so which leg is up reads; leg at a true 45°;
+  leg guide on the lifted leg's hip line. full-locust — wings level with the shoulders in the flight.
+- bow — Kick up: deeper bowl (thighs steep, shins upright, soles up, chest and head lifted).
+- camel — Heels in hand: head drops back toward the heels, the arc continues through the neck.
+- fixed-firm — Elbows down: chest lifted, head upright; lying stages keep a gentle low-back arch.
+- half-tortoise — longer fold, forehead further forward. spine-twisting — twist ~75° (was ~60°).
+- head-to-knee-stretching — Hold the foot: hinged forward so the hands really reach the foot.
+- standing-separate-leg-stretching — wide straddle (~39° legs, feet ~1.3 m, flat on the floor),
+  head reaches the floor, arms solved to the outer heels; floor guide spans the new heels.
+- standing-separate-leg-head-to-knee — arms hang steeper than the leg (the "solid band" is gone).
+- triangle — pelvis/spine/head one even diagonal. half-moon — Hands to feet: `side` view, torso
+  down the front of the legs, arms round to the heels. savasana — Stillness: hands away from the
+  thighs, feet fall open.
+
+Re-rendered those 14 sheets (`npm run motion …`, one run; old hashes gone, 85 files, one per stem;
+manifest `position` fields unchanged), `npm run rig:export`, Blender `export_fixtures.py`
+(refreshed: cobra--lift, half-moon--hands-to-feet, savasana--stillness, spine-twisting--right-side,
+spine-twisting--hand-behind--right-side--50). `npm test` 253/25 green (no assertion touched),
+`tsc -b`, lint, build clean. Sprite vs live re-shot for the 14 (98 stages, median 2 px / p90 8 px).
+Codex review round (same night): standing-separate-leg-stretching's ghost is re-solved on the
+real pose's footprint (same ankles, flat feet, knees bent forward, hips sunk and drawn back —
+its toes went through the floor); its palms (not wrists) now land on the outer heels
+(`PALM` = 0.035 m past the wrist). head-to-knee-stretching: both hands reach the foot in Hold
+the foot, Forehead to the knee, Left leg and Both legs (shoulders protract, the far one most;
+palm offset explicit in `grip`); its ghosts fall short on purpose (`short=True`). half-moon's
+Hands to feet palms land behind the heels (was 7.5 cm short). Every two-bone reach helper now
+prints `reach warning [...]` to stderr when a target is > 1 cm out of reach. Remaining warnings
+(pre-existing, sheets untouched): spine-twisting SET_RIGHT arm hook 4.7 cm (Arm over the knee /
+Hand behind / Change), toe-stand hands to the floor 24–32 cm, `_canon` bridge midpoints 3–4 cm.
+Re-rendered half-moon, head-to-knee-stretching, standing-separate-leg-stretching only; rig and
+fixture exports rerun (half-moon--hands-to-feet refreshed again); tests 253/25 green.
+Still open: the rig's short torso limits how far Cobra and Camel can arch (the arms reach the
+floor/heels only at these depths); commit + push; Codex review.
+
+---
+
 ## ✔ 2026-09-29 (afternoon) — LIVE FIGURE ROLLED OUT TO ALL 26 (uncommitted)
 
 `docs/live-figure-rollout-spec.md` §1–§5, as uncommitted working-tree changes (not reviewed,

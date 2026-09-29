@@ -7,6 +7,12 @@ Prone recipe: head toward -Y, legs toward +Y, tubes resting at z≈0.12. The
 arms are straight "strings" aimed from the shoulder at a point just outside
 the ankle (`grip` solves it from the stage's own spine and legs); the hand
 turns in so the palm wraps the outer ankle.
+
+Refined after the reference photograph (2026-09-29): Kick up was a shallow
+folded triangle; now the body rocks onto the abdomen, the thighs rise
+steeply with the knees well above the hips, the shins stand nearly upright
+with the soles to the ceiling, and the chest and head lift — one deeper,
+even arc with the straight arms still meeting the outer ankles.
 """
 
 
@@ -111,16 +117,21 @@ KNEES_APART = gripping(**{
 })
 
 # Kick: the legs push back into the hands, which draws the chest up; the
-# body rocks on the abdomen with thighs and chest off the floor.
-THIGH = (0, 0.8, 0.6)
-SHIN = (0, -0.5, 0.87)
+# body rocks forward onto the abdomen with thighs and chest off the floor.
+# After the reference photograph: the thighs rise steeply (knees well
+# above the hips), the shins stand nearly upright with the soles to the
+# ceiling, the chest and head lift toward the ceiling, and the straight arms
+# run from the shoulders up to the outer ankles — one deep, even arc.
+THIGH = (0, 0.66, 0.75)
+SHIN = (0, -0.45, 0.89)
 KICK = gripping(**{
-    'pelvis': (0, -1, 0.15),
-    'spine.lower': (0, -0.85, 0.52), 'spine.upper': (0, -0.6, 0.8),
-    'neck': (0, -0.5, 0.87), 'head': (0, -0.6, 0.8),
+    'pelvis.location': at(0, -0.12, FLOOR + 0.03),
+    'pelvis': (0, -1, 0.12),
+    'spine.lower': (0, -0.78, 0.63), 'spine.upper': (0, -0.48, 0.88),
+    'neck': (0, -0.32, 0.95), 'head': (0, -0.25, 0.97),
     'clavicle.L': (0.95, 0.15, -0.1), 'clavicle.R': (-0.95, 0.15, -0.1),
     'thigh.L': THIGH, 'thigh.R': THIGH, 'shin.L': SHIN, 'shin.R': SHIN,
-    'foot.L': (0, 0.75, 0.66), 'foot.R': (0, 0.75, 0.66),
+    'foot.L': (0, 0.5, 0.87), 'foot.R': (0, 0.5, 0.87),
 })
 
 # --- Teaching layers -------------------------------------------------------

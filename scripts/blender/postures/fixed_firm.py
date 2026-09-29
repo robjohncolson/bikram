@@ -8,6 +8,12 @@ forward along the floor and the shins fold back beside the hips (angled
 outward so the seat is between the feet). The body faces -Y, so leaning
 back goes toward +Y; the whole figure is nudged -Y so the reclined body stays
 centred in the frame.
+
+Refined after the reference photograph (2026-09-29): on the elbows the
+chest now lifts out of the low back with the head upright (it was a
+straight plank with the chin tucked), and lying down the low back keeps a
+gentle arch off the floor between the seat and the shoulders instead of a
+flat plank.
 """
 
 
@@ -46,20 +52,24 @@ SIT = {
 }
 
 # Reclined onto the elbows: upper arms vertical, forearms flat on the floor
-# pointing toward the hips, torso about forty degrees off the floor.
+# pointing toward the hips, torso about forty degrees off the floor. After
+# the reference photograph the chest lifts out of the low back (the upper
+# spine steeper than the lower) and the head stays upright, eyes forward.
 BACK = (0, 0.77, 0.64)
 ELBOWS = {
     **SHINS, **THIGHS_FLAT,
     'pelvis.location': at(0, Y0, -0.90),
-    'pelvis': BACK, 'spine.lower': BACK, 'spine.upper': BACK,
-    'neck': (0, 0.4, 0.92), 'head': (0, 0.3, 0.95),
+    'pelvis': BACK, 'spine.lower': (0, 0.86, 0.51), 'spine.upper': (0, 0.6, 0.8),
+    'neck': (0, 0.2, 0.98), 'head': (0, 0.05, 1),
     'clavicle.L': (0.95, 0.1, 0.2), 'clavicle.R': (-0.95, 0.1, 0.2),
     'upperarm.L': (0, 0.02, -1), 'upperarm.R': (0, 0.02, -1),
     'forearm.L': (-0.05, -1, 0), 'forearm.R': (0.05, -1, 0),
     'hand.L': (0, -1, -0.05), 'hand.R': (0, -1, -0.05),
 }
 
-# Flat on the back, arms overhead on the floor, holding opposite elbows:
+# On the back, arms overhead on the floor, holding opposite elbows. After the
+# reference photograph the low back keeps a gentle arch off the floor between
+# the seat and the shoulders (the chest the highest point), not a flat plank:
 # the forearms cross one on top of the other (the right elbow rests a little
 # higher so the left forearm passes under it), and each hand curls around the
 # outside of the opposite elbow.
@@ -67,8 +77,8 @@ FLAT = (0, 1, 0)
 LIE = {
     **SHINS, **THIGHS_FLAT,
     'pelvis.location': at(0, Y0, -0.88),
-    'pelvis': FLAT, 'spine.lower': FLAT, 'spine.upper': FLAT,
-    'neck': FLAT, 'head': (0, 1, -0.02),
+    'pelvis': (0, 1, 0.3), 'spine.lower': (0, 1, 0.08), 'spine.upper': (0, 1, -0.25),
+    'neck': (0, 1, -0.1), 'head': (0, 1, -0.02),
     'clavicle.L': (0.95, 0.3, 0), 'clavicle.R': (-0.95, 0.3, 0),
     'upperarm.L': (-0.26, 1, -0.02), 'upperarm.R': (0.26, 1, 0.2),
     'forearm.L': (-1, 0, 0), 'forearm.R': (1, 0, 0),

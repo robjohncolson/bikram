@@ -7,6 +7,11 @@ side view shows the lift (the airplane's banana curve, arms as swept fins);
 the camera swings to the front for "Arms out" so the wings read, then back
 to the side for the flight. (The quarter views collapse the wings onto the
 body line, so they are avoided.)
+
+Refined after the reference photograph (2026-09-29): in the flight the
+wings were lifted well above the shoulders and crossed the torso as a
+diagonal from the side; they now reach out level with the shoulders
+(on the shoulder guide line), so the banana curve of chest and legs reads.
 """
 
 
@@ -55,7 +60,7 @@ TOES = prone(**{**wings(), 'foot.L': (0, 0.95, -0.3), 'foot.R': (0, 0.95, -0.3)}
 
 LEG = (0, 0.9, 0.42)
 FLY = prone(**{
-    **wings(lift=0.45, sweep=0.35),
+    **wings(lift=0.12, sweep=0.3),
     'spine.lower': (0, -0.94, 0.33),
     'spine.upper': (0, -0.8, 0.6),
     'neck': (0, -0.6, 0.8), 'head': (0, -0.55, 0.84),

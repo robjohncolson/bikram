@@ -7,8 +7,24 @@ direction so the knees stay planted while the hips press forward.
 Side view: the face points screen-right (-Y), the heels sit screen-left.
 The heel grip is solved (`arms_to_heels`) so the palms land on the heels.
 The full expression carries teaching guides and a ghost (the mistake).
+
+Refined after the reference photograph (2026-09-29): in Heels in hand the
+head hung straight down inside the arms and the arc stopped at the
+shoulders; the neck now carries the arch on and the head drops back
+toward the heels, so chest, throat and head read as one long curve.
 """
 import math
+import sys
+from pathlib import Path
+
+
+def _warn_reach(dist, span, target):
+    """Say so (stderr) when a reach target lies more than 1 cm beyond the
+    chain: the helper clamps it, and the limb silently falls short."""
+    if dist > span + 0.01:
+        print(f'reach warning [{Path(__file__).stem}]: target '
+              f'({target[0]:.3f}, {target[1]:.3f}, {target[2]:.3f}) is '
+              f'{dist - span:.3f} m out of reach', file=sys.stderr)
 
 KNEE_Y = -0.15
 
@@ -87,7 +103,9 @@ def reach(shoulder, target, pole, b=0.35):
     (forearm + hand in line) or 0.25 to the wrist."""
     a = 0.29
     v = tuple(t - s for t, s in zip(target, shoulder))
-    d = min(math.sqrt(sum(c * c for c in v)), a + b - 1e-4)
+    _raw = math.sqrt(sum(c * c for c in v))
+    _warn_reach(_raw, a + b, target)
+    d = min(_raw, a + b - 1e-4)
     u = _n(v)
     pd = sum(p * c for p, c in zip(pole, u))
     w = _n(tuple(p - pd * c for p, c in zip(pole, u)))
@@ -134,8 +152,8 @@ HEELS_TORSO = {
     'pelvis': (0, 0.3, 0.95),
     'spine.lower': (0, 0.72, 0.7),
     'spine.upper': (0, 1, 0.02),
-    'neck': (0, 0.55, -0.83),
-    'head': (0, 0.25, -0.97),
+    'neck': (0, 0.85, -0.52),
+    'head': (0, 0.6, -0.8),
 }
 HEELS = stage(HEELS_THIGH, HEELS_TORSO)
 

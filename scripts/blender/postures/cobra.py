@@ -7,8 +7,25 @@ stays on the mat; the spine curls up from it. The hands stay planted: the
 arms are placed with a small two-bone IK from a forward-kinematics estimate
 of the shoulders, elbows bent back and in. `pelvis.location` is in the
 pelvis bone's rest frame ((a, b, c) -> world (a, -c, b)); `shift` converts.
+
+Refined after the reference photograph (2026-09-29), keeping the 26 & 2 form
+(hands under the shoulders, elbows bent and in): Lift was a steep, upright
+stub with the elbows flaring; now the pelvis stays flat, the curl rises
+from the low back and reaches forward so the shoulders sit over the wrists,
+the head tips back to look up, and the elbows point back beside the ribs.
 """
 import math
+import sys
+from pathlib import Path
+
+
+def _warn_reach(dist, span, target):
+    """Say so (stderr) when a reach target lies more than 1 cm beyond the
+    chain: the helper clamps it, and the limb silently falls short."""
+    if dist > span + 0.01:
+        print(f'reach warning [{Path(__file__).stem}]: target '
+              f'({target[0]:.3f}, {target[1]:.3f}, {target[2]:.3f}) is '
+              f'{dist - span:.3f} m out of reach', file=sys.stderr)
 
 
 def _n(v):
@@ -28,7 +45,9 @@ def two_bone(root, target, l1, l2, hint):
     """Directions of the two bones from `root` reaching `target`, the middle
     joint bent toward `hint`."""
     d = _add(target, root, -1)
-    dist = min(math.sqrt(_dot(d, d)), l1 + l2 - 1e-3)
+    _raw = math.sqrt(_dot(d, d))
+    _warn_reach(_raw, l1 + l2, target)
+    dist = min(_raw, l1 + l2 - 1e-3)
     u = _n(d)
     x = (l1 * l1 - l2 * l2 + dist * dist) / (2 * dist)
     r = math.sqrt(max(l1 * l1 - x * x, 0.0))
@@ -96,10 +115,15 @@ HANDS = hands_down(body(*FLAT))
 # "Hug the elbows in against the ribs": the same hands, elbows tucked.
 ELBOWS_IN = hands_down(body(*FLAT), hint=(-0.15, 0.4, 1))
 
+# The half cobra: the pelvis stays flat and the navel on the mat, the curl
+# rises from the low back and travels forward as much as up (the chest
+# reaches past the hands' line, shoulders over the wrists), the neck follows
+# the arch and the head tips back so the eyes find the ceiling. The elbows
+# stay bent, pinned to the ribs and pointing back.
 LIFT = hands_down(body(
-    (0, -1, 0.1), (0, -0.8, 0.6), (0, -0.45, 0.89), (0, -0.3, 0.95), (0, -0.25, 0.97),
-    clav_up=0.15,
-))
+    (0, -1, 0.04), (0, -0.93, 0.37), (0, -0.7, 0.71), (0, -0.33, 0.94), (0, 0.4, 0.92),
+    clav_up=0.05,
+), hint=(-0.12, 1, 0.55))
 
 
 

@@ -105,3 +105,16 @@ After the review fixes (measured `SKIN_FIT`, `jointRadii`) the 26 postures'
 sheets were re-shot and looked at again (worst-edge median 2 px, p90 8 px,
 unchanged); the bridges were not re-shot (the dev-only route that showed
 them was removed) — they share the same body.
+
+**Posing refinement (2026-09-29, `docs/posing-refinement-spec.md`).** Fourteen
+postures had their stage directions re-authored after the reference
+photographs (cobra, locust, full-locust, bow, camel, fixed-firm,
+half-tortoise, spine-twisting, head-to-knee-stretching, the two standing
+separate-leg postures, triangle, half-moon's Hands to feet, savasana) and
+their sheets re-rendered. Each was re-shot sprite vs live at every chip,
+layers off and on (98 stages): worst-edge median 2 px, p90 8 px, the same
+as above; every changed stage matches. No `known` row changes: they are rig
+cosmetics (subdivision-pinched knees, the Pranayama waist nick, Full
+Locust's end-on head), not posture data. Locust's one-leg stages now take
+the quarter-back view and Half Moon's Hands to feet the side view; both
+figures follow the authored view.

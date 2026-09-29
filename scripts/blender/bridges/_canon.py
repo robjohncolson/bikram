@@ -27,6 +27,16 @@ sheet changes the pose by a frame and never the zoom.
 import importlib.util
 import math
 from pathlib import Path
+import sys
+
+
+def _warn_reach(dist, span, target):
+    """Say so (stderr) when a reach target lies more than 1 cm beyond the
+    chain: the helper clamps it, and the limb silently falls short."""
+    if dist > span + 0.01:
+        print(f'reach warning [{Path(__file__).stem}]: target '
+              f'({target[0]:.3f}, {target[1]:.3f}, {target[2]:.3f}) is '
+              f'{dist - span:.3f} m out of reach', file=sys.stderr)
 
 POSTURES = Path(__file__).resolve().parent.parent / 'postures'
 
@@ -83,7 +93,9 @@ def two_bone(root, target, l1, l2, hint):
     """Directions of two bones from `root` reaching `target`, the middle
     joint bent toward `hint` (straight when the target is out of reach)."""
     d = _add(target, root, -1)
-    dist = min(math.sqrt(_dot(d, d)), l1 + l2 - 1e-3)
+    _raw = math.sqrt(_dot(d, d))
+    _warn_reach(_raw, l1 + l2, target)
+    dist = min(_raw, l1 + l2 - 1e-3)
     u = _n(d)
     x = (l1 * l1 - l2 * l2 + dist * dist) / (2 * dist)
     r = math.sqrt(max(l1 * l1 - x * x, 0.0))

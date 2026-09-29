@@ -10,6 +10,17 @@ The palms land on the heels (`GRIP_HAND`); "Hips up" carries teaching
 guides and a ghost of the common mistake.
 """
 import math
+import sys
+from pathlib import Path
+
+
+def _warn_reach(dist, span, target):
+    """Say so (stderr) when a reach target lies more than 1 cm beyond the
+    chain: the helper clamps it, and the limb silently falls short."""
+    if dist > span + 0.01:
+        print(f'reach warning [{Path(__file__).stem}]: target '
+              f'({target[0]:.3f}, {target[1]:.3f}, {target[2]:.3f}) is '
+              f'{dist - span:.3f} m out of reach', file=sys.stderr)
 
 KNEE_Y = -0.28
 KNEE_Z = 0.06
@@ -56,7 +67,9 @@ def reach(shoulder, target, pole, b=0.25):
     wrist), elbow bending toward `pole`. Lengths 0.29 and `b`."""
     a = 0.29
     v = tuple(t - s for t, s in zip(target, shoulder))
-    d = min(math.sqrt(sum(c * c for c in v)), a + b - 1e-4)
+    _raw = math.sqrt(sum(c * c for c in v))
+    _warn_reach(_raw, a + b, target)
+    d = min(_raw, a + b - 1e-4)
     u = _n(v)
     # component of pole perpendicular to u
     pd = sum(p * c for p, c in zip(pole, u))

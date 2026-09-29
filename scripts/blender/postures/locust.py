@@ -7,6 +7,13 @@ Prone recipe: the head lies toward -Y (face down), legs toward +Y, and
 toward -Y the rig's left stays +X, so the right leg is thigh.R (-X, the leg
 nearest the side camera). The body is nudged -Y so the lifted legs sit
 centred in the frame.
+
+Refined after the reference photograph (2026-09-29): the one-leg lifts
+looked identical from the side, so Right leg and Left leg now take the
+quarter-back view (the lifted leg reads in front of or behind the one on
+the floor, and the hip-hike ghost shows its sideways roll); the single
+leg rises a true forty-five degrees from a hip that stays down. The leg
+guide runs along the lifted leg's own hip line.
 """
 
 def at(x, y, z):
@@ -56,7 +63,7 @@ LIE_BESIDE = prone(**{
 })
 
 # One straight leg lifts from the hip to about forty-five degrees; hips stay down.
-UP45 = (0, 0.74, 0.67)
+UP45 = (0, 0.71, 0.71)
 FOOT45 = (0, 0.6, 0.8)
 RIGHT = prone(**{'thigh.R': UP45, 'shin.R': UP45, 'foot.R': FOOT45})
 LEFT = prone(**{'thigh.L': UP45, 'shin.L': UP45, 'foot.L': FOOT45})
@@ -84,12 +91,12 @@ BOTH = prone(**{
 HIP_Z = 0.15
 
 
-def leg_guides(leg=UP45, hip_z=HIP_Z, reach=1.25):
+def leg_guides(leg=UP45, hip_z=HIP_Z, reach=1.25, x=0.0):
     lx, ly, lz = leg
     n = (ly * ly + lz * lz) ** 0.5
     return [
         {'from': (0, -1.0, 0.0), 'to': (0, 0.95, 0.0)},
-        {'from': (0, Y0, hip_z), 'to': (0, Y0 + reach * ly / n, hip_z + reach * lz / n)},
+        {'from': (x, Y0, hip_z), 'to': (x, Y0 + reach * ly / n, hip_z + reach * lz / n)},
     ]
 
 
@@ -124,10 +131,10 @@ POSTURE = {
         {'label': 'Lie prone', 'pose': LIE_BESIDE, 'hold': 4},
         {'label': 'Arms under the body', 'pose': LIE, 'hold': 5},
         {'label': 'Elbows toward each other', 'pose': ELBOWS_TOGETHER, 'hold': 4},
-        {'label': 'Right leg', 'pose': RIGHT, 'hold': 6,
-         'guides': leg_guides(), 'ghost': hip_hike('R')},
-        {'label': 'Left leg', 'pose': LEFT, 'hold': 6,
-         'guides': leg_guides(), 'ghost': hip_hike('L')},
+        {'label': 'Right leg', 'pose': RIGHT, 'hold': 6, 'view': 'quarter-back',
+         'guides': leg_guides(x=-0.1), 'ghost': hip_hike('R')},
+        {'label': 'Left leg', 'pose': LEFT, 'hold': 6, 'view': 'quarter-back',
+         'guides': leg_guides(x=0.1), 'ghost': hip_hike('L')},
         {'label': 'Both legs', 'pose': BOTH, 'hold': 8,
          'guides': leg_guides(BOTH_LEG, hip_z=0.20), 'ghost': BOTH_GHOST},
         {'label': 'Lower', 'pose': LIE, 'hold': 4},

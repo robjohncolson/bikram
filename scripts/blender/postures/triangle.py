@@ -5,6 +5,10 @@ Wide stance, arms out in one line; one knee bends to a right angle over its
 ankle, the torso tips over that thigh, the low hand touches the floor by the
 foot and the other arm points straight up — everything in one plane, so the
 front view shows it. Right side first (the right side is -X).
+
+Refined after the reference photograph (2026-09-29): the pelvis tipped
+steeply and broke the side body at the waist; pelvis, spine and head now
+run as one even diagonal continuing the straight back leg.
 """
 
 
@@ -55,12 +59,15 @@ def bend(side):
 def triangle(side):
     s = -1 if side == 'R' else 1
     o = 'L' if side == 'R' else 'R'
-    spine = (s * 0.9, 0, 0.44)
+    # After the reference photograph: the side body runs as one long,
+    # even diagonal from the pelvis to the crown (no break at the waist),
+    # continuing the line of the straight back leg.
+    spine = (s * 0.84, 0, 0.54)
     return {
         **stance(side, True),
-        'pelvis': (s * 0.5, 0, 0.87),
-        'spine.lower': (s * 0.85, 0, 0.53), 'spine.upper': spine,
-        'neck': spine, 'head': (s * 0.7, 0, 0.7),
+        'pelvis': (s * 0.75, 0, 0.66),
+        'spine.lower': (s * 0.8, 0, 0.6), 'spine.upper': spine,
+        'neck': spine, 'head': (s * 0.8, 0, 0.6),
         f'clavicle.{side}': (s * 0.44, 0, -0.9), f'clavicle.{o}': (-s * 0.44, 0, 0.9),
         f'upperarm.{side}': (s * 0.12, 0, -1), f'forearm.{side}': (s * 0.12, 0, -1),
         f'hand.{side}': (s * 0.12, 0, -1),

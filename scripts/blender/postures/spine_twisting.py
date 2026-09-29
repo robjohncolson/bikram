@@ -5,16 +5,31 @@ Seated (pelvis joint at z≈0.12, sit bones on the floor). Right side: the left
 knee folds down in front with the left heel beside the right hip, the right
 foot steps over and plants outside the left knee, the left arm hooks over the
 outside of the right knee to hold the left knee, and the right hand plants
-on the floor behind. The twist ROLLS the spine: `spine.lower` −25° and
-`spine.upper` −35° about their own (vertical) axes, so the omitted
-clavicles ride the roll and the shoulder line turns ~60° to the right while
+on the floor behind. The twist ROLLS the spine: `spine.lower` −30° and
+`spine.upper` −45° about their own (vertical) axes, so the omitted
+clavicles ride the roll and the shoulder line turns ~75° to the right while
 the hips stay square. The left side is the exact mirror (`mirror`, which
 flips roll signs too). Arms are solved by a small two-bone reach from the
 rolled shoulder positions so the hands land on their targets. The full
 twists carry teaching guides (tall midline, square hip line, turned
 shoulder line) and a ghost of the common mistake.
+
+Refined after the reference photograph (2026-09-29): the trunk turns
+further (~75° at the shoulders, was ~60°) over the square hips, closer
+to the near right angle the photograph shows.
 """
 import math
+import sys
+from pathlib import Path
+
+
+def _warn_reach(dist, span, target):
+    """Say so (stderr) when a reach target lies more than 1 cm beyond the
+    chain: the helper clamps it, and the limb silently falls short."""
+    if dist > span + 0.01:
+        print(f'reach warning [{Path(__file__).stem}]: target '
+              f'({target[0]:.3f}, {target[1]:.3f}, {target[2]:.3f}) is '
+              f'{dist - span:.3f} m out of reach', file=sys.stderr)
 
 PELVIS = (0.0, 0.05, 0.12)
 
@@ -41,7 +56,9 @@ def offset(x, y, z):
 def reach(shoulder, target, pole):
     a, b = 0.29, 0.25
     v = _sub(target, shoulder)
-    d = min(math.sqrt(sum(c * c for c in v)), a + b - 1e-4)
+    _raw = math.sqrt(sum(c * c for c in v))
+    _warn_reach(_raw, a + b, target)
+    d = min(_raw, a + b - 1e-4)
     u = _n(v)
     pd = sum(p * c for p, c in zip(pole, u))
     w = _n(tuple(p - pd * c for p, c in zip(pole, u)))
@@ -139,13 +156,15 @@ FOOT_OVER = {**BASE, **LEGS_RIGHT, 'neck': (0, 0, 1), 'head': (0, 0, 1), **SIT_A
 # right hand still beside the hip.
 ARM_OVER = {**SET_RIGHT, **{k: v for k, v in SIT_ARMS.items() if k.endswith('.R')}}
 
-# The twist: the spine rolls −25° low and −35° high (≈ −60° at the
-# shoulders, to the right); the clavicles ride it, left shoulder forward,
-# right shoulder back. The head follows a touch over the right shoulder.
-TWIST = -60
+# The twist: the spine rolls −30° low and −45° high (≈ −75° at the
+# shoulders, to the right — after the reference photograph, where the trunk
+# turns close to a right angle over square hips); the clavicles ride it,
+# left shoulder forward, right shoulder back. The head follows a touch over
+# the right shoulder.
+TWIST = -75
 RIGHT = {**BASE, **LEGS_RIGHT,
-         'spine.lower': {'dir': (0, 0, 1), 'roll': -25},
-         'spine.upper': {'dir': (0, 0, 1), 'roll': -35},
+         'spine.lower': {'dir': (0, 0, 1), 'roll': -30},
+         'spine.upper': {'dir': (0, 0, 1), 'roll': -45},
          'neck': (-0.08, 0.06, 1), 'head': (-0.15, 0.12, 1),
          **arms(*turned(TWIST), 1, with_clavicles=False)}
 

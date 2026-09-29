@@ -10,8 +10,27 @@ hold the foot. Then both legs straight and the flat fold. The arms are
 solved by a small two-bone reach (`reach`) from the torso directions so the
 hands land on the feet. Side view: the face points screen-right (-Y); the
 camera sits on the mannequin's right (-X), so the right leg is nearest.
+
+Refined after the reference photograph (2026-09-29): in Hold the foot the
+torso sat nearly upright and the hands stopped well short of the foot;
+it now hinges forward from the hips with a long back and open chest so
+the straight arms really reach the ball of the foot. Every grip is
+solved so BOTH hands reach (the shoulders reach forward, the far one most;
+the palm, not the wrist, lands on the foot's edge); the ghosts' hands fall
+short on purpose.
 """
 import math
+import sys
+from pathlib import Path
+
+
+def _warn_reach(dist, span, target):
+    """Say so (stderr) when a reach target lies more than 1 cm beyond the
+    chain: the helper clamps it, and the limb silently falls short."""
+    if dist > span + 0.01:
+        print(f'reach warning [{Path(__file__).stem}]: target '
+              f'({target[0]:.3f}, {target[1]:.3f}, {target[2]:.3f}) is '
+              f'{dist - span:.3f} m out of reach', file=sys.stderr)
 
 PELVIS = (0.0, 0.33, 0.12)
 THIGH, SHIN, FOOT = 0.44, 0.44, 0.1644
@@ -43,7 +62,9 @@ def reach(shoulder, target, pole):
     elbow bending toward `pole`."""
     a, b = 0.29, 0.25
     v = tuple(t - s for t, s in zip(target, shoulder))
-    d = min(math.sqrt(sum(c * c for c in v)), a + b - 1e-4)
+    _raw = math.sqrt(sum(c * c for c in v))
+    _warn_reach(_raw, a + b, target)
+    d = min(_raw, a + b - 1e-4)
     u = _n(v)
     pd = sum(p * c for p, c in zip(pole, u))
     w = _n(tuple(p - pd * c for p, c in zip(pole, u)))
@@ -76,16 +97,25 @@ def folded_leg(side, sx):
     }
 
 
-def arms_to(dirs, targets, pole, hands=None):
+def arms_to(dirs, targets, pole, hands=None, clavs=None, short=False):
     """Wrists to world targets; `hands` (side → direction) aims the hands,
-    otherwise they carry on from the forearm, tipped up a little."""
+    otherwise they carry on from the forearm, tipped up a little. `clavs`
+    (side → direction) overrides the default shoulder line. `short=True`
+    is for a ghost whose hands are MEANT to fall short: a target beyond the
+    arm is pulled in along its line to the arm's full reach, on purpose
+    (so it is not reported as out of reach)."""
     neck = neck_of(dirs)
     out = {}
     for side, sx in (('L', 1), ('R', -1)):
-        clav = _n((sx, -0.1, 0.2))
+        clav = _n(clavs[side]) if clavs else _n((sx, -0.1, 0.2))
         out['clavicle.' + side] = clav
         shoulder = _add(neck, clav, 0.2044)
         tgt = targets[side]
+        if short:
+            v = tuple(t - s_ for t, s_ in zip(tgt, shoulder))
+            d = math.sqrt(sum(c * c for c in v))
+            if d > 0.535:
+                tgt = _add(shoulder, v, 0.535 / d)
         up, fo = reach(shoulder, tgt, pole)
         out['upperarm.' + side] = up
         out['forearm.' + side] = fo
@@ -93,11 +123,18 @@ def arms_to(dirs, targets, pole, hands=None):
     return out
 
 
+PALM = 0.035       # the palm swelling sits this far past the wrist, along the hand
+
+
 def grip(ball, sx):
-    """Wrist on the `sx` side of a toes-up foot, just heel-ward of the ball;
-    the hand wraps round in front of the sole so the palm swelling sits on
-    the foot's edge and the fingers cross the sole (interlaced)."""
-    return _add(ball, (sx * 0.075, 0.04, -0.01)), _n((-sx * 0.55, -0.83, 0.0))
+    """(wrist, hand direction) for the `sx` side of a toes-up foot: the PALM
+    swelling sits against the foot's edge just heel-ward of the ball, the
+    hand wraps round in front of the sole so the fingers cross it
+    (interlaced), and the wrist is placed a palm's offset back along the
+    hand from the palm."""
+    hand = _n((-sx * 0.55, -0.83, 0.0))
+    palm = _add(ball, (sx * 0.056, 0.011, -0.01))
+    return _add(palm, hand, -PALM), hand
 
 
 BASE = {'pelvis.location': offset(0, PELVIS[1], PELVIS[2] - 1.0)}
@@ -124,17 +161,25 @@ def fold_torso(sx):
     }
 
 
-def head_to_knee(side, sx, torso=None):
+def fold_clavs(sx):
+    """Shoulders reaching forward in the head-to-knee fold over the `sx` leg:
+    the far shoulder protracts most, so both hands really get to the foot."""
+    near, far = ('R', 'L') if sx < 0 else ('L', 'R')
+    return {near: (sx, -0.2, -0.1), far: (-sx, -0.6, -0.1)}
+
+
+def head_to_knee(side, sx, torso=None, clavs=None, short=False):
     """`side` is the straight leg; the torso folds over it, forehead to the
     knee, both hands wrapping the foot."""
     other, ox = ('L', 1) if side == 'R' else ('R', -1)
     legs, ball = straight_leg(side, sx, splay=0.12)
     legs.update(folded_leg(other, ox))
     torso = torso or fold_torso(sx)
+    clavs = clavs or fold_clavs(sx)
     (w_out, h_out), (w_in, h_in) = grip(ball, sx), grip(ball, -sx)
     targets = {side: w_out, other: w_in}
     hands = {side: h_out, other: h_in}
-    arms = arms_to(torso, targets, (0, 0.2, -1), hands)
+    arms = arms_to(torso, targets, (0, 0.2, -1), hands, clavs, short)
     return {**BASE, **legs, **torso, **arms}
 
 
@@ -159,8 +204,9 @@ def knee_guides(side, sx):
 
 def knee_ghost(side, sx):
     """Common mistake: the hips stay upright and the back humps to reach the
-    foot, so the head hangs over the thigh, short of the knee."""
-    return diff(head_to_knee(side, sx, {
+    foot, so the head hangs over the thigh, short of the knee (and the hands
+    fall short of the foot, on purpose)."""
+    return diff(head_to_knee(side, sx, short=True, torso={
         'pelvis': (sx * 0.03, -0.25, 0.97),
         'spine.lower': (sx * 0.08, -0.6, 0.8),
         'spine.upper': (sx * 0.06, -0.95, 0.3),
@@ -182,9 +228,12 @@ FOLD_TORSO = {
     'neck': (0, -0.95, -0.3),
     'head': (0, -0.95, -0.3),
 }
+# both shoulders reach forward so the hands get to the feet and the elbows
+# bend toward the floor
+FOLD_CLAVS = {'L': (1, -0.45, -0.1), 'R': (-1, -0.45, -0.1)}
 FOLD = {**BASE, **_legs, **FOLD_TORSO,
         **arms_to(FOLD_TORSO, {'L': grip(_ballL, 1)[0], 'R': grip(_ballR, -1)[0]}, (0, 0, -1),
-                  {'L': grip(_ballL, 1)[1], 'R': grip(_ballR, -1)[1]})}
+                  {'L': grip(_ballL, 1)[1], 'R': grip(_ballR, -1)[1]}, FOLD_CLAVS)}
 
 FOLD_GUIDES = [
     leg_line('R', -1),
@@ -203,17 +252,21 @@ _FOLD_GHOST_TORSO = {
 }
 FOLD_GHOST = diff({**FOLD, **_FOLD_GHOST_TORSO, **arms_to(
     _FOLD_GHOST_TORSO, {'L': grip(_ballL, 1)[0], 'R': grip(_ballR, -1)[0]}, (0, 0, -1),
-    {'L': grip(_ballL, 1)[1], 'R': grip(_ballR, -1)[1]})}, FOLD)
+    {'L': grip(_ballL, 1)[1], 'R': grip(_ballR, -1)[1]}, FOLD_CLAVS, short=True)}, FOLD)
 
 # "Square the torso over the extended leg and interlace your fingers
-# around the ball of the right foot": sitting tall, reaching for the foot.
+# around the ball of the right foot": after the reference photograph the
+# torso hinges forward from the hips with the back long, leaning over the
+# right leg, and both shoulders reach forward — the far (left) one most, so
+# the chest squares to the leg — until BOTH hands really reach the foot
+# (both wrist targets within the arm's length), eyes forward.
 HOLD_FOOT = head_to_knee('R', -1, torso={
-    'pelvis': (0, -0.25, 0.97),
-    'spine.lower': (0, -0.35, 0.94),
-    'spine.upper': (0, -0.4, 0.92),
-    'neck': (0, -0.3, 0.95),
-    'head': (0, -0.35, 0.94),
-})
+    'pelvis': (-0.1, -0.8, 0.6),
+    'spine.lower': (-0.2, -0.8, 0.6),
+    'spine.upper': (-0.2, -0.8, 0.6),
+    'neck': (-0.1, -0.5, 0.87),
+    'head': (-0.05, -0.3, 0.95),
+}, clavs={'L': (1, -0.65, 0.05), 'R': (-1, -0.35, 0.05)})
 
 POSTURE = {
     'id': 'head-to-knee-stretching',
