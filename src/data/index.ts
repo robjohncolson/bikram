@@ -4,10 +4,10 @@
 import { poses } from './poses';
 import { chakras, chakraById } from './chakras';
 import { muscles, muscleById } from './muscles';
-import { motionUrls } from './motion';
+import { bridgeFor, motionUrls } from './motion';
 import type { ChakraId, MuscleId, Pose } from './types';
 
-export { poses, chakras, chakraById, muscles, muscleById, motionUrls };
+export { poses, chakras, chakraById, muscles, muscleById, motionUrls, bridgeFor };
 export type * from './types';
 
 const poseById = new Map(poses.map((p) => [p.id, p]));

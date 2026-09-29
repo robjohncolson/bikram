@@ -172,6 +172,7 @@ HEELS_GHOST = {
 
 POSTURE = {
     'id': 'camel',
+    'position': {'start': 'kneeling', 'end': 'kneeling'},
     'view': 'side',
     'frame': {'center_z': 0.6, 'scale': 1.8},
     'transition': 8,

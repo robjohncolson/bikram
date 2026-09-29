@@ -152,6 +152,7 @@ FLAT = {**TORSO, **ARMS_DOWN, **LONG_LEG['R'], **LONG_LEG['L']}
 
 POSTURE = {
     'id': 'wind-removing',
+    'position': {'start': 'supine', 'end': 'supine'},
     'view': 'side',
     'frame': {'center_z': 0.35, 'scale': 2.4},
     'transition': 8,

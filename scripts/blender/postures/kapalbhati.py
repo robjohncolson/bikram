@@ -91,6 +91,7 @@ PUMP_GHOST = {
 
 POSTURE = {
     'id': 'kapalbhati',
+    'position': {'start': 'kneeling', 'end': 'kneeling'},
     'view': 'side',
     'frame': {'center_z': 0.55, 'scale': 1.4},
     'transition': 4,

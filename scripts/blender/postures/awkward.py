@@ -117,6 +117,7 @@ PART_3_GHOST = {
 
 POSTURE = {
     'id': 'awkward',
+    'position': {'start': 'standing', 'end': 'standing'},
     'view': 'side',
     'frame': {'center_z': 1.0, 'scale': 2.3},
     'transition': 8,

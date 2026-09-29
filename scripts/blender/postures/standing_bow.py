@@ -108,6 +108,7 @@ FULL_GHOST = {
 
 POSTURE = {
     'id': 'standing-bow',
+    'position': {'start': 'standing', 'end': 'standing'},
     'view': 'side',
     'frame': {'center_z': 1.05, 'scale': 2.5},
     'transition': 7,

@@ -97,6 +97,7 @@ FOLD_GHOST = {
 
 POSTURE = {
     'id': 'standing-separate-leg-stretching',
+    'position': {'start': 'standing', 'end': 'standing'},
     'view': 'quarter',
     'frame': {'center_z': 1.0, 'scale': 2.5},
     'transition': 7,

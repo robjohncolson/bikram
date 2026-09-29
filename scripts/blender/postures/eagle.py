@@ -114,6 +114,7 @@ LEFT_GHOST = mirror(RIGHT_GHOST)
 
 POSTURE = {
     'id': 'eagle',
+    'position': {'start': 'standing', 'end': 'standing'},
     'view': 'front',
     'frame': {'center_z': 0.98, 'scale': 2.1},
     'transition': 7,

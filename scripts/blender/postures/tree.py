@@ -103,6 +103,7 @@ def press(lift):
 
 POSTURE = {
     'id': 'tree',
+    'position': {'start': 'standing', 'end': 'standing'},
     'view': 'front',
     'frame': {'center_z': 1.0, 'scale': 2.2},
     'transition': 7,

@@ -175,6 +175,7 @@ TADASANA = {
 
 POSTURE = {
     'id': 'toe-stand',
+    'position': {'start': 'standing', 'end': 'standing'},
     'view': 'quarter',
     'frame': {'center_z': 0.9, 'scale': 2.1},
     'transition': 8,

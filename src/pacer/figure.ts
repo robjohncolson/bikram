@@ -30,9 +30,17 @@
  * Stages passed on the way in are setup steps and get a brief hold each
  * (a fraction of the segment, 1.5–8 s), so the entry reads as the dialogue
  * does: hold the foot, kick out, elbows down… then the hold proper.
+ *
+ * Bridges: every sheet opens in its own body position (standing, lying on
+ * the back or front, kneeling, seated — `PoseMotion.position`). When the
+ * figure changes sheet between two positions (into a posture, or inside
+ * one when a rest borrows the savasana sheet) the segment carries the
+ * hand-off `bridge` sheet (`bridgeFor`), which plays through once before
+ * the segment's own steps: the figure rolls over, sits up, kneels… so a
+ * line such as "lie on your stomach" never lands on a figure already there.
  */
 import type { Pose, PoseMotion, PoseSegment } from '../data';
-import { getPose } from '../data';
+import { bridgeFor, getPose } from '../data';
 import { segmentKey } from './grid';
 import type { PoseTrack } from './cues';
 import { mapSteps } from './stagematch';
@@ -51,7 +59,26 @@ export interface FigureMove {
   stage: number;
 }
 
-export type FigureSegment =
+/** A hand-off bridge a segment plays before its own frames. */
+export interface FigureBridge {
+  /** the bridge sheet from the previous sheet's end position to this sheet's start */
+  bridge?: PoseMotion;
+  /**
+   * where the previous sheet left the figure: its held stage. The release
+   * from there to that sheet's last stage (its own frames) plays before
+   * the bridge, so a Cobra held in Lift lowers before it rolls over.
+   */
+  bridgeFrom?: { motion: PoseMotion; stage: number };
+  /**
+   * figure seconds when the bridge starts (default 0). A posture's first
+   * segment is first shown `leadBeats` into its figure clock (the figure
+   * runs a bar ahead of the class), so its bridge starts there.
+   */
+  bridgeAt?: number;
+}
+
+export type FigureSegment = FigureBridge &
+  (
   | {
       kind: 'stages';
       motion: PoseMotion;
@@ -69,7 +96,8 @@ export type FigureSegment =
       settle?: number;
     }
   | { kind: 'breath'; motion: PoseMotion; inhale: number; exhale: number }
-  | { kind: 'pulse'; motion: PoseMotion; from: number; to: number };
+  | { kind: 'pulse'; motion: PoseMotion; from: number; to: number }
+  );
 
 export interface FigurePlan {
   segments: FigureSegment[];
@@ -174,6 +202,21 @@ export interface FigurePlanOptions {
   leadBeats?: number;
   /** how long a spoken line takes — the move starts when it ends */
   clipSeconds?: (text: string) => number;
+  /**
+   * the sheet the figure was last on before this posture (the previous
+   * posture's plan's last segment motion — see `planEndMotion`): the
+   * first segment bridges from its end position
+   */
+  previous?: PoseMotion;
+  /** the stage `previous` was holding (see `planEnd`); its release plays before the bridge */
+  previousStage?: number;
+}
+
+/** The hand-off bridge from sheet `a` to sheet `b`, when their positions differ. */
+function bridgeBetween(a: PoseMotion | undefined, b: PoseMotion): PoseMotion | undefined {
+  const from = a?.position?.end;
+  const to = b.position?.start;
+  return from && to && from !== to ? bridgeFor(from, to) : undefined;
 }
 
 /**
@@ -181,7 +224,9 @@ export interface FigurePlanOptions {
  * posture has no sheet. A posture without segments gets one segment
  * landing on its climax (the closing savasana uses this). With a track,
  * every walk-in line that names a stage becomes a move: the figure gets
- * there as the line finishes, so what is said is what is shown.
+ * there as the line finishes, so what is said is what is shown. A segment
+ * whose sheet opens in another body position than the last one closed in
+ * carries the bridge between them.
  */
 export function figurePlan(pose: Pose, opts: FigurePlanOptions = {}): FigurePlan | undefined {
   const own = pose.motion;
@@ -194,11 +239,23 @@ export function figurePlan(pose: Pose, opts: FigurePlanOptions = {}): FigurePlan
     ? pose.segments
     : [{ kind: 'set', label: '', cue: '', seconds: pose.approxTotalSeconds }];
   const out: FigureSegment[] = [];
+  const lead = (opts.leadBeats ?? 0) * (opts.beatSeconds ?? 1);
+  /** the stage the last figure segment holds at its end (undefined for a breath/pulse sheet) */
+  let lastStage: number | undefined = opts.previousStage;
+  /** the bridge into sheet m from wherever the figure last was */
+  const bridgeInto = (m: PoseMotion): FigureBridge => {
+    const last = out.length ? out[out.length - 1].motion : opts.previous;
+    const bridge = bridgeBetween(last, m);
+    if (!bridge || !last) return {};
+    const from = lastStage !== undefined ? { bridgeFrom: { motion: last, stage: lastStage } } : {};
+    return out.length === 0 && lead > 0 ? { bridge, bridgeAt: lead, ...from } : { bridge, ...from };
+  };
   for (const seg of segs) {
     if (seg.kind === 'breath') {
       const b = breathSegment(own);
       if (b) {
-        out.push(b);
+        out.push({ ...b, ...bridgeInto(b.motion) });
+        lastStage = undefined;
         continue;
       }
     }
@@ -226,13 +283,33 @@ export function figurePlan(pose: Pose, opts: FigurePlanOptions = {}): FigurePlan
       from,
       targets,
       ...(spoken && spoken.moves.length ? { moves: spoken.moves, settle: spoken.settle } : {}),
+      ...bridgeInto(m),
     });
     // leaving a sheet (a rest, a sit-up) puts the figure down: the next set
     // on the posture's own sheet re-enters from its first stage
     cursors.clear();
     cursors.set(m, targets[targets.length - 1]);
+    lastStage = targets[targets.length - 1];
   }
   return { segments: out };
+}
+
+/**
+ * The sheet a posture leaves the figure on: its plan's last segment motion
+ * (a borrowed sheet when it ends on a rest or a sit-up). The next
+ * posture's `previous`.
+ */
+export function planEndMotion(pose: Pose | undefined): PoseMotion | undefined {
+  return planEnd(pose)?.motion;
+}
+
+/** The sheet AND the held stage a posture leaves the figure on (stage undefined after a breath sheet). */
+export function planEnd(pose: Pose | undefined): { motion: PoseMotion; stage?: number } | undefined {
+  if (!pose) return undefined;
+  const plan = figurePlan(pose);
+  const last = plan?.segments[plan.segments.length - 1];
+  if (!last) return undefined;
+  return { motion: last.motion, stage: last.kind === 'stages' ? last.targets[last.targets.length - 1] : undefined };
 }
 
 /** The moves the segment's spoken setup lines ask for, in figure seconds, and when the last line ends. */
@@ -270,10 +347,42 @@ function walkInMoves(
   return { moves, settle };
 }
 
-/** One step of a compiled segment: show `frame` until `until` seconds. */
+/** One step of a compiled segment: show `frame` of `motion`'s sheet until `until` seconds. */
 export interface FrameStep {
+  /** the sheet the frame belongs to — the segment's own, or its bridge's */
+  motion: PoseMotion;
   frame: number;
   until: number;
+}
+
+/**
+ * The bridge a segment plays first: its opening pose until `bridgeAt`,
+ * then every frame at the bridge's fps. Empty (ending at 0) without one.
+ */
+export function bridgeSteps(seg: FigureSegment): { steps: FrameStep[]; end: number } {
+  const b = seg.bridge;
+  if (!b) return { steps: [], end: 0 };
+  const steps: FrameStep[] = [];
+  let t = Math.max(0, seg.bridgeAt ?? 0);
+  const from = seg.bridgeFrom;
+  if (t > 0) {
+    // waiting for the lead: the held stage of the sheet we are leaving, else the bridge's opening pose
+    steps.push(from ? { motion: from.motion, frame: from.motion.stages[from.stage].frame, until: t } : { motion: b, frame: 0, until: t });
+  }
+  if (from) {
+    // the release: from the held stage through the source sheet's remaining stages (transition frames only)
+    for (let i = from.stage + 1; i < from.motion.stages.length; i++) {
+      for (const f of hopFrames(from.motion, i)) {
+        t += 1 / from.motion.fps;
+        steps.push({ motion: from.motion, frame: f, until: t });
+      }
+    }
+  }
+  for (let f = 0; f < b.frames; f++) {
+    t += 1 / b.fps;
+    steps.push({ motion: b, frame: f, until: t });
+  }
+  return { steps, end: t };
 }
 
 /** Frames of the transition into stage b (empty for the cut back to stage 0). */
@@ -290,16 +399,25 @@ function hopFrames(m: PoseMotion, b: number): number[] {
  * Lay a 'stages' segment out in real seconds: each target gets an even
  * slice; on the way in, setup stages are held briefly (12% of the slice,
  * 1.5–8 s, scaled down so setup never eats more than 60% of it) and the
- * target holds until the slice ends.
+ * target holds until the slice ends. A bridge plays first; the segment's
+ * own steps share what is left of it.
  */
 export function segmentTimeline(seg: Extract<FigureSegment, { kind: 'stages' }>, seconds: number): FrameStep[] {
-  if (seg.moves && seg.moves.length) return spokenTimeline(seg, seconds, seg.moves);
+  const bridge = bridgeSteps(seg);
+  const own =
+    seg.moves && seg.moves.length
+      ? spokenTimeline(seg, seconds, seg.moves, bridge.end)
+      : stagedTimeline(seg, seconds, bridge.end);
+  return [...bridge.steps, ...own];
+}
+
+function stagedTimeline(seg: Extract<FigureSegment, { kind: 'stages' }>, seconds: number, t0: number): FrameStep[] {
   const m = seg.motion;
   const n = m.stages.length;
   const dt = 1 / m.fps;
-  const slice = seconds / Math.max(1, seg.targets.length);
+  const slice = Math.max(0, seconds - t0) / Math.max(1, seg.targets.length);
   const steps: FrameStep[] = [];
-  let t = 0;
+  let t = t0;
   let cur = seg.from;
   for (const target of seg.targets) {
     const end = t + slice;
@@ -317,15 +435,15 @@ export function segmentTimeline(seg: Extract<FigureSegment, { kind: 'stages' }>,
     for (const i of path) {
       for (const f of hopFrames(m, i)) {
         t += dt;
-        steps.push({ frame: f, until: t });
+        steps.push({ motion: m, frame: f, until: t });
       }
       if (i !== target && !isNeutral(m, i)) {
         t += hold;
-        steps.push({ frame: m.stages[i].frame, until: t });
+        steps.push({ motion: m, frame: m.stages[i].frame, until: t });
       }
     }
     t = Math.max(t, end);
-    steps.push({ frame: m.stages[target].frame, until: t });
+    steps.push({ motion: m, frame: m.stages[target].frame, until: t });
     cur = target;
   }
   return steps;
@@ -338,30 +456,33 @@ const SETTLE_SECONDS = 1.5;
  * Lay a segment out around its spoken moves: hold where the figure is
  * until each line ends, then travel (transition frames only, no setup
  * holds) to the stage the line named; if the lines never reach the
- * target, finish the entry a few seconds after the last one.
+ * target, finish the entry a few seconds after the last one. Starts at
+ * `t0` (after a bridge): a line that ends while the bridge is still
+ * playing moves the figure the moment the bridge is done.
  */
 function spokenTimeline(
   seg: Extract<FigureSegment, { kind: 'stages' }>,
   seconds: number,
   moves: FigureMove[],
+  t0: number,
 ): FrameStep[] {
   const m = seg.motion;
   const n = m.stages.length;
   const dt = 1 / m.fps;
   const target = seg.targets[seg.targets.length - 1];
   const steps: FrameStep[] = [];
-  let t = 0;
+  let t = t0;
   let cur = seg.from;
   const travel = (to: number, at: number) => {
     if (at > t) {
       t = at;
-      steps.push({ frame: m.stages[cur].frame, until: t });
+      steps.push({ motion: m, frame: m.stages[cur].frame, until: t });
     }
     for (let i = cur; i !== to; ) {
       i = (i + 1) % n;
       for (const f of hopFrames(m, i)) {
         t += dt;
-        steps.push({ frame: f, until: t });
+        steps.push({ motion: m, frame: f, until: t });
       }
     }
     cur = to;
@@ -373,14 +494,19 @@ function spokenTimeline(
   }
   if (cur !== target) travel(target, Math.min(Math.max(t, seg.settle ?? 0) + SETTLE_SECONDS, Math.max(0, seconds - 1)));
   t = Math.max(t, seconds);
-  steps.push({ frame: m.stages[target].frame, until: t });
+  steps.push({ motion: m, frame: m.stages[target].frame, until: t });
   return steps;
+}
+
+/** The step a timeline shows at `t` seconds (its last step past the end). */
+export function stepAt(steps: FrameStep[], t: number): FrameStep | undefined {
+  for (const s of steps) if (t < s.until) return s;
+  return steps[steps.length - 1];
 }
 
 /** The frame a timeline shows at `t` seconds (its last frame past the end). */
 export function frameAt(steps: FrameStep[], t: number): number {
-  for (const s of steps) if (t < s.until) return s.frame;
-  return steps.length ? steps[steps.length - 1].frame : 0;
+  return stepAt(steps, t)?.frame ?? 0;
 }
 
 const easeInOut = (p: number) => (p < 0.5 ? 2 * p * p : 1 - (-2 * p + 2) ** 2 / 2);
@@ -422,14 +548,29 @@ export interface FigureClock {
   breath?: { phase: 'inhale' | 'exhale'; progress: number };
 }
 
-/** The sprite frame a figure segment shows at this moment of the class. */
-export function figureFrameAt(seg: FigureSegment, clock: FigureClock, steps?: FrameStep[]): number {
-  switch (seg.kind) {
-    case 'breath':
-      return breathFrame(seg, clock.breath?.phase, clock.breath?.progress ?? 0);
-    case 'pulse':
-      return pulseFrame(seg, clock.beatProgress);
-    case 'stages':
-      return frameAt(steps ?? segmentTimeline(seg, clock.total), clock.seconds);
+/** Which sheet the figure draws and its frame. */
+export interface FigureFrame {
+  motion: PoseMotion;
+  frame: number;
+}
+
+/**
+ * The sprite frame a figure segment shows at this moment of the class —
+ * on the bridge's sheet while a bridge plays, else on the segment's own.
+ */
+export function figureFrameAt(seg: FigureSegment, clock: FigureClock, steps?: FrameStep[]): FigureFrame {
+  if (seg.kind === 'stages') {
+    const s = stepAt(steps ?? segmentTimeline(seg, clock.total), clock.seconds);
+    return s ? { motion: s.motion, frame: s.frame } : { motion: seg.motion, frame: 0 };
   }
+  if (seg.bridge) {
+    const b = bridgeSteps(seg);
+    if (clock.seconds < b.end) {
+      const s = stepAt(b.steps, clock.seconds);
+      if (s) return { motion: s.motion, frame: s.frame };
+    }
+  }
+  return seg.kind === 'breath'
+    ? { motion: seg.motion, frame: breathFrame(seg, clock.breath?.phase, clock.breath?.progress ?? 0) }
+    : { motion: seg.motion, frame: pulseFrame(seg, clock.beatProgress) };
 }

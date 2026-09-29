@@ -150,6 +150,7 @@ POSTURE = {
     'id': 'half-moon',                       # the Pose id, exactly
     'view': 'front',                         # default camera: front | quarter | side | quarter-back | back
     'frame': {'center_z': 1.05, 'scale': 2.5},   # ortho camera: height it centres on, metres visible top-to-bottom
+    'position': {'start': 'standing', 'end': 'standing'},   # body position of the first / last stage
     'transition': 7,                         # frames between stages (12 fps)
     'stages': [                              # held stages, in class order
         {'label': 'Arms up', 'pose': UP, 'hold': 4},
@@ -159,6 +160,14 @@ POSTURE = {
 }
 ```
 
+- `position`: `standing | supine | prone | kneeling | seated` for the
+  sheet's first and last stage (Fixed Firm's sitting-between-the-heels
+  counts as kneeling). The renderer copies it into the manifest; when the
+  class figure changes sheet between two positions it plays the hand-off
+  bridge `bridge:<start>-<end>` first (see `../bridges/`).
+- A stage may carry its own `'frame': {'center_z', 'scale'}` — the camera
+  framing is then keyframed per stage (the bridges use this so they open
+  on one position's framing and close on the next).
 - `view` names: `front` (0°), `quarter` (-35°), `side` (-90°, the face
   points screen-RIGHT), `quarter-back` (-145°), `back` (180°).
 - `frame.center_z` / `scale`: for standing work `1.05 / 2.5`; kneeling
@@ -172,6 +181,24 @@ POSTURE = {
   Two-sided postures show the right side then the left; two sets don't
   need to be repeated in the sprite.
 - Keep total frames under ~110 (sprite grid is 10 wide; 240 px cells).
+
+## Hand-off bridges (`../bridges/`)
+
+`bridges/<start>_<end>.py` modules export the same `POSTURE` dict with
+`'id': 'bridge:<start>-<end>'`: a short sheet (transition 6, holds 2–3)
+from the canonical pose of one position to the canonical pose of another,
+through one to three authored midpoints (roll to the side, hands and
+knees, sit up, turn on the seat…). `_canon.py` (an underscore file: a
+helper, never rendered) imports the canonical poses from the posture
+modules that own them — standing = `awkward.TADASANA`, supine =
+`wind_removing.FLAT`, prone = `cobra.PRONE`, kneeling = `camel.KNEEL`,
+seated = `spine_twisting.SIT` — and holds the midpoints and `bridge()`.
+Sheets and sidecars are written as `bridge.<start>-<end>.*` (no colons in
+Windows file names). No guides or ghosts. The held-stage preview cannot
+show a limb swinging through the floor BETWEEN stages: after rendering,
+read the sheet itself (`public/motion/bridge.*.png`) and add a midpoint
+where a transition sinks (a knee straightening while its thigh drops
+does; a foot flipping from toes-up to pointed does).
 
 ## Workflow
 

@@ -107,6 +107,7 @@ def fold_ghost(front, back):
 
 POSTURE = {
     'id': 'standing-separate-leg-head-to-knee',
+    'position': {'start': 'standing', 'end': 'standing'},
     'view': 'side',
     'frame': {'center_z': 1.0, 'scale': 2.5},
     'transition': 7,

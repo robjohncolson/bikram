@@ -135,6 +135,19 @@
   color: var(--cm-text);
 }
 
+/* teaching layers flash for one breath after a coaching line: guides
+   after an alignment line, the ghost after a mistake line (data-on) */
+.cm-figure .pose-motion-cell--guides,
+.cm-figure .pose-motion-cell--ghost {
+  opacity: 0;
+  transition: opacity 0.4s ease;
+}
+
+.cm-figure .pose-motion-cell--guides[data-on],
+.cm-figure .pose-motion-cell--ghost[data-on] {
+  opacity: 1;
+}
+
 .cm-figure-hidden {
   font-family: var(--font-display);
   font-size: clamp(64px, 12vw, 140px);
@@ -330,5 +343,9 @@
   .cm-ring {
     transition: none !important;
     animation: none !important;
+  }
+  .cm-figure .pose-motion-cell--guides,
+  .cm-figure .pose-motion-cell--ghost {
+    transition: none;
   }
 }

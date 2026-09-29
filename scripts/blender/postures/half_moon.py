@@ -106,6 +106,7 @@ FOLD = {
 
 POSTURE = {
     'id': 'half-moon',
+    'position': {'start': 'standing', 'end': 'standing'},
     'view': 'front',
     'frame': {'center_z': 1.05, 'scale': 2.5},
     'transition': 7,

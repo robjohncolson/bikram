@@ -81,7 +81,10 @@ function useReducedMotion(): boolean {
  * and the guides (alignment lines, cool blue) ON TOP, all at the same
  * frame and mask math. Posture pages get "Guides"/"Mistake" chips whose
  * choice persists in `yoga-motion-layers-v1`; a `layers` prop overrides
- * it and hides the chips and caption (class mode).
+ * it and hides the chips and caption (class mode). With `fadeLayers` the
+ * layer cells the sheet has are always mounted and switched by a
+ * `data-on` attribute instead, so CSS can fade them in and out (class mode
+ * flashes a layer for one breath after a coaching line).
  */
 export function PoseMotion({
   motion,
@@ -92,6 +95,7 @@ export function PoseMotion({
   breath,
   breathPaused = false,
   layers,
+  fadeLayers = false,
   frame: controlled,
 }: {
   motion: Motion;
@@ -106,6 +110,8 @@ export function PoseMotion({
   breathPaused?: boolean;
   /** fixed layer choice that hides the chips and caption (class mode) */
   layers?: MotionLayers;
+  /** keep the sheet's layer cells mounted and toggle `data-on`, for CSS fades */
+  fadeLayers?: boolean;
   /** controlled mode: show exactly this frame and never run the player */
   frame?: number;
 }) {
@@ -197,9 +203,25 @@ export function PoseMotion({
     <div className="pose-motion">
       <div className={'pose-motion-frame' + (frameClassName ? ` ${frameClassName}` : '')} aria-hidden>
         <div ref={stackRef} className="pose-motion-stack" data-breath={breathing?.phase} style={stackStyle}>
-          {ghost && <div className="pose-motion-cell pose-motion-cell--ghost" style={cellStyle(ghost)} />}
+          {fadeLayers && motion.ghost ? (
+            <div
+              className="pose-motion-cell pose-motion-cell--ghost"
+              data-on={active.ghost || undefined}
+              style={cellStyle(motion.ghost)}
+            />
+          ) : (
+            ghost && <div className="pose-motion-cell pose-motion-cell--ghost" style={cellStyle(ghost)} />
+          )}
           <div className="pose-motion-cell" style={cellStyle(motion.sprite)} />
-          {guides && <div className="pose-motion-cell pose-motion-cell--guides" style={cellStyle(guides)} />}
+          {fadeLayers && motion.guides ? (
+            <div
+              className="pose-motion-cell pose-motion-cell--guides"
+              data-on={active.guides || undefined}
+              style={cellStyle(motion.guides)}
+            />
+          ) : (
+            guides && <div className="pose-motion-cell pose-motion-cell--guides" style={cellStyle(guides)} />
+          )}
         </div>
       </div>
       {showStages && (

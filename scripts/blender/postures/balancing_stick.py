@@ -89,6 +89,7 @@ def stick_ghost(stand, lift):
 
 POSTURE = {
     'id': 'balancing-stick',
+    'position': {'start': 'standing', 'end': 'standing'},
     'view': 'side',
     'frame': {'center_z': 1.05, 'scale': 2.6},
     'transition': 7,

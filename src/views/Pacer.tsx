@@ -37,7 +37,17 @@ import {
   unlockClips,
   watchVoices,
 } from '../pacer';
-import type { BeatEvent, BreathCue, ClassProgram, Metronome, PacerSettings, PoseTrack, VoiceChoice, WakeLock } from '../pacer';
+import type {
+  BeatEvent,
+  BreathCue,
+  ClassProgram,
+  CueLayer,
+  Metronome,
+  PacerSettings,
+  PoseTrack,
+  VoiceChoice,
+  WakeLock,
+} from '../pacer';
 import type { Pose } from '../data';
 import { poses } from '../data';
 import {
@@ -213,6 +223,9 @@ export function Pacer() {
   const [running, setRunning] = useState(false);
   const [beatView, setBeatView] = useState<{ beat: number; bar: number; beatsPerBar: number } | null>(null);
   const [classRun, setClassRun] = useState<ClassRun>({ phase: 'idle' });
+  /** a coaching line just spoken lights its teaching layer on the class
+   *  figure for one breath (posture `idx`, until class beat `untilBeat`) */
+  const [flash, setFlash] = useState<{ layer: CueLayer; idx: number; untilBeat: number } | null>(null);
   /** the class-mode figure's breath: follows bar parity while the class
    *  runs, holds (frozen) while it is paused, undefined in pulse mode */
   const [breath, setBreath] = useState<BreathCue | undefined>(undefined);
@@ -274,6 +287,11 @@ export function Pacer() {
   }, []);
 
   const commitClass = useCallback((next: ClassRun) => {
+    const prev = classRef.current;
+    // a hand-off, a pause or the end of the class puts any lit layer out
+    const same =
+      next.phase === 'running' && prev.phase === 'running' && next.idx === prev.idx;
+    if (!same) setFlash(null);
     classRef.current = next;
     setClassRun(next);
   }, []);
@@ -321,7 +339,8 @@ export function Pacer() {
     }
   }, []);
 
-  /** Render any cue events due at this 0-based beat of the active hold. */
+  /** Render any cue events due at this 0-based beat of the active hold.
+   *  A spoken coaching line with a layer flashes it for one breath. */
   const fireCues = useCallback(
     (beatIdx: number) => {
       const track = trackRef.current;
@@ -336,6 +355,12 @@ export function Pacer() {
           metRef.current?.cue('warn'); // tone; engine mute already zeroes it
         } else if (speakable && ev.text) {
           sayCue(ev.text, ev.kind === 'announce');
+          const c = classRef.current;
+          if (ev.layer && c.phase === 'running') {
+            // the state this beat commits already reads beatIdx + 1, so the
+            // deadline counts from there: one breath (one beat in pulse mode)
+            setFlash({ layer: ev.layer, idx: c.idx, untilBeat: beatIdx + 1 + track.breathBeats });
+          }
         }
       }
     },
@@ -564,6 +589,14 @@ export function Pacer() {
     if (running) lockRef.current?.acquire();
     else lockRef.current?.release();
   }, [running]);
+
+  // A lit layer goes out once the class beat passes the end of its breath.
+  useEffect(() => {
+    if (!flash) return;
+    if (classRun.phase !== 'running' || classRun.idx !== flash.idx || classRun.budget - classRun.left >= flash.untilBeat) {
+      setFlash(null);
+    }
+  }, [classRun, flash]);
 
   // Immersion only exists while a class is running or paused.
   useEffect(() => {
@@ -907,6 +940,7 @@ export function Pacer() {
       overlay = (
         <PacerClassMode
           pose={savasana}
+          previousPose={classPoses[classPoses.length - 1]}
           segmentLabel="Final savasana"
           segmentKind="rest"
           paused={false}
@@ -948,6 +982,8 @@ export function Pacer() {
     // change cue is spoken on, so the new hold is shown as it begins
     const figSeg = track ? segmentAtBeat(track, Math.min(track.totalBeats - 1, beatIdx + track.barBeats)) : null;
     const nextCue = track ? cueWhen(track, beatIdx) : undefined;
+    // the one-breath layer flash, while its breath lasts (never in rehearsal's hidden stretch)
+    const lit = flash && flash.idx === classRun.idx && beatIdx < flash.untilBeat ? flash.layer : undefined;
     classBody = (
       <div className="pc-class-run">
         <div className="pc-class-pose">
@@ -1044,6 +1080,8 @@ export function Pacer() {
         <PacerClassMode
           pose={pose}
           next={next}
+          previousPose={classPoses[classRun.idx - 1]}
+          layer={hidden ? undefined : lit}
           segmentLabel={seg?.label}
           segmentKind={seg?.kind}
           position={seg ?? undefined}

@@ -113,6 +113,7 @@ FOLD_GHOST = {
 
 POSTURE = {
     'id': 'half-tortoise',
+    'position': {'start': 'kneeling', 'end': 'kneeling'},
     'view': 'side',
     'frame': {'center_z': 0.65, 'scale': 1.9},
     'transition': 7,

@@ -17,6 +17,7 @@ import { fileURLToPath } from 'node:url';
 
 const ROOT = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
 const POSTURES = path.join(ROOT, 'scripts', 'blender', 'postures');
+const BRIDGES = path.join(ROOT, 'scripts', 'blender', 'bridges');
 
 const candidates = [
   process.env.BLENDER,
@@ -38,19 +39,24 @@ if (preview) {
   process.exit(r.status ?? 1);
 }
 
-const all = readdirSync(POSTURES)
-  .filter((f) => f.endsWith('.py') && !f.startsWith('_'))
-  .map((f) => f.slice(0, -3).replace(/_/g, '-'))
-  .sort();
+// ids: posture modules by file name (`toe_stand.py` → `toe-stand`), hand-off
+// bridges with a `bridge:` prefix (`bridges/supine_prone.py` → `bridge:supine-prone`)
+const moduleIds = (dir, prefix) =>
+  existsSync(dir)
+    ? readdirSync(dir)
+        .filter((f) => f.endsWith('.py') && !f.startsWith('_'))
+        .map((f) => prefix + f.slice(0, -3).replace(/_/g, '-'))
+    : [];
+const all = [...moduleIds(POSTURES, ''), ...moduleIds(BRIDGES, 'bridge:')].sort();
 const ids = args.length ? args.map((a) => a.replace(/_/g, '-')) : all;
 const unknown = ids.filter((id) => !all.includes(id));
 if (unknown.length) {
-  console.error(`render-motion: no posture module for ${unknown.join(', ')}`);
+  console.error(`render-motion: no posture or bridge module for ${unknown.join(', ')}`);
   process.exit(1);
 }
 const defaultJobs = (process.env.MOTION_ENGINE || 'CYCLES').toUpperCase() === 'EEVEE' ? 1 : 3;
 const jobs = Math.max(1, Math.min(ids.length, Number(process.env.MOTION_JOBS) || defaultJobs));
-console.log(`render-motion: ${ids.length} posture(s), ${jobs} at a time`);
+console.log(`render-motion: ${ids.length} sheet(s), ${jobs} at a time`);
 
 function runOne(id) {
   return new Promise((resolve) => {

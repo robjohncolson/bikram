@@ -208,6 +208,7 @@ LEFT_GHOST = mirror(RIGHT_GHOST)
 
 POSTURE = {
     'id': 'spine-twisting',
+    'position': {'start': 'seated', 'end': 'seated'},
     'view': 'side',
     'frame': {'center_z': 0.45, 'scale': 1.4},
     'transition': 8,

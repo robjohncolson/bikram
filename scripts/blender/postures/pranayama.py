@@ -83,6 +83,7 @@ EXHALE_GHOST = {
 
 POSTURE = {
     'id': 'pranayama',
+    'position': {'start': 'standing', 'end': 'standing'},
     'view': 'quarter',
     'frame': {'center_z': 0.98, 'scale': 2.1},
     'transition': 8,

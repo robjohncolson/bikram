@@ -217,6 +217,7 @@ HOLD_FOOT = head_to_knee('R', -1, torso={
 
 POSTURE = {
     'id': 'head-to-knee-stretching',
+    'position': {'start': 'seated', 'end': 'seated'},
     'view': 'side',
     'frame': {'center_z': 0.42, 'scale': 1.45},
     'transition': 8,

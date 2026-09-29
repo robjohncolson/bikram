@@ -83,6 +83,7 @@ FLY_GHOST = {
 
 POSTURE = {
     'id': 'full-locust',
+    'position': {'start': 'prone', 'end': 'prone'},
     'view': 'side',
     'frame': {'center_z': 0.4, 'scale': 2.3},
     'transition': 7,

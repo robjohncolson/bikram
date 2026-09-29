@@ -118,6 +118,7 @@ HEAD_TO_KNEE_GHOST = {
 
 POSTURE = {
     'id': 'standing-head-to-knee',
+    'position': {'start': 'standing', 'end': 'standing'},
     'view': 'side',
     'frame': {'center_z': 1.0, 'scale': 2.4},
     'transition': 7,

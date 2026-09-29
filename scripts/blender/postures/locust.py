@@ -116,6 +116,7 @@ BOTH_GHOST = {
 
 POSTURE = {
     'id': 'locust',
+    'position': {'start': 'prone', 'end': 'prone'},
     'view': 'side',
     'frame': {'center_z': 0.55, 'scale': 2.3},
     'transition': 7,

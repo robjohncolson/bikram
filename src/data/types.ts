@@ -170,6 +170,9 @@ export interface MotionStage {
   frame: number;
 }
 
+/** A body position a motion sheet opens or closes in (see `PoseMotion.position`). */
+export type Position = 'standing' | 'supine' | 'prone' | 'kneeling' | 'seated';
+
 /** A rendered motion sprite sheet: square cells laid out row-major. */
 export interface PoseMotion {
   /** public URL of the PNG sheet */
@@ -194,6 +197,12 @@ export interface PoseMotion {
   fps: number;
   /** camera view the sequence opens on */
   view: string;
+  /**
+   * the body position of the sheet's first and last stage; when the class
+   * figure changes sheet between different positions a hand-off bridge
+   * (`bridge:<start>-<end>`, see `bridgeFor`) plays first
+   */
+  position?: { start: Position; end: Position };
   /** held stages, in order, with the frame each begins on */
   stages: MotionStage[];
 }

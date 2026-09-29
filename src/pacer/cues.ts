@@ -30,6 +30,30 @@ export interface CueEvent {
   kind: CueKind;
   /** text for spoken kinds; absent for tones */
   text?: string;
+  /**
+   * mid-hold coaching lines only: the teaching layer the class figure
+   * lights for one breath after the line (see `cueLayer`)
+   */
+  layer?: CueLayer;
+}
+
+/** A teaching layer of the figure: the alignment guides or the common-mistake ghost. */
+export type CueLayer = 'ghost' | 'guides';
+
+/** Words that mark a coaching line as describing the mistake to avoid. */
+const MISTAKE_WORDS = /\b(?:not|never|don't|do not|instead|rather than|mistake|avoid|stop|without)\b/i;
+
+/**
+ * Which teaching layer a coaching line lights: a line that names the
+ * common mistake ("don't…", "never…", "instead of…") shows the ghost,
+ * any other coaching line shows the alignment guides. Pass coaching text
+ * only — setup steps, announces and segment cues light nothing, and
+ * neither does an empty line.
+ */
+export function cueLayer(text: string): CueLayer | undefined {
+  const t = text.replace(/[‘’]/g, "'").trim();
+  if (!t) return undefined;
+  return MISTAKE_WORDS.test(t) ? 'ghost' : 'guides';
 }
 
 export interface PoseTrack {
@@ -303,7 +327,8 @@ export function buildPoseTrack(pose: Pose, bpm: number, opts: CueOptions = {}): 
           }
         }
         if (place === null) break;
-        events.push({ atBeat: place, kind: 'guide', text: line });
+        const layer = cueLayer(line);
+        events.push({ atBeat: place, kind: 'guide', text: line, ...(layer ? { layer } : {}) });
         spoken.push(place);
         used.add(line);
       }

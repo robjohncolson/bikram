@@ -1,10 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
-import type { Pose } from '../data';
+import type { Pose, PoseMotion as Motion } from '../data';
 import { PoseMotion } from '../components/PoseMotion';
 import type { BreathPhase } from '../components/PoseMotion';
-import { clipSeconds, figureFrameAt, figurePlan, segmentTimeline } from '../pacer';
-import type { FigurePlan, PoseTrack, SegmentPosition } from '../pacer';
+import { clipSeconds, figureFrameAt, figurePlan, planEnd, segmentTimeline } from '../pacer';
+import type { CueLayer, FigureFrame, FigurePlan, PoseTrack, SegmentPosition } from '../pacer';
 import './PacerClassMode.css';
 
 /** Where the class clock is: the live segment and the beats into it. */
@@ -22,6 +22,10 @@ export interface FigureClockProps {
 export interface PacerClassModeProps {
   pose: Pose;
   next?: Pose;
+  /** the posture before this one in the class: the figure bridges from where it left off */
+  previousPose?: Pose;
+  /** a teaching layer flashing for one breath after a coaching line */
+  layer?: CueLayer;
   segmentLabel?: string;
   segmentKind?: string;
   paused: boolean;
@@ -58,7 +62,8 @@ export interface PacerClassModeProps {
 }
 
 /**
- * The sprite frame the class figure shows right now. The class advances in
+ * The sheet and sprite frame the class figure shows right now (a hand-off
+ * bridge's sheet while one plays). The class advances in
  * whole beats (props change once a beat); between beats the hook
  * extrapolates on requestAnimationFrame from the moment the beat arrived,
  * so entries play at sheet speed and Kapalbhati pumps land on the beat.
@@ -70,7 +75,7 @@ function useClassFigureFrame(
   clock: FigureClockProps | undefined,
   breath: BreathPhase | undefined,
   paused: boolean,
-): number | undefined {
+): FigureFrame | undefined {
   const segIndex = clock ? Math.min(clock.segment, (plan?.segments.length ?? 1) - 1) : -1;
   const seg = plan && segIndex >= 0 ? plan.segments[segIndex] : undefined;
   const beatsIn = clock?.beatsIn ?? 0;
@@ -89,35 +94,42 @@ function useClassFigureFrame(
     breathStamp.current = performance.now();
   }, [breathPhase]);
 
-  const [frame, setFrame] = useState<number | undefined>(undefined);
+  const [frame, setFrame] = useState<FigureFrame | undefined>(undefined);
+  const lastRef = useRef<FigureFrame | undefined>(undefined);
   useEffect(() => {
     if (!seg) {
+      lastRef.current = undefined;
       setFrame(undefined);
       return;
     }
-    if (paused) return; // hold the last frame
     const compute = (now: number) => {
       const beatMs = beatSeconds * 1000;
-      const sub = beatMs > 0 ? Math.min(1, Math.max(0, (now - beatStamp.current) / beatMs)) : 0;
-      setFrame(
-        figureFrameAt(
-          seg,
-          {
-            seconds: (beatsIn + sub) * beatSeconds,
-            total,
-            beatProgress: sub,
-            breath:
-              breathPhase && breathSeconds > 0
-                ? { phase: breathPhase, progress: Math.min(1, (now - breathStamp.current) / (breathSeconds * 1000)) }
-                : undefined,
-          },
-          steps,
-        ),
+      // paused: no extrapolation, the beat's own frame (so a skip while
+      // paused still shows the new posture's sheet)
+      const sub = paused || beatMs <= 0 ? 0 : Math.min(1, Math.max(0, (now - beatStamp.current) / beatMs));
+      const next = figureFrameAt(
+        seg,
+        {
+          seconds: (beatsIn + sub) * beatSeconds,
+          total,
+          beatProgress: sub,
+          breath:
+            breathPhase && breathSeconds > 0
+              ? { phase: breathPhase, progress: Math.min(1, (now - breathStamp.current) / (breathSeconds * 1000)) }
+              : undefined,
+        },
+        steps,
       );
+      // a long hold is the same sheet and frame for minutes: no new object, no rerender
+      const last = lastRef.current;
+      if (last && last.motion === next.motion && last.frame === next.frame) return;
+      lastRef.current = next;
+      setFrame(next);
     };
     // once per beat synchronously (rAF is silent in a background tab), then
     // smoothly between beats while the tab is visible
     compute(performance.now());
+    if (paused) return; // hold that frame
     let raf = requestAnimationFrame(function tick(now) {
       compute(now);
       raf = requestAnimationFrame(tick);
@@ -206,8 +218,12 @@ export function PacerClassMode(props: PacerClassModeProps) {
   // (rests and sit-ups borrow the savasana and sit-up sheets), and the
   // frame follows the class clock — into the posture on the cue, held
   // while the class holds, other side when the side changes.
+  // Changing sheet between body positions plays a hand-off bridge first
+  // (rolling over, sitting up…); into the posture it bridges from the
+  // sheet the previous posture left the figure on.
   const beatSeconds = props.figureClock?.beatSeconds ?? 1;
   const track = props.track;
+  const previous = useMemo(() => planEnd(props.previousPose), [props.previousPose]);
   const plan = useMemo(
     () =>
       figurePlan(props.pose, {
@@ -215,15 +231,19 @@ export function PacerClassMode(props: PacerClassModeProps) {
         beatSeconds,
         leadBeats: track?.barBeats ?? 0,
         clipSeconds,
+        previous: previous?.motion,
+        previousStage: previous?.stage,
       }),
-    [props.pose, track, beatSeconds],
+    [props.pose, track, beatSeconds, previous],
   );
-  const frame = useClassFigureFrame(plan, props.figureClock, props.breath, props.paused);
+  const figure = useClassFigureFrame(plan, props.figureClock, props.breath, props.paused);
   const segMotion =
     plan && props.figureClock
       ? plan.segments[Math.min(props.figureClock.segment, plan.segments.length - 1)]?.motion
       : undefined;
-  const motion = props.hidden ? undefined : (segMotion ?? props.pose.motion);
+  const motion: Motion | undefined = props.hidden ? undefined : (figure?.motion ?? segMotion ?? props.pose.motion);
+  // a coaching line lights its layer for one breath; nothing while withheld
+  const layer = props.hidden ? undefined : props.layer;
 
   // the breath ring: phase drives a transition one bar long; pulse mode
   // beats a quick contraction on every count instead
@@ -280,8 +300,9 @@ export function PacerClassMode(props: PacerClassModeProps) {
                 showStages={false}
                 breath={props.breath}
                 breathPaused={props.paused}
-                layers={{ guides: true, ghost: false }}
-                frame={frame}
+                layers={{ guides: layer === 'guides', ghost: layer === 'ghost' }}
+                fadeLayers
+                frame={figure?.frame}
               />
             </div>
           ) : (

@@ -161,6 +161,7 @@ HIPS_UP_GHOST = {
 
 POSTURE = {
     'id': 'rabbit',
+    'position': {'start': 'kneeling', 'end': 'kneeling'},
     'view': 'side',
     'frame': {'center_z': 0.55, 'scale': 1.6},
     'transition': 8,

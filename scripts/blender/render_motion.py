@@ -3,7 +3,9 @@ Blender motion renderer for the 26 & 2 figures.
 
 Builds a procedural mannequin (armature + skin-modifier tube body), poses
 it from world-space bone directions defined per posture in
-`scripts/blender/postures/<id>.py`, renders each frame as Freestyle line
+`scripts/blender/postures/<id>.py` (and per hand-off bridge in
+`scripts/blender/bridges/<start>_<end>.py`, id `bridge:<start>-<end>`),
+renders each frame as Freestyle line
 art on a transparent background, and stitches the frames into one PNG
 sprite sheet per posture under `public/motion/`. It also regenerates the
 manifest `src/data/motion/manifest.ts` (GENERATED — do not hand-edit).
@@ -12,7 +14,8 @@ Run from the repo root:
 
     blender -b --python scripts/blender/render_motion.py -- [pose-id ...]
 
-With no ids every posture module in `postures/` is rendered. Blender is
+With no ids every module in `postures/` and `bridges/` is rendered
+(files starting with `_` are shared helpers, never rendered). Blender is
 expected at C:/Tools/blender-5.2.1-windows-x64/blender.exe on this
 machine; `npm run motion` wraps the call.
 
@@ -44,6 +47,9 @@ from mathutils import Matrix, Quaternion, Vector
 
 ROOT = Path(__file__).resolve().parents[2]
 POSTURES_DIR = Path(__file__).resolve().parent / 'postures'
+BRIDGES_DIR = Path(__file__).resolve().parent / 'bridges'
+MODULE_DIRS = (POSTURES_DIR, BRIDGES_DIR)
+POSITIONS = ('standing', 'supine', 'prone', 'kneeling', 'seated')
 OUT_DIR = ROOT / 'public' / 'motion'
 MANIFEST = ROOT / 'src' / 'data' / 'motion' / 'manifest.ts'
 
@@ -478,29 +484,48 @@ def nearest_stage(spans: list[tuple[int, int]], f: int) -> int:
     return best
 
 
+def stage_frame(posture: dict, st: dict) -> tuple[float, float]:
+    """(center_z, ortho scale) for one stage: the stage's own `frame` when
+    it has one (a bridge travels between body positions, so its framing
+    travels too), else the posture's."""
+    box = {**posture.get('frame', {}), **st.get('frame', {})}
+    return box.get('center_z', 0.9), box.get('scale', 2.0)
+
+
+def frame_camera(cam: bpy.types.Object, center_z: float, scale: float) -> None:
+    cam.parent.location = (0, 0, center_z)
+    cam.data.ortho_scale = scale
+
+
 def build_timeline(rig: bpy.types.Object, cam: bpy.types.Object, posture: dict) -> list[dict]:
-    """Keyframe every stage (rig + camera view) with holds and transitions.
-    Returns the stage marks as 0-based sprite frame indices."""
+    """Keyframe every stage (rig + camera view, and the camera framing when
+    any stage has its own `frame`) with holds and transitions. Returns the
+    stage marks as 0-based sprite frame indices."""
     rest = rest_directions()
     stages = posture['stages']
     default_view = posture.get('view', 'front')
-    center_z = posture.get('frame', {}).get('center_z', 0.9)
+    framed = any('frame' in st for st in stages)
     marks = []
     az = None
     pivot = cam.parent
     spans = stage_spans(posture)
     for st, (first, last) in zip(stages, spans):
         apply_stage(rig, st['pose'], rest)
+        center_z, scale = stage_frame(posture, st)
         az = orbit_camera(cam, st.get('view', default_view), center_z, az)
+        frame_camera(cam, center_z, scale)
         for f in (first, last):
             keyframe_all(rig, f)
             pivot.keyframe_insert('rotation_euler', frame=f)
+            if framed:
+                pivot.keyframe_insert('location', frame=f)
+                cam.data.keyframe_insert('ortho_scale', frame=f)
         marks.append({'label': st['label'], 'frame': first - 1})
     scene = bpy.context.scene
     scene.frame_start = 1
     scene.frame_end = spans[-1][1]
     # Smooth ease in/out between stages.
-    for fc in action_fcurves(rig) + action_fcurves(cam.parent):
+    for fc in action_fcurves(rig) + action_fcurves(cam.parent) + action_fcurves(cam.data):
         for kp in fc.keyframe_points:
             kp.interpolation = 'BEZIER'
             kp.easing = 'EASE_IN_OUT'
@@ -623,6 +648,40 @@ def load_posture(path: Path) -> dict:
     return mod.POSTURE
 
 
+def module_files() -> list[Path]:
+    """Every renderable module: postures, then bridges (`_*.py` are helpers)."""
+    return [p for d in MODULE_DIRS if d.exists() for p in sorted(d.glob('*.py')) if not p.name.startswith('_')]
+
+
+def module_id(path: Path) -> str:
+    """The id a module file stands for: `toe_stand.py` → `toe-stand`,
+    `bridges/supine_prone.py` → `bridge:supine-prone`."""
+    stem = path.stem.replace('_', '-')
+    return f'bridge:{stem}' if path.parent == BRIDGES_DIR else stem
+
+
+def module_path(pose_id: str) -> Path:
+    for p in module_files():
+        if module_id(p) == pose_id or p.stem == pose_id:
+            return p
+    raise FileNotFoundError(f'no posture or bridge module for {pose_id!r}')
+
+
+def file_stem(pose_id: str) -> str:
+    """File-system name for an id: `bridge:supine-prone` → `bridge.supine-prone`
+    (a colon is not a legal file-name character on Windows)."""
+    return pose_id.replace(':', '.')
+
+
+def posture_position(posture: dict) -> dict:
+    """The module's `position` ({'start', 'end'}), validated."""
+    pos = posture.get('position') or {}
+    for k in ('start', 'end'):
+        if pos.get(k) not in POSITIONS:
+            raise ValueError(f"{posture['id']}: position {k} must be one of {POSITIONS}, got {pos.get(k)!r}")
+    return {'start': pos['start'], 'end': pos['end']}
+
+
 def build_scene(posture: dict) -> dict:
     """Scene for one posture: the figure, one guides mesh per stage that has
     `guides` (None otherwise) and — when any stage has a `ghost` — a second
@@ -675,12 +734,14 @@ def render_posture(path: Path) -> dict:
     posture = load_posture(path)
     pose_id = posture['id']
     print(f'== {pose_id}')
+    stem = file_stem(pose_id)
+    position = posture_position(posture)
     built = build_scene(posture)
     scene, layers, guides, ghost = built['scene'], built['layers'], built['guides'], built['ghost']
     marks = build_timeline(built['rig'], built['cam'], posture)
     spans = stage_spans(posture)
-    tmp = ROOT / '.motion-tmp' / pose_id
-    out, n, rows = write_sheet(render_frames(scene, tmp), pose_id)
+    tmp = ROOT / '.motion-tmp' / stem
+    out, n, rows = write_sheet(render_frames(scene, tmp), stem)
     extra = {}
 
     # Guides pass: body hidden, each stage's guides for its hold + the nearer
@@ -690,9 +751,9 @@ def render_posture(path: Path) -> dict:
         guide_strokes(scene, True)
         frames = render_frames(scene, tmp, lambda f: show_guides(guides, nearest_stage(spans, f)))
         guide_strokes(scene, False)
-        extra['guides'] = f"/motion/{write_sheet(frames, f'{pose_id}.guides')[0].name}"
+        extra['guides'] = f"/motion/{write_sheet(frames, f'{stem}.guides')[0].name}"
     else:
-        for old in hashed_sheets(f'{pose_id}.guides'):
+        for old in hashed_sheets(f'{stem}.guides'):
             old.unlink()
 
     # Ghost pass: the second mannequin in the mistake pose, hold frames only.
@@ -711,9 +772,9 @@ def render_posture(path: Path) -> dict:
             return True
 
         frames = render_frames(scene, tmp, show_ghost)
-        extra['ghost'] = f"/motion/{write_sheet(frames, f'{pose_id}.ghost')[0].name}"
+        extra['ghost'] = f"/motion/{write_sheet(frames, f'{stem}.ghost')[0].name}"
     else:
-        for old in hashed_sheets(f'{pose_id}.ghost'):
+        for old in hashed_sheets(f'{stem}.ghost'):
             old.unlink()
     solo(layers, 'Figure')
 
@@ -726,6 +787,7 @@ def render_posture(path: Path) -> dict:
         'cols': COLS,
         'fps': FPS,
         'view': posture.get('view', 'front'),
+        'position': position,
         'stages': marks,
     }
 
@@ -747,9 +809,11 @@ def write_manifest(entries: dict[str, dict]) -> None:
             f"{{ label: {json.dumps(s['label'])}, frame: {s['frame']} }}" for s in e['stages']
         )
         layers = ''.join(f", {k}: '{e[k]}'" for k in ('guides', 'ghost') if e.get(k))
+        pos = e.get('position')
+        position = f", position: {{ start: '{pos['start']}', end: '{pos['end']}' }}" if pos else ''
         lines.append(
             f"  '{pid}': {{ sprite: '{e['sprite']}'{layers}, frame: {e['frame']}, frames: {e['frames']}, "
-            f"cols: {e['cols']}, fps: {e['fps']}, view: '{e['view']}', stages: [{stages}] }},"
+            f"cols: {e['cols']}, fps: {e['fps']}, view: '{e['view']}'{position}, stages: [{stages}] }},"
         )
     lines.append('};')
     lines.append('')
@@ -762,10 +826,12 @@ def read_existing_manifest() -> dict[str, dict]:
         return {}
     entries = {}
     row = re.compile(
-        r"'(?P<id>[a-z0-9-]+)': \{ sprite: '(?P<sprite>[^']+)'"
+        r"'(?P<id>[a-z0-9:-]+)': \{ sprite: '(?P<sprite>[^']+)'"
         r"(?:, guides: '(?P<guides>[^']+)')?(?:, ghost: '(?P<ghost>[^']+)')?"
         r", frame: (?P<frame>\d+), frames: (?P<frames>\d+), cols: (?P<cols>\d+), fps: (?P<fps>\d+)"
-        r", view: '(?P<view>[^']+)', stages: \[(?P<stages>.*?)\] \},"
+        r", view: '(?P<view>[^']+)'"
+        r"(?:, position: \{ start: '(?P<pstart>[a-z]+)', end: '(?P<pend>[a-z]+)' \})?"
+        r", stages: \[(?P<stages>.*?)\] \},"
     )
     for m in row.finditer(MANIFEST.read_text(encoding='utf-8')):
         stages = [
@@ -779,8 +845,19 @@ def read_existing_manifest() -> dict[str, dict]:
         for k in ('guides', 'ghost'):
             if m[k]:
                 e[k] = m[k]
+        if m['pstart']:
+            e['position'] = {'start': m['pstart'], 'end': m['pend']}
         entries[m['id']] = e
     return entries
+
+
+def refresh_positions(entries: dict[str, dict]) -> None:
+    """Positions are authored data, not render output: every manifest write
+    takes them from the modules, so editing one never needs a re-render."""
+    files = {module_id(p): p for p in module_files()}
+    for pid, e in entries.items():
+        if pid in files:
+            e['position'] = posture_position(load_posture(files[pid]))
 
 
 ENTRIES_DIR = ROOT / '.motion-tmp' / 'entries'
@@ -793,6 +870,7 @@ def merge_entries() -> None:
         e = json.loads(f.read_text(encoding='utf-8'))
         entries[e['id']] = e
         f.unlink()
+    refresh_positions(entries)
     write_manifest(entries)
     print(f'manifest → {MANIFEST.relative_to(ROOT)} ({len(entries)} postures)')
 
@@ -808,9 +886,9 @@ def main() -> None:
     # and parallel writers must not race on the manifest)
     entry_only = '--entry-only' in argv
     argv = [a for a in argv if a != '--entry-only']
-    files = sorted(POSTURES_DIR.glob('*.py'))
+    files = module_files()
     if argv:
-        files = [p for p in files if p.stem.replace('_', '-') in argv or p.stem in argv]
+        files = [p for p in files if module_id(p) in argv or p.stem in argv]
     if not files:
         print('no posture modules matched', argv)
         sys.exit(1)
@@ -818,12 +896,13 @@ def main() -> None:
         ENTRIES_DIR.mkdir(parents=True, exist_ok=True)
         for path in files:
             e = render_posture(path)
-            (ENTRIES_DIR / f"{e['id']}.json").write_text(json.dumps(e), encoding='utf-8')
+            (ENTRIES_DIR / f"{file_stem(e['id'])}.json").write_text(json.dumps(e), encoding='utf-8')
         return
     entries = read_existing_manifest()
     for path in files:
         e = render_posture(path)
         entries[e['id']] = e
+    refresh_positions(entries)
     write_manifest(entries)
     print(f'manifest → {MANIFEST.relative_to(ROOT)} ({len(entries)} postures)')
 

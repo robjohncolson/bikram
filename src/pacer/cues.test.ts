@@ -4,6 +4,7 @@ import {
   buildClassTrack,
   buildPoseTrack,
   coachingMaterial,
+  cueLayer,
   cueWhen,
   lineFitsSegment,
   phaseAtBeat,
@@ -359,6 +360,40 @@ describe('cue sequencer', () => {
         expect(spokenBeats[i] - spokenBeats[i - 1], tr.pose.id).toBeGreaterThanOrEqual(4);
       }
       expect(tr.events.find((e) => e.kind === 'announce')!.atBeat).toBeLessThan(tr.totalBeats - 5);
+    }
+  });
+});
+
+describe('cueLayer', () => {
+  const cobra = poses.find((p) => p.id === 'cobra')!;
+  const line = (p: typeof cobra, start: string) => p.cues.find((c) => c.startsWith(start))!;
+
+  it('lights the ghost for a line that names the mistake', () => {
+    expect(cueLayer(line(cobra, 'Elbows stay bent'))).toBe('ghost'); // "do not press up into straight arms"
+    expect(cueLayer(line(halfMoon, 'Both knees locked'))).toBe('ghost'); // "not the arms or hips"
+    expect(cueLayer("Don't let the hips drop.")).toBe('ghost');
+    expect(cueLayer('Lift the chest instead of the chin.')).toBe('ghost');
+  });
+
+  it('lights the guides for any other coaching line', () => {
+    expect(cueLayer(line(cobra, 'Roll the shoulders down'))).toBe('guides');
+    expect(cueLayer(line(halfMoon, 'Keep the body in one flat plane'))).toBe('guides');
+  });
+
+  it('matches whole words only and lights nothing for empty text', () => {
+    expect(cueLayer('Keep the knot of the belly firm and stopwatch-steady.')).toBe('guides');
+    expect(cueLayer('')).toBeUndefined();
+    expect(cueLayer('   ')).toBeUndefined();
+  });
+
+  it('tags every coaching event with its layer and no walk-in or announce', () => {
+    for (const tr of buildClassTrack(60)) {
+      const coaching = new Set([...tr.pose.cues, tr.pose.breath]);
+      for (const e of tr.events) {
+        const isCoaching = e.kind === 'guide' && e.text !== undefined && coaching.has(e.text) && !tr.pose.setup.includes(e.text);
+        if (isCoaching) expect(e.layer, `${tr.pose.id}: ${e.text}`).toBe(cueLayer(e.text!));
+        else expect(e.layer, `${tr.pose.id}: ${e.kind} ${e.text ?? ''}`).toBeUndefined();
+      }
     }
   });
 });

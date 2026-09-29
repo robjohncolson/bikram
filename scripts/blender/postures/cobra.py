@@ -127,6 +127,7 @@ LIFT_GUIDES = [
 
 POSTURE = {
     'id': 'cobra',
+    'position': {'start': 'prone', 'end': 'prone'},
     'view': 'side',
     'frame': {'center_z': 0.35, 'scale': 2.4},
     'transition': 8,

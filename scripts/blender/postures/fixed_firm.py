@@ -102,6 +102,7 @@ LIE_GHOST = {
 
 POSTURE = {
     'id': 'fixed-firm',
+    'position': {'start': 'kneeling', 'end': 'kneeling'},
     'view': 'side',
     'frame': {'center_z': 0.55, 'scale': 2.0},
     'transition': 7,

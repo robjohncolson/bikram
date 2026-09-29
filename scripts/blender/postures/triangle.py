@@ -101,6 +101,7 @@ def triangle_ghost(side):
 
 POSTURE = {
     'id': 'triangle',
+    'position': {'start': 'standing', 'end': 'standing'},
     'view': 'front',
     'frame': {'center_z': 1.0, 'scale': 2.5},
     'transition': 7,

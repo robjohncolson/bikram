@@ -3,7 +3,7 @@ Render every held stage of one posture as a still and compose them into a
 single dark-background contact sheet for a quick visual check. Much faster
 than a full sprite render when tuning a posture's bone directions.
 
-    blender -b --python scripts/blender/preview_stages.py -- <pose-id> [out.png]
+    blender -b --python scripts/blender/preview_stages.py -- <pose-id | bridge:<a>-<b>> [out.png]
 
 Stages with `guides` show them in blue, stages with a `ghost` show the
 ghost figure in orange, both under the white figure (the real sheets keep
@@ -42,22 +42,23 @@ def main() -> None:
         print('usage: -- <pose-id> [out.png]')
         sys.exit(1)
     pose_id = argv[0]
-    out = Path(argv[1]) if len(argv) > 1 else rm.ROOT / '.motion-tmp' / f'preview-{pose_id}.png'
-    module = rm.POSTURES_DIR / f"{pose_id.replace('-', '_')}.py"
-    posture = rm.load_posture(module)
+    stem = rm.file_stem(pose_id)
+    out = Path(argv[1]) if len(argv) > 1 else rm.ROOT / '.motion-tmp' / f'preview-{stem}.png'
+    posture = rm.load_posture(rm.module_path(pose_id))
 
     built = rm.build_scene(posture)
     scene, layers, rig, cam = built['scene'], built['layers'], built['rig'], built['cam']
     guides, ghost = built['guides'], built['ghost']
-    center_z = posture.get('frame', {}).get('center_z', 0.9)
     rest = rm.rest_directions()
 
-    tmp = rm.ROOT / '.motion-tmp' / f'preview-{pose_id}'
+    tmp = rm.ROOT / '.motion-tmp' / f'preview-{stem}'
     tmp.mkdir(parents=True, exist_ok=True)
     frames = []   # (label, {'figure': p, 'guides': p?, 'ghost': p?})
     for i, st in enumerate(posture['stages']):
         rm.apply_stage(rig, st['pose'], rest)
+        center_z, scale = rm.stage_frame(posture, st)
         rm.orbit_camera(cam, st.get('view', posture.get('view', 'front')), center_z)
+        rm.frame_camera(cam, center_z, scale)
         cells = {}
         if guides[i] is not None:
             rm.solo(layers, 'Guides')

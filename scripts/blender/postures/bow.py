@@ -147,6 +147,7 @@ KICK_GHOST = {k: v for k, v in _GHOST.items() if KICK.get(k) != v}
 
 POSTURE = {
     'id': 'bow',
+    'position': {'start': 'prone', 'end': 'prone'},
     'view': 'side',
     'frame': {'center_z': 0.45, 'scale': 2.2},
     'transition': 7,

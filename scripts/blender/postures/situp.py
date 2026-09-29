@@ -149,6 +149,7 @@ FOLD_GUIDES = [
 
 POSTURE = {
     'id': 'situp',
+    'position': {'start': 'supine', 'end': 'supine'},
     'view': 'side',
     'frame': {'center_z': 0.35, 'scale': 2.4},
     'transition': 8,
