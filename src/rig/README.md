@@ -22,3 +22,13 @@ and the sweep axis is X, `midpoint_dir`'s side tie-break cannot separate
 them and Blender's pick is float32 noise. The port keeps the first way;
 the parity test names such cases and replays Blender's picks to show the
 rest of the port is exact.
+
+## Skin sections
+
+`fixtures/skin-fit-from-blender.json` holds the SUBDIVIDED skin's own
+cross-sections at each joint stem (the hull the sprite sheets draw), measured
+by a documented rule per stem; `body.ts SKIN_FIT` is those values to 3
+decimals and `body.test.ts` holds it to them. Regenerate when the skin
+(radii, joints, skin extras, modifier stack) changes, from the repo root:
+
+    C:/Tools/blender-5.2.1-windows-x64/blender.exe -b --python scripts/blender/measure_skin_fit.py

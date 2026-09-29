@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { motionManifest } from '../motion/manifest';
+import { poses } from '../poses';
 import type { Position, RigData, RigGuide, RigStagePose } from '../types';
-import { RIG_LIVE, applyFigureFlag, figureRenderer, hasRigData, loadRigData, rigBridgeIds } from './index';
+import { RIG_LIVE, applyFigureFlag, figureRenderer, hasRigData, loadRigData, preloadRigData, rigBridgeIds, rigDataIfLoaded } from './index';
 import skeleton from './skeleton.json';
 
 const sheets = import.meta.glob<RigData>(['./*.json', '!./skeleton.json'], { eager: true, import: 'default' });
@@ -79,13 +80,35 @@ describe('rig data (exported from the Blender posture modules)', () => {
     expect(rigBridgeIds().sort()).toEqual(Object.keys(motionManifest).filter((k) => k.startsWith('bridge:')).sort());
   });
 
-  it('rolls the live figure out behind a flag (figureRenderer is pure)', () => {
+  it('preloads a whole class (every posture + the bridges) and resolves once all have settled', async () => {
+    const ids = [...RIG_LIVE, ...rigBridgeIds(), 'not-a-sheet'];
+    await expect(preloadRigData(ids)).resolves.toBeUndefined();
+    for (const id of [...RIG_LIVE, ...rigBridgeIds()]) expect(rigDataIfLoaded(id)?.id, id).toBe(id);
+    expect(rigDataIfLoaded('not-a-sheet')).toBeUndefined();
+  });
+
+  it('rolls the live figure out to every posture with rig data (figureRenderer is pure)', () => {
     expect(RIG_LIVE.has('half-moon')).toBe(true);
+    // the set IS the postures with rig data: every manifest posture, no bridge
+    const postures = Object.keys(motionManifest).filter((k) => !k.startsWith('bridge:'));
+    expect([...RIG_LIVE].sort()).toEqual(postures.sort());
+    expect(RIG_LIVE.size).toBe(26);
+    expect([...RIG_LIVE].some((id) => id.startsWith('bridge'))).toBe(false);
     expect(figureRenderer('half-moon', undefined, 'class')).toBe('rig');
     expect(figureRenderer('half-moon', undefined, 'page')).toBe('sprite');
-    expect(figureRenderer('cobra', undefined, 'class')).toBe('sprite');
+    expect(figureRenderer('cobra', undefined, 'class')).toBe('rig');
+    expect(figureRenderer('cobra', undefined, 'page')).toBe('sprite');
     expect(figureRenderer('cobra', 'rig', 'page')).toBe('rig');
     expect(figureRenderer('nope', 'rig')).toBe('sprite');
+    expect(figureRenderer('nope', undefined, 'class')).toBe('sprite');
+  });
+
+  it('never mixes renderers in a class: every posture of the sequence draws the rig', () => {
+    expect(poses).toHaveLength(26);
+    for (const p of poses) {
+      expect(hasRigData(p.id), p.id).toBe(true);
+      expect(figureRenderer(p.id, undefined, 'class'), p.id).toBe('rig');
+    }
   });
 
   describe('applyFigureFlag', () => {
@@ -108,10 +131,12 @@ describe('rig data (exported from the Blender posture modules)', () => {
       // …so a later plain visit to a non-live posture gets the rig
       expect(figureRenderer('cobra', applyFigureFlag(''), 'page')).toBe('rig');
       expect(figureRenderer('cobra', applyFigureFlag(''), 'class')).toBe('rig');
-      // ?figure=sprite on half moon forgets it
+      // ?figure=sprite on half moon forgets it: pages go back to the sprite hero…
       expect(applyFigureFlag('?figure=sprite')).toBeUndefined();
-      expect(figureRenderer('cobra', applyFigureFlag(''), 'class')).toBe('sprite');
-      expect(figureRenderer('half-moon', applyFigureFlag(''), 'class')).toBe('rig'); // RIG_LIVE still
+      expect(figureRenderer('cobra', applyFigureFlag(''), 'page')).toBe('sprite');
+      // …and the class keeps the rig, which every posture now has (RIG_LIVE)
+      expect(figureRenderer('cobra', applyFigureFlag(''), 'class')).toBe('rig');
+      expect(figureRenderer('half-moon', applyFigureFlag(''), 'class')).toBe('rig');
     });
 
     it('still honours the query when storage is blocked', () => {

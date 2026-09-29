@@ -25,7 +25,7 @@ interface Fixture {
 }
 
 const fixtures = Object.values(
-  import.meta.glob<Fixture>(['./fixtures/*.json', '!./fixtures/skeleton-from-blender.json'], { eager: true, import: 'default' }),
+  import.meta.glob<Fixture>(['./fixtures/*.json', '!./fixtures/skeleton-from-blender.json', '!./fixtures/skin-fit-from-blender.json'], { eager: true, import: 'default' }),
 );
 const sheets = Object.fromEntries(
   Object.values(import.meta.glob<RigData>('../data/rig/*.json', { eager: true, import: 'default' }))

@@ -316,9 +316,19 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   matrix commutes with slerp; big turns through steered midpoints),
   `mirror.ts`, `camera.ts` (`cameraAt`/`stageCamera`/`orbitBetween`,
   smoothstep, short way round), `body.ts` (tube graph + guides; the MESH
-  recipe `bodyRecipe` uses the skin's ELLIPTICAL radii in rest space, one
-  rigid transform per bone via `placeBone` — the mean-radius round tubes
-  of `bodySegments` read fat from the side), `sheet.ts` (cached stage
+  recipe `bodyRecipe` is built from `SKIN_FIT` — the SUBDIVIDED skin's own
+  elliptical sections at each joint stem, MEASURED by
+  `scripts/blender/measure_skin_fit.py` (runs in Blender; a rule per stem;
+  writes `fixtures/skin-fit-from-blender.json`, which `body.test.ts` holds
+  `SKIN_FIT` to); the sheets draw that hull, not the skin radii — with
+  every leaf (crown, fingertips, toes, heels) pulled back so its round end
+  stops AT its vertex, one rigid transform per bone via `placeBone`, and
+  hinge joints turned halfway between their two bones (`placeJoint`) and
+  sized per pose by `jointRadii` — the fit at rest, grown just enough
+  (per axis, then uniformly, whichever grows least; exact, a 2×2
+  eigenvalue per rim) to enclose every tube rim under bend AND roll (the
+  twisting spine) — `body.test.ts` checks it on the production path over
+  Spine Twisting's stages and blends and synthetic rolls/bends), `sheet.ts` (cached stage
   poses/midpoints per sheet; `playAt` = a sheet on its own clock).
   PARITY: `fixtures/*.json` are Blender's own joint positions
   (`blender -b --python scripts/blender/export_fixtures.py`);
@@ -337,7 +347,15 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   posture/bridge module. `index.ts`: `loadRigData(id)` (lazy
   `import.meta.glob` chunk per sheet; bridge ids map to `bridge.<a>-<b>.json`),
   `rigDataIfLoaded`, `rigBridgeIds`, and the ROLLOUT FLAG: `RIG_LIVE`
-  (`{'half-moon'}`) gets the rig in class mode; `?figure=rig` forces it
+  (every posture with rig data, derived from the sheets — all 26; the
+  class never mixes renderers; checked posture by posture against the
+  sprites in `docs/live-figure-rollout.md`) gets the rig in class mode;
+  `Pacer` warms the rig chunks (`components/rigPreload.ts`) and starts
+  `preloadRigData` (a readiness promise) for every posture + the eight
+  bridges as the page opens and again on Begin; class mode never moves
+  its figure onto a sheet that has not loaded — it HOLDS the current rig
+  pose until the sheet arrives (`rigFallback.ts holdUntilLoaded`; a sheet
+  that fails is let through to the figure's own fallback); `?figure=rig` forces it
   everywhere (persisted in `yoga-figure-v1`), `?figure=sprite` clears it
   (`applyFigureFlag(search)` owns the storage side effect — views call it
   whatever the posture; `figureRenderer(id, override, 'class'|'page')` is
@@ -353,8 +371,13 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   clock the sprite then resumes at `frameForPose` of the rig's pose. The
   rig demonstration keeps its elapsed sheet time across pause (only a chip
   seeks, `stageStartAt`). Line art: normals+depth to a target, a
-  full-screen edge pass marks depth jumps (> `DEPTH_JUMP`) and sharp
-  normal creases, stroke = `LINE_PX/FRAME_PX × size`; ghost/figure/guides
+  full-screen edge pass marks depth jumps (> `DEPTH_JUMP`, measured against
+  the depth the surface's own slope predicts, so a grazing surface is not
+  a fill of contours) and normal creases only where they are CONTOURS (the
+  nearer side edge-on, `GRAZING`, over a surface behind it — concave folds
+  draw nothing, as in Freestyle); stroke = `INK_PX/FRAME_PX × px` (the
+  sheets' 1.7 px Freestyle line measures ~3.05 px of ink); no
+  supersampling (2× cost a class-mode frame past 8 ms at 4× throttle); ghost/figure/guides
   are each copied to their own 2D canvas (`figure-rig-layer--*`, so class
   mode fades them with the same `data-on` CSS); colours come from the
   wrapper's computed `color`, `--ember` (ghost at 55%) and `--stretches`,
@@ -365,8 +388,8 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   zero-length `cut` marker the sprite never shows (the rig blends back to
   stage 0 over `TRANSITION_FRAMES/fps`), `poseAt`, `figurePoseAt`.
   `PacerClassMode`'s hook computes frame and pose together and preloads
-  the bridges' rig JSON. `PoseDetail` shows sprite and live side by side
-  for `RIG_LIVE` postures (or all of them with the flag).
+  every posture's and bridge's rig JSON. `PoseDetail` shows sprite and
+  live side by side for `RIG_LIVE` postures (all of them).
 - `src/components/` — shared `PoseFigure` (figure or numbered-badge fallback)
   and `BodyMap` (front/back silhouettes, tintable muscle regions; its props
   contract is load-bearing for PoseDetail and Explorer).

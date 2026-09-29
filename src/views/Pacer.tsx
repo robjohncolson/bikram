@@ -50,7 +50,7 @@ import type {
   WakeLock,
 } from '../pacer';
 import type { Pose } from '../data';
-import { applyFigureFlag, poses } from '../data';
+import { applyFigureFlag, figureRenderer, poses, preloadRigData, rigBridgeIds } from '../data';
 import {
   amendLastClass,
   applyEvidence,
@@ -66,6 +66,7 @@ import {
   saveStore,
 } from '../trainer';
 import { PoseFigure } from '../components/PoseFigure';
+import { preloadRig } from '../components/rigPreload';
 import { PacerClassMode } from './PacerClassMode';
 import { CoachDebrief } from './CoachDebrief';
 import { COACH_PROGRAM_ID, loadCoachProgram, saveCoachProgram, validateProposal } from '../coach';
@@ -221,7 +222,16 @@ export function Pacer() {
   // ?figure=rig|sprite sets or clears the live-figure flag on arrival (class mode reads it)
   const { search } = useLocation();
   useEffect(() => {
-    applyFigureFlag(search);
+    // every posture of a class draws the live rig (RIG_LIVE): warm its code
+    // AND every posture's and bridge's sheet as the page opens, so class
+    // mode opens on the rig and a skip finds its sheet waiting (the class
+    // figure holds its pose for any sheet still on the way — PacerClassMode)
+    const override = applyFigureFlag(search);
+    const live = poses.filter((p) => figureRenderer(p.id, override, 'class') === 'rig');
+    if (live.length) {
+      preloadRig();
+      void preloadRigData([...live.map((p) => p.id), ...rigBridgeIds()]);
+    }
   }, [search]);
   const [settings, setSettings] = useState<PacerSettings>(restoreSettings);
   const [cues, setCues] = useState<CuePrefs>(restoreCues);
@@ -665,6 +675,9 @@ export function Pacer() {
     const m = metRef.current;
     if (!m) return;
     unlockClips(); // inside the gesture: mobile browsers need it here
+    // the program's sheets and the bridges, if the page-open preload has not
+    // fetched them yet (cached loads resolve at once)
+    void preloadRigData([...classPoses.map((p) => p.id), ...rigBridgeIds()]);
     if (!m.running) {
       m.start();
       setRunning(true);

@@ -10,6 +10,72 @@ push to `main` via Vercel's Git integration**; the CLI token on this machine is 
 
 ---
 
+## ✔ 2026-09-29 (afternoon) — LIVE FIGURE ROLLED OUT TO ALL 26 (uncommitted)
+
+`docs/live-figure-rollout-spec.md` §1–§5, as uncommitted working-tree changes (not reviewed,
+not committed). `RIG_LIVE` is now every posture with rig data (derived from the generated
+sheets; `rig-data.test.ts` pins it = the 26 manifest postures, no bridges, and that every
+posture of the sequence draws the rig in class mode). Posture pages show sprite + live side
+by side for all 26.
+
+Proof: a scratchpad Playwright script screenshotted sprite and live at every stage chip of
+all 26 postures and 8 bridges (layers off, then on where a stage has guides/ghost), one sheet
+per id, each looked at; the table Robert reads is `docs/live-figure-rollout.md`:
+postures ok 10 · fixed 9 · known 7; bridges ok 7 · known 1. The known rows are cosmetic
+(fully folded knees when sitting on the heels read ~0.04 m longer/rounder — Blender's
+subdivision pinches them; a waist nick in Pranayama's side view; Full Locust's head seen
+end-on as a ring). Worst per-stage ink bounding-box difference: median 11 → 2 px of 342, p90 14 → 8.
+
+Fixed generically (no posture data touched):
+- `body.ts`: the mesh is built from `SKIN_FIT` (the SUBDIVIDED skin's sections, measured by
+  sectioning Blender's evaluated body) instead of skin radii × 0.95; leaves end AT their
+  vertex (the head, hands, feet and lying figures were ~0.05 m long); hinge joints turn
+  halfway between their bones (`placeJoint`) and cover both tube rims at any bend (Camel's
+  lumpy back). `body.test.ts` (+5 tests).
+- `figureRigScene.ts`: stroke width matched to the sheets' measured ink (`INK_PX` 3.05 px at
+  240 — the live strokes were 2/3 as heavy); a normal crease strokes only where it is a
+  contour (`GRAZING`), so concave folds draw nothing; the depth jump is measured against the
+  surface's own slope (a grazing heel drew a grey block).
+- Supersampling measured and NOT adopted: class-mode size 390 px, DPR 1, 4× CPU throttle,
+  6 runs each: batched blend frame median 6.1 ms without / 8.8 ms with 2× supersampling;
+  frame + readback latency median 11.2 / 16.0 ms.
+
+Class mode (no flag), watched in a foreground Playwright Chrome: short class Pranayama → Half
+Moon → Awkward → Eagle → Cobra → Camel → Spine Twisting → Kapalbhati with Next skips and a
+pause/resume (figure frozen while paused, carries on after); full class skipped to Toe Stand →
+Savasana (the standing→supine bridge plays kneel, hands and knees, roll, lie), Wind Removing
+(guide flashes on coaching lines, 3 in 150 s), Sit-up posture (the sit-up plays; the
+supine→prone bridge rolls into Cobra); Half Moon from the start caught a guides flash and a
+ghost flash fading in. Every sampled frame after the first was the rig. `/pose/savasana`,
+`/cobra`, `/locust` at 360 px: the two figures stack, no horizontal overflow, both themes.
+
+Codex review (2 × P2) fixed, still uncommitted:
+- Joints under bend + ROLL: `jointRadii` (body.ts) sizes each hinge joint per pose to enclose
+  every tube rim exactly (the fit at rest; grown per axis then uniformly, whichever grows
+  least); the renderer applies it per frame. Spine Twisting's waist needed > 1.01 before.
+  `body.test.ts` checks the production path (`placeBone`/`placeJoint`/`jointRadii`) on every
+  Spine Twisting stage and blend, both sides, and synthetic longitudinal/plain/compound turns.
+- `SKIN_FIT` is now MEASURED by `scripts/blender/measure_skin_fit.py` (Blender) into
+  `src/rig/fixtures/skin-fit-from-blender.json` and held to it by `body.test.ts` (pelvis
+  0.14 → 0.155 across, ankle and hip re-measured; sheets re-shot, same numbers).
+- Sheets never missing mid-class: `preloadRigData` (readiness promise) runs for every posture
+  + the eight bridges when the Pacer opens and again on Begin; class mode HOLDS the current rig
+  pose while a destination sheet loads (`holdUntilLoaded`, unit-tested with a delayed promise
+  and early skips; also checked in Chrome with the Awkward sheet delayed 15 s: Half Moon's pose
+  held under the Awkward header, never a sprite frame).
+
+Not done / open:
+- At class OPEN the sprite still covers the first ~0.2 s (dev server) while WebGL starts and
+  compiles, even with `Pacer` now warming the rig chunks (`components/rigPreload.ts`) and class
+  mode preloading every sheet; after that no sprite frame was seen, skips and hand-offs
+  included. Removing it would mean an empty figure while loading, which the reviewed
+  fallback design rejects.
+- The known rows above (a pinched-knee model for full flexion would fix most of them).
+- The live figure lays ~13–20 % more ink than the sprite (arm-against-torso contours run
+  longer); stroke profile itself matches.
+
+---
+
 ## ✔ 2026-09-29 — LIVE FIGURE (`ec7207a`, pushed; Codex-reviewed, 6 findings fixed)
 
 Implemented `docs/live-figure-spec.md` §1–§7 as uncommitted working-tree changes (not reviewed

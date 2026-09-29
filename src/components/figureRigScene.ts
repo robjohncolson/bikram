@@ -35,24 +35,42 @@ import {
 import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
-import type { CameraState, RigPose, Solved, TubeRecipe, Vec3 } from '../rig';
-import { bodyRecipe, placeBone, solve } from '../rig';
+import type { CameraState, JointRecipe, RigPose, Solved, TubeRecipe, Vec3 } from '../rig';
+import { bodyRecipe, hingeBone, jointRadii, placeBone, placeJoint, solve } from '../rig';
 
-/** Freestyle stroke width at the sheets' 240 px cell (render_motion.py LINE_PX / FRAME_PX) */
-const LINE_PX = 1.7;
+/**
+ * The sheets' stroke as it reaches the screen, in px of ink across at the
+ * 240 px cell: Freestyle's 1.7 px line (render_motion.py LINE_PX) with its
+ * round caps and antialiasing measures ~3.05 px across once encoded
+ * (profiled on the posture page against the sprite cell of the same stage).
+ */
+const INK_PX = 3.05;
+/** the edge pass's antialiased rim adds about this much ink (px) to 2 × halfWidth */
+const EDGE_AA = 0.5;
 const GUIDE_PX = 1.0;
 const FRAME_PX = 240;
 /**
- * The Blender skin is a subdivided hull round the joint radii, which
- * comes out a little slimmer than the radii themselves; the tubes are
- * scaled to match the sheets' silhouette (compared side by side on the
- * posture page).
+ * a depth jump larger than this (metres) between neighbouring pixels is a
+ * contour — measured against the depth the surface's own slope predicts
+ * there, so a surface seen nearly edge-on (a heel tucked under the seat)
+ * is not mistaken for a fill of contours
  */
-const BODY_SCALE = 0.95;
-/** a depth jump larger than this (metres) between neighbouring pixels is a contour */
 const DEPTH_JUMP = 0.05;
+/** the slope prediction stops at this steepness (the view normal's z) */
+const MIN_FACING = 0.08;
 /** neighbouring normals closer than this (cosine) are the same surface */
-const NORMAL_SAME = 0.0;
+const NORMAL_SAME = 0.5;
+/**
+ * A normal crease is only a stroke where it is a CONTOUR, as Freestyle
+ * draws them: the nearer side is turning away from the camera (its view
+ * normal within this of edge-on) over a surface just behind it — an arm
+ * lying against the torso. Where two surfaces meet in a concave fold (an
+ * arm pressed to the head, the tube running into a joint) neither side is
+ * edge-on and the sheets draw nothing, so neither does the rig.
+ */
+const GRAZING = 0.7;
+/** the surface behind a contour must be at least this far back (metres) */
+const CONTOUR_GAP = 0.002;
 const NEAR = 0.1;
 const FAR = 20;
 
@@ -100,22 +118,32 @@ uniform sampler2D tDepth;
 uniform vec2 texel;
 uniform float halfWidth;
 uniform float depthRange;
+uniform float metersPerPx;
 uniform vec4 color;
 varying vec2 vUv;
 
 const int RINGS = 12;
 const float DEPTH_JUMP = ${DEPTH_JUMP.toFixed(4)};
+const float MIN_FACING = ${MIN_FACING.toFixed(3)};
 const float NORMAL_SAME = ${NORMAL_SAME.toFixed(3)};
+const float GRAZING = ${GRAZING.toFixed(3)};
+const float CONTOUR_GAP = ${CONTOUR_GAP.toFixed(4)};
 
-bool edgeBetween(float dc, vec3 nc, vec2 uv) {
+bool edgeBetween(float dc, vec3 nc, vec2 uv, vec2 offPx) {
   float ds = texture2D(tDepth, uv).x;
   bool bc = dc >= 0.99999;
   bool bs = ds >= 0.99999;
   if (bc && bs) return false;
   if (bc != bs) return true;
-  if (abs(ds - dc) * depthRange > DEPTH_JUMP) return true;
+  float dz = (ds - dc) * depthRange;
+  // what the centre's own surface would do over this offset (a plane with
+  // view normal nc: depth grows by n.xy · offset / n.z)
+  float pred = dot(nc.xy, offPx * metersPerPx) / max(nc.z, MIN_FACING);
+  if (abs(dz - pred) > DEPTH_JUMP) return true;
   vec3 ns = texture2D(tNormal, uv).xyz * 2.0 - 1.0;
-  return dot(nc, ns) < NORMAL_SAME;
+  if (dot(nc, ns) >= NORMAL_SAME || abs(dz) < CONTOUR_GAP) return false;
+  vec3 nNear = dz > 0.0 ? nc : ns;
+  return abs(nNear.z) < GRAZING;
 }
 
 void main() {
@@ -128,7 +156,7 @@ void main() {
     for (int i = 0; i < 8; i++) {
       float a = float(i) * 0.78539816;
       vec2 off = vec2(cos(a), sin(a)) * d;
-      if (edgeBetween(dc, nc, vUv + off * texel)) { dmin = d; break; }
+      if (edgeBetween(dc, nc, vUv + off * texel, off)) { dmin = d; break; }
     }
     if (dmin < 1e3) break;
   }
@@ -143,8 +171,8 @@ function tubeGeometry(t: TubeRecipe): BufferGeometry {
   const index: number[] = [];
   for (let end = 0; end < 2; end++) {
     const c = end === 0 ? t.from : t.to;
-    const ru = t.ru[end] * BODY_SCALE;
-    const rv = t.rv[end] * BODY_SCALE;
+    const ru = t.ru[end];
+    const rv = t.rv[end];
     for (let i = 0; i < TUBE_SIDES; i++) {
       const a = (i / TUBE_SIDES) * Math.PI * 2;
       const cu = Math.cos(a) * ru;
@@ -168,11 +196,14 @@ const TUBE_SIDES = 24;
 /**
  * A mannequin: per bone one group holding that bone's tubes and joint
  * ellipsoids in REST coordinates (`rig/body.ts bodyRecipe`), so posing is
- * one rigid transform per bone (`placeBone`) — no geometry is rebuilt.
+ * one rigid transform per bone (`placeBone`) — no geometry is rebuilt. A
+ * hinge joint's ellipsoid has a group of its own, turned halfway between
+ * its two bones (`placeJoint`) and sized to hold both rims (`jointRadii`).
  */
 class Mannequin {
   readonly group = new Group();
   private bones = new Map<string, Group>();
+  private hinges: { joint: JointRecipe; group: Group; mesh: Mesh }[] = [];
   private geometries: BufferGeometry[] = [];
 
   constructor(material: MeshNormalMaterial) {
@@ -196,8 +227,15 @@ class Mannequin {
     for (const j of joints) {
       const m = new Mesh(ball, material);
       m.position.set(...j.at);
-      m.scale.set(j.radii[0] * BODY_SCALE, j.radii[1] * BODY_SCALE, j.radii[2] * BODY_SCALE);
-      groupOf(j.bone).add(m);
+      m.scale.set(...j.radii);
+      if (hingeBone(j.vertex)) {
+        const g = new Group();
+        g.add(m);
+        this.group.add(g);
+        this.hinges.push({ joint: j, group: g, mesh: m });
+      } else {
+        groupOf(j.bone).add(m);
+      }
     }
   }
 
@@ -206,6 +244,13 @@ class Mannequin {
       const { position, q } = placeBone(solved, bone);
       g.position.set(...position);
       g.quaternion.set(q[1], q[2], q[3], q[0]);
+    }
+    for (const { joint, group, mesh } of this.hinges) {
+      const { position, q } = placeJoint(solved, joint);
+      group.position.set(...position);
+      group.quaternion.set(q[1], q[2], q[3], q[0]);
+      // grown just enough to hold both tube rims when they roll against it (== the fit at rest)
+      mesh.scale.set(...jointRadii(solved, joint));
     }
   }
 
@@ -267,6 +312,7 @@ export class RigScene {
         texel: { value: new Vector2(1, 1) },
         halfWidth: { value: 1 },
         depthRange: { value: FAR - NEAR },
+        metersPerPx: { value: 0.01 },
         color: { value: new Vector4(1, 1, 1, 1) },
       },
       depthTest: false,
@@ -288,7 +334,13 @@ export class RigScene {
     return this.renderer.domElement;
   }
 
-  /** Size in CSS px (square); the backing store is capped at 2× DPR. */
+  /**
+   * Size in CSS px (square); the backing store is capped at 2× DPR. No
+   * supersampling: drawing the edge target at 2× and scaling it down took
+   * a class-mode blend frame past the 8 ms budget at 4× CPU throttling
+   * (median ~8.8 ms batched, ~16 ms with the readback, against ~6 / ~11 ms),
+   * so a 1× screen gets the edge pass's own antialiased strokes.
+   */
   setSize(size: number) {
     const dpr = Math.min(2, window.devicePixelRatio || 1);
     if (size === this.size && dpr === this.dpr) return;
@@ -300,13 +352,14 @@ export class RigScene {
     this.target.setSize(px, px);
     (this.edge.uniforms.texel.value as Vector2).set(1 / px, 1 / px);
     // the sheets' stroke, scaled with the cell (and the backing store)
-    this.edge.uniforms.halfWidth.value = ((LINE_PX / FRAME_PX) * size * dpr) / 2;
+    this.edge.uniforms.halfWidth.value = Math.max(0.5, ((INK_PX / FRAME_PX) * px - EDGE_AA) / 2);
     this.guideMaterial.resolution.set(px, px);
-    this.guideMaterial.linewidth = Math.max(1, (GUIDE_PX / FRAME_PX) * size * dpr);
+    this.guideMaterial.linewidth = Math.max(1, (GUIDE_PX / FRAME_PX) * px);
   }
 
   private aim(cam: CameraState) {
     const h = cam.scale / 2;
+    this.edge.uniforms.metersPerPx.value = cam.scale / Math.max(1, this.renderer.domElement.width);
     this.camera.left = -h;
     this.camera.right = h;
     this.camera.top = h;

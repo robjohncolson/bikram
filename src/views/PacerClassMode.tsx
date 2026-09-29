@@ -1,9 +1,10 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useReducer, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
 import { useLocation } from 'react-router-dom';
 import type { Pose, PoseMotion as Motion } from '../data';
-import { applyFigureFlag, figureRenderer, loadRigData, rigBridgeIds } from '../data';
+import { RIG_LIVE, applyFigureFlag, figureRenderer, loadRigData, motionId, rigBridgeIds, rigDataIfLoaded } from '../data';
 import { PoseMotion } from '../components/PoseMotion';
+import { holdUntilLoaded } from '../components/rigFallback';
 import type { BreathPhase } from '../components/PoseMotion';
 import { clipSeconds, figureFrameAt, figurePlan, figurePoseAt, planEnd, segmentTimeline } from '../pacer';
 import type { CueLayer, FigureFrame, FigurePlan, FigurePose, PoseTrack, SegmentPosition } from '../pacer';
@@ -272,16 +273,19 @@ export function PacerClassMode(props: PacerClassModeProps) {
       }),
     [props.pose, track, beatSeconds, previous],
   );
-  // the renderer: the live rig for RIG_LIVE postures (or everything with
-  // ?figure=rig), else the sprite; the bridges' rig data is preloaded so a
-  // hand-off never waits on a fetch
+  // the renderer: the live rig for RIG_LIVE postures (every posture with rig
+  // data, or everything with ?figure=rig), else the sprite. Every posture's
+  // and bridge's rig data is preloaded (the Pacer starts it as the page
+  // opens; this posture's first here), and the figure below HOLDS its pose
+  // for a sheet still on the way, so a skip or hand-off never shows the
+  // sprite in the middle of a class
   const { search } = useLocation();
   const override = useMemo(() => applyFigureFlag(search), [search]);
   const renderer = figureRenderer(props.pose.id, override, 'class');
   const rig = renderer === 'rig';
   useEffect(() => {
     if (!rig) return;
-    for (const id of [props.pose.id, ...rigBridgeIds()]) loadRigData(id).catch(() => {});
+    for (const id of [props.pose.id, ...rigBridgeIds(), ...RIG_LIVE]) loadRigData(id).catch(() => {});
   }, [rig, props.pose.id]);
   const classFigure = useClassFigureFrame(plan, props.figureClock, props.breath, props.paused, rig);
   const figure = classFigure?.frame;
@@ -289,7 +293,39 @@ export function PacerClassMode(props: PacerClassModeProps) {
     plan && props.figureClock
       ? plan.segments[Math.min(props.figureClock.segment, plan.segments.length - 1)]?.motion
       : undefined;
-  const motion: Motion | undefined = props.hidden ? undefined : (figure?.motion ?? segMotion ?? props.pose.motion);
+  const nextMotion: Motion | undefined = props.hidden ? undefined : (figure?.motion ?? segMotion ?? props.pose.motion);
+  const nextPose = rig ? classFigure?.pose : undefined;
+  // never move the figure onto a sheet that has not loaded: hold what it
+  // drew last (the current rig pose) until the sheet arrives, then move
+  const [, sheetArrived] = useReducer((n: number) => n + 1, 0);
+  const wanted = {
+    motion: nextMotion,
+    pose: nextPose,
+    frame: figure?.frame,
+    sheet: rig && nextMotion ? motionId(nextPose?.motion ?? nextMotion) : undefined,
+  };
+  const heldRef = useRef<typeof wanted | undefined>(undefined);
+  // a sheet that will not load is let through: the figure's own fallback takes it from there
+  const failedRef = useRef(new Set<string>());
+  const settled = (id: string) => rigDataIfLoaded(id) !== undefined || failedRef.current.has(id);
+  const shown = rig ? holdUntilLoaded(heldRef.current, wanted, settled) : wanted;
+  heldRef.current = shown;
+  const waitingFor = wanted.sheet && shown !== wanted ? wanted.sheet : undefined;
+  useEffect(() => {
+    if (!waitingFor) return;
+    let alive = true;
+    const arrived = () => {
+      if (alive) sheetArrived();
+    };
+    loadRigData(waitingFor).then(arrived, () => {
+      failedRef.current.add(waitingFor);
+      arrived();
+    });
+    return () => {
+      alive = false;
+    };
+  }, [waitingFor]);
+  const motion = shown.motion;
   // a coaching line lights its layer for one breath; nothing while withheld
   const layer = props.hidden ? undefined : props.layer;
 
@@ -350,9 +386,9 @@ export function PacerClassMode(props: PacerClassModeProps) {
                 breathPaused={props.paused}
                 layers={{ guides: layer === 'guides', ghost: layer === 'ghost' }}
                 fadeLayers
-                frame={figure?.frame}
+                frame={shown.frame}
                 renderer={renderer}
-                pose={rig ? classFigure?.pose : undefined}
+                pose={shown.pose}
                 breathProgress={classFigure?.breathProgress}
               />
             </div>

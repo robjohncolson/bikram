@@ -5,9 +5,11 @@
  * draws, and the service worker's runtime cache keeps them offline like
  * every other chunk.
  *
- * Rollout: the sprite stays the default. `RIG_LIVE` postures draw the live
- * rig in class mode; `?figure=rig` forces it everywhere (remembered in
- * `yoga-figure-v1`) and `?figure=sprite` clears that.
+ * Rollout: every posture with rig data is `RIG_LIVE` — the class draws the
+ * live rig throughout (never a mix of renderers between postures), and a
+ * posture page shows the sprite and the live figure side by side.
+ * `?figure=rig` forces the rig everywhere (remembered in `yoga-figure-v1`)
+ * and `?figure=sprite` clears that.
  */
 import type { RigData } from '../types';
 
@@ -43,6 +45,17 @@ export function loadRigData(id: string): Promise<RigData> {
   return p;
 }
 
+/**
+ * Start loading these sheets and resolve once every one has settled (a
+ * sheet that fails is left to the figure's own fallback). Class mode starts
+ * this for the whole program and the eight bridges as soon as the pacer
+ * page opens, so a skip rarely has to wait — and when it does, the class
+ * figure holds its pose until the sheet arrives (`holdUntilLoaded`).
+ */
+export function preloadRigData(ids: Iterable<string>): Promise<void> {
+  return Promise.allSettled([...ids].filter(hasRigData).map((id) => loadRigData(id))).then(() => undefined);
+}
+
 /** The sheet if it has already loaded (so a re-render never flashes the fallback). */
 export function rigDataIfLoaded(id: string): RigData | undefined {
   return loaded.get(id);
@@ -56,8 +69,18 @@ export function rigBridgeIds(): string[] {
     .map((s) => s.replace('.', ':'));
 }
 
-/** Postures whose class-mode figure is the live rig by default. */
-export const RIG_LIVE: ReadonlySet<string> = new Set(['half-moon']);
+/**
+ * Postures whose class-mode figure is the live rig by default: every
+ * posture with rig data (derived from the generated sheets, so a new
+ * posture module joins by `npm run rig:export`; bridges are not postures).
+ * Checked against the sprite, posture by posture, in
+ * `docs/live-figure-rollout.md`.
+ */
+export const RIG_LIVE: ReadonlySet<string> = new Set(
+  Object.keys(files)
+    .map((k) => k.slice(2, -5))
+    .filter((s) => !s.startsWith('bridge.')),
+);
 
 const FLAG_KEY = 'yoga-figure-v1';
 
