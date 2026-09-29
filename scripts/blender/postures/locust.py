@@ -40,6 +40,12 @@ def prone(**over):
 
 
 LIE = prone()
+# "Work the elbows toward each other": the arms drawn in under the body.
+ELBOWS_TOGETHER = prone(**{
+    'clavicle.L': (0.9, 0.1, -0.5), 'clavicle.R': (-0.9, 0.1, -0.5),
+    'upperarm.L': (-0.45, 0.9, 0), 'upperarm.R': (0.45, 0.9, 0),
+    'forearm.L': (-0.05, 1, 0), 'forearm.R': (0.05, 1, 0),
+})
 
 # "Lie face down with the chin reaching forward": arms still beside the
 # body, before they are fed underneath.
@@ -116,6 +122,7 @@ POSTURE = {
     'stages': [
         {'label': 'Lie prone', 'pose': LIE_BESIDE, 'hold': 4},
         {'label': 'Arms under the body', 'pose': LIE, 'hold': 5},
+        {'label': 'Elbows toward each other', 'pose': ELBOWS_TOGETHER, 'hold': 4},
         {'label': 'Right leg', 'pose': RIGHT, 'hold': 6,
          'guides': leg_guides(), 'ghost': hip_hike('R')},
         {'label': 'Left leg', 'pose': LEFT, 'hold': 6,

@@ -40,6 +40,7 @@ function stem(w: string): string {
     .toLowerCase()
     .replace(/[^a-z]/g, '')
     .replace(/(ing|ed|es|s)$/, '')
+    .replace(/([bdgklmnprt])\1$/, '$1') // sitting -> sit, planted -> plant
     .replace(/(ie)$/, 'y');
 }
 

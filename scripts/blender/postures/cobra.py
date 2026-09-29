@@ -93,6 +93,8 @@ PRONE = {
 }
 
 HANDS = hands_down(body(*FLAT))
+# "Hug the elbows in against the ribs": the same hands, elbows tucked.
+ELBOWS_IN = hands_down(body(*FLAT), hint=(-0.15, 0.4, 1))
 
 LIFT = hands_down(body(
     (0, -1, 0.1), (0, -0.8, 0.6), (0, -0.45, 0.89), (0, -0.3, 0.95), (0, -0.25, 0.97),
@@ -131,6 +133,7 @@ POSTURE = {
     'stages': [
         {'label': 'Lie prone', 'pose': PRONE, 'hold': 4},
         {'label': 'Hands under shoulders', 'pose': HANDS, 'hold': 5},
+        {'label': 'Elbows in', 'pose': ELBOWS_IN, 'hold': 4},
         {'label': 'Lift', 'pose': LIFT, 'hold': 10,
          'guides': LIFT_GUIDES, 'ghost': LIFT_GHOST},
         {'label': 'Lower', 'pose': HANDS, 'hold': 4},

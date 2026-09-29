@@ -85,6 +85,15 @@ describe('cue sequencer', () => {
     expect(segOf(at(halfMoon.setup[4])!)).toBe('First set — hands to feet');
   });
 
+  it('speaks a step that opens with "on the second side" on the left side', () => {
+    const eagle = poses.find((p) => p.id === 'eagle')!;
+    const track = buildPoseTrack(eagle, 60);
+    const line = eagle.setup.find((s) => /^on the second side/i.test(s))!;
+    const ev = track.events.find((e) => e.text === line)!;
+    expect(segmentAtBeat(track, ev.atBeat)!.label).toBe('First set — left side');
+    expect(segmentAtBeat(track, ev.atBeat)!.entering).toBe(true);
+  });
+
   it('coaches each part of a posture only with lines about it', () => {
     for (const track of buildClassTrack(60)) {
       const phrases = [...new Set(track.spans.map((sp) => sp.phrase))];

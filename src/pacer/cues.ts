@@ -140,6 +140,8 @@ const WALK_IN_LINES_PER_BREATH = 2;
  * segment about that part, and the steps after it follow until the next
  * named part. Steps naming nothing stay with the current bucket.
  */
+const working = (sp: { kind: string }) => sp.kind !== 'rest' && sp.kind !== 'situp';
+
 export function walkInBuckets(pose: Pose, spans: SegSpan[]): Map<number, string[]> {
   const buckets = new Map<number, string[]>();
   const firstOf = new Map<string, number>();
@@ -147,14 +149,19 @@ export function walkInBuckets(pose: Pose, spans: SegSpan[]): Map<number, string[
     if (sp.kind === 'rest' || sp.kind === 'situp') return;
     if (sp.phrase && !firstOf.has(sp.phrase)) firstOf.set(sp.phrase, i);
   });
+  // a step that opens by naming the second side belongs to the first
+  // segment about the left ("On the second side, everything mirrors…")
+  const leftSeg = spans.findIndex((sp, i) => working(sp) && i > 0 && /\bleft\b/i.test(pose.segments?.[i]?.label ?? ''));
   let cur = 0;
   for (const step of pose.setup) {
     for (const [phrase, idx] of firstOf) {
       if (idx > cur && mentionsPhrase(step, phrase)) cur = Math.max(cur, idx);
     }
-    const list = buckets.get(cur) ?? [];
+    let at = cur;
+    if (leftSeg > cur && /^(on|for) the (second|other|left) side\b/i.test(step.trim())) at = leftSeg;
+    const list = buckets.get(at) ?? [];
     list.push(step);
-    buckets.set(cur, list);
+    buckets.set(at, list);
   }
   return buckets;
 }
@@ -188,7 +195,6 @@ export function buildPoseTrack(pose: Pose, bpm: number, opts: CueOptions = {}): 
   // by a nominal breath instead (the default six-count's twelve beats)
   const stride = breath > 1 ? breath : breathBeats(DEFAULT_BAR_BEATS);
   const lineStride = stride / WALK_IN_LINES_PER_BREATH;
-  const working = (sp: { kind: string }) => sp.kind !== 'rest' && sp.kind !== 'situp';
   /** whole strides covering `lines` spoken lines, one a bar */
   const entryFor = (lines: number) => (lines > 0 ? Math.ceil(lines / WALK_IN_LINES_PER_BREATH) * stride : 0);
 

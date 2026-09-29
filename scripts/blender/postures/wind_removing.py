@@ -68,15 +68,29 @@ LONG_LEG = {'R': {'thigh.R': (-0.03, 1, 0), 'shin.R': (-0.03, 1, 0), 'foot.R': (
             'L': {'thigh.L': (0.03, 1, 0), 'shin.L': (0.03, 1, 0), 'foot.L': (0, 0.3, 1)}}
 
 THIGH_IN = _n((0, -0.55, 0.83))     # knee pulled toward the chest
+THIGH_NEAR = _n((0, -0.3, 0.95))    # knee drawn up, not yet pulled in
 SHIN_IN = _n((0, 0.9, -0.35))
 
 
-def knee(side, dx=0.0):
-    t = _n((THIGH_IN[0] + dx, THIGH_IN[1], THIGH_IN[2]))
+THIGH_DEEP = _n((0, -0.72, 0.69))   # knee pulled down beside the ribcage
+
+
+def knee(side, dx=0.0, thigh=THIGH_IN):
+    t = _n((thigh[0] + dx, thigh[1], thigh[2]))
     return _add(HIP[side], t, 0.44), t
 
 
-def hug(sides, lift=0.0, soft_leg=False):
+def knee_up(side):
+    """'Bend the knee and draw the thigh toward the chest': the knee up,
+    hands not yet on it."""
+    pose = {**FLAT}
+    pose[f'thigh.{side}'] = THIGH_NEAR
+    pose[f'shin.{side}'] = _n((0, 0.85, -0.5))
+    pose[f'foot.{side}'] = (0, 0.6, 0.8)
+    return pose
+
+
+def hug(sides, lift=0.0, soft_leg=False, thigh=THIGH_IN):
     """Knee(s) in, hands interlaced on the shin(s) just below the knee.
     `lift` curls the upper back off the mat (shoulders rising); `soft_leg`
     lets the extended leg's knee bend up — both only used by the ghost."""
@@ -91,7 +105,7 @@ def hug(sides, lift=0.0, soft_leg=False):
     grips = []
     for s in 'RL':
         if s in sides:
-            k, t = knee(s)
+            k, t = knee(s, thigh=thigh)
             pose[f'thigh.{s}'] = t
             pose[f'shin.{s}'] = SHIN_IN
             pose[f'foot.{s}'] = (0, 0.6, 0.8)
@@ -143,7 +157,9 @@ POSTURE = {
     'transition': 8,
     'stages': [
         {'label': 'Lie down', 'pose': FLAT, 'hold': 4},
-        {'label': 'Right knee', 'pose': hug('R'), 'hold': 8,
+        {'label': 'Right knee up', 'pose': knee_up('R'), 'hold': 4},
+        {'label': 'Fingers below the knee', 'pose': hug('R'), 'hold': 4},
+        {'label': 'Knee to the shoulder', 'pose': hug('R', thigh=THIGH_DEEP), 'hold': 8,
          'guides': GUIDES, 'ghost': ghost('R')},
         {'label': 'Left knee', 'pose': hug('L'), 'hold': 8,
          'guides': GUIDES, 'ghost': ghost('L')},

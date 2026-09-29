@@ -223,7 +223,7 @@ POSTURE = {
     'stages': [
         {'label': 'Sit', 'pose': SIT, 'hold': 4},
         {'label': 'Hold the foot', 'pose': HOLD_FOOT, 'hold': 4},
-        {'label': 'Forehead to the right knee', 'pose': RIGHT, 'hold': 7,
+        {'label': 'Forehead to the knee', 'pose': RIGHT, 'hold': 7,
          'guides': knee_guides('R', -1), 'ghost': knee_ghost('R', -1)},
         {'label': 'Left leg', 'pose': LEFT, 'hold': 7,
          'guides': knee_guides('L', 1), 'ghost': knee_ghost('L', 1)},

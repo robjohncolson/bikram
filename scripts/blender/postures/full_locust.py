@@ -50,6 +50,8 @@ def wings(lift=0.0, sweep=0.12):
 
 LIE = prone()
 ARMS = prone(**wings())
+# "Bring your legs together, knees straight, toes pointed."
+TOES = prone(**{**wings(), 'foot.L': (0, 0.95, -0.3), 'foot.R': (0, 0.95, -0.3)})
 
 LEG = (0, 0.9, 0.42)
 FLY = prone(**{
@@ -87,6 +89,7 @@ POSTURE = {
     'stages': [
         {'label': 'Lie prone', 'pose': LIE, 'hold': 4},
         {'label': 'Arms out', 'pose': ARMS, 'hold': 5, 'view': 'front'},
+        {'label': 'Toes pointed', 'pose': TOES, 'hold': 4},
         {'label': 'Lift off the floor', 'pose': FLY, 'hold': 10,
          'guides': FLY_GUIDES, 'ghost': FLY_GHOST},
         {'label': 'Lower', 'pose': ARMS, 'hold': 4},

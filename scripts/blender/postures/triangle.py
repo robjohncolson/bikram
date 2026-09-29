@@ -68,6 +68,12 @@ def triangle(side):
     }
 
 
+def look_up(side):
+    """The full triangle with the head turned up to the top hand."""
+    s = -1 if side == 'R' else 1
+    return {**triangle(side), 'head': (s * 0.2, -0.35, 0.9)}
+
+
 def triangle_guides(side):
     """The pane the whole body stays in, the horizontal at the bent thigh,
     and the one vertical line of the arms."""
@@ -103,10 +109,11 @@ POSTURE = {
         {'label': 'Arms out', 'pose': OPEN, 'hold': 4},
         {'label': 'Turn the right foot', 'pose': TURN, 'hold': 3},
         {'label': 'Bend right knee', 'pose': bend('R'), 'hold': 3},
-        {'label': 'Right hand down', 'pose': triangle('R'), 'hold': 9,
+        {'label': 'Right hand down', 'pose': triangle('R'), 'hold': 5},
+        {'label': 'Turn the head', 'pose': look_up('R'), 'hold': 9,
          'guides': triangle_guides('R'), 'ghost': triangle_ghost('R')},
         {'label': 'Centre', 'pose': OPEN, 'hold': 3},
-        {'label': 'Left side', 'pose': triangle('L'), 'hold': 7,
+        {'label': 'Left side', 'pose': look_up('L'), 'hold': 7,
          'guides': triangle_guides('L'), 'ghost': triangle_ghost('L')},
         {'label': 'Rise', 'pose': OPEN, 'hold': 3},
         {'label': 'Stand', 'pose': TADASANA, 'hold': 4},
