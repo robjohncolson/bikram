@@ -44,6 +44,7 @@ import { bridgeFor, getPose } from '../data';
 import { segmentKey } from './grid';
 import type { PoseTrack } from './cues';
 import { mapSteps } from './stagematch';
+import { tempoOf } from './tempo';
 
 /** frames a stage-to-stage transition takes in the sheets (6–8 by posture);
  *  the larger value so a hop never misses motion — at worst a still hold
@@ -53,10 +54,15 @@ const NEUTRAL = /^(release|centre|center|rise|lower|change|stand)$/i;
 const SIDE_WORDS = ['right', 'left', 'both'] as const;
 type Side = (typeof SIDE_WORDS)[number];
 
-/** A movement the spoken class asks for: reach `stage` at `seconds` into the segment. */
+/** A movement the spoken class asks for: start for `stage` at `seconds` into the segment. */
 export interface FigureMove {
   seconds: number;
   stage: number;
+  /**
+   * how long the travel takes, when the line sets a tempo ("slowly", "in
+   * one motion", "on an inhale"); undefined = the sheet's own fps
+   */
+  over?: number;
 }
 
 /** A hand-off bridge a segment plays before its own frames. */
@@ -94,6 +100,12 @@ export type FigureSegment = FigureBridge &
       moves?: FigureMove[];
       /** figure seconds when the last spoken walk-in line ends: the entry completes after it */
       settle?: number;
+      /**
+       * seconds the entry travel takes when the segment's own change cue
+       * sets a tempo ("Come up slowly — and over to the left side"):
+       * the lead bar, so the move rides the exhale it is spoken on
+       */
+      entryOver?: number;
     }
   | { kind: 'breath'; motion: PoseMotion; inhale: number; exhale: number }
   | { kind: 'pulse'; motion: PoseMotion; from: number; to: number }
@@ -277,12 +289,16 @@ export function figurePlan(pose: Pose, opts: FigurePlanOptions = {}): FigurePlan
       m === own && targets.length === 1 && seg.kind !== 'rest' && seg.kind !== 'situp'
         ? walkInMoves(pose, opts, out.length, from, targets[0])
         : undefined;
+    // a change cue that says "slowly" stretches the entry over the bar it is spoken on
+    const barSeconds = (opts.track?.barBeats ?? 0) * (opts.beatSeconds ?? 1);
+    const entryOver = out.length > 0 && tempoOf(seg.cue).kind === 'slow' && barSeconds > 0 ? barSeconds : undefined;
     out.push({
       kind: 'stages',
       motion: m,
       from,
       targets,
       ...(spoken && spoken.moves.length ? { moves: spoken.moves, settle: spoken.settle } : {}),
+      ...(entryOver ? { entryOver } : {}),
       ...bridgeInto(m),
     });
     // leaving a sheet (a rest, a sit-up) puts the figure down: the next set
@@ -337,12 +353,25 @@ function walkInMoves(
   const stages = mapSteps(texts, labels, from, target);
   const moves: FigureMove[] = [];
   let settle = 0;
+  const barSeconds = track.barBeats * beatSeconds;
+  const breathSeconds = track.breathBeats * beatSeconds;
+  /** figure seconds of the next inhale start at or after `t` (segments open on an inhale) */
+  const nextInhale = (t: number) => {
+    if (track.barBeats <= 1) return t;
+    const inClass = t - leadBeats * beatSeconds; // class seconds into the segment
+    const k = Math.max(0, Math.ceil(inClass / breathSeconds - 1e-9));
+    return k * breathSeconds + leadBeats * beatSeconds;
+  };
   lines.forEach((e, i) => {
-    const ends = (e.atBeat - span.startBeat + leadBeats) * beatSeconds + clipSeconds(texts[i]);
+    const clip = clipSeconds(texts[i]);
+    const ends = (e.atBeat - span.startBeat + leadBeats) * beatSeconds + clip;
     settle = Math.max(settle, ends);
     const stage = stages[i];
     if (stage === undefined) return;
-    moves.push({ seconds: ends, stage });
+    const tempo = tempoOf(texts[i]);
+    const starts = tempo.starts === 'line-start' ? ends - clip : tempo.starts === 'next-inhale' ? nextInhale(ends) : ends;
+    const over = tempo.over?.({ clipSeconds: clip, barSeconds });
+    moves.push({ seconds: starts, stage, ...(over !== undefined ? { over } : {}) });
   });
   return { moves, settle };
 }
@@ -419,7 +448,7 @@ function stagedTimeline(seg: Extract<FigureSegment, { kind: 'stages' }>, seconds
   const steps: FrameStep[] = [];
   let t = t0;
   let cur = seg.from;
-  for (const target of seg.targets) {
+  seg.targets.forEach((target, ti) => {
     const end = t + slice;
     // the path of stages from cur (exclusive) to target (inclusive), cyclic
     const path: number[] = [];
@@ -428,13 +457,16 @@ function stagedTimeline(seg: Extract<FigureSegment, { kind: 'stages' }>, seconds
       path.push(i);
     }
     const setups = path.filter((i) => i !== target && !isNeutral(m, i));
-    const transitionSeconds = path.reduce((s, i) => s + hopFrames(m, i).length * dt, 0);
+    const hopCount = path.reduce((s, i) => s + hopFrames(m, i).length, 0);
+    // a "slowly" change cue: the first entry's travel rides the whole bar
+    const frameDt = ti === 0 && seg.entryOver && hopCount > 0 ? seg.entryOver / hopCount : dt;
+    const transitionSeconds = hopCount * frameDt;
     let hold = Math.min(8, Math.max(1.5, slice * 0.12));
     const budget = slice * 0.6 - transitionSeconds;
     if (setups.length && hold * setups.length > budget) hold = Math.max(0, budget / setups.length);
     for (const i of path) {
       for (const f of hopFrames(m, i)) {
-        t += dt;
+        t += frameDt;
         steps.push({ motion: m, frame: f, until: t });
       }
       if (i !== target && !isNeutral(m, i)) {
@@ -445,7 +477,7 @@ function stagedTimeline(seg: Extract<FigureSegment, { kind: 'stages' }>, seconds
     t = Math.max(t, end);
     steps.push({ motion: m, frame: m.stages[target].frame, until: t });
     cur = target;
-  }
+  });
   return steps;
 }
 
@@ -473,15 +505,22 @@ function spokenTimeline(
   const steps: FrameStep[] = [];
   let t = t0;
   let cur = seg.from;
-  const travel = (to: number, at: number) => {
+  /** travel to `to` starting at `at`, over `over` seconds (else at sheet speed) */
+  const travel = (to: number, at: number, over?: number) => {
     if (at > t) {
       t = at;
       steps.push({ motion: m, frame: m.stages[cur].frame, until: t });
     }
+    const path: number[] = [];
     for (let i = cur; i !== to; ) {
       i = (i + 1) % n;
+      path.push(i);
+    }
+    const hopCount = path.reduce((s, i) => s + hopFrames(m, i).length, 0);
+    const frameDt = over !== undefined && hopCount > 0 ? over / hopCount : dt;
+    for (const i of path) {
       for (const f of hopFrames(m, i)) {
-        t += dt;
+        t += frameDt;
         steps.push({ motion: m, frame: f, until: t });
       }
     }
@@ -490,7 +529,7 @@ function spokenTimeline(
   const sorted = [...moves].sort((a, b) => a.seconds - b.seconds);
   for (const mv of sorted) {
     if (mv.stage === cur) continue;
-    travel(mv.stage, Math.min(mv.seconds, Math.max(0, seconds - 1)));
+    travel(mv.stage, Math.min(mv.seconds, Math.max(0, seconds - 1)), mv.over);
   }
   if (cur !== target) travel(target, Math.min(Math.max(t, seg.settle ?? 0) + SETTLE_SECONDS, Math.max(0, seconds - 1)));
   t = Math.max(t, seconds);

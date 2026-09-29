@@ -182,6 +182,12 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   `FigureMove` (`stagematch.ts` scores stage labels against the line's
   words with a small synonym table; `stagematch.test.ts` pins the mapping
   per posture) and the figure travels there as the line ends
+  at the TEMPO THE LINE ASKS FOR (`tempo.ts`: "slowly"/"slow motion"
+  starts with the line and spans it plus 1.5 s; "in one motion"/"dive"/
+  "kick" snaps in 0.35 s after it; "on an inhale, lift" waits for the next
+  inhale and rides its first half; a change cue that says "slowly"
+  stretches the entry over the bar it is spoken on — `FigureMove.over`,
+  `entryOver`; all app-side, no re-render)
   (`clipdurations.ts`, GENERATED from public/voice by ffprobe — rerun
   `scripts/clip-durations` after generate-voice; TTS falls back to a
   reading-pace estimate). Every standing sheet opens AND closes in

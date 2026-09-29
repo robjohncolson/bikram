@@ -240,8 +240,43 @@ describe('spoken walk-in moves', () => {
     expect(seg.moves!.map((mv) => label(m, mv.stage))).not.toContain('Head to knee');
     const seconds = track.spans[0].endBeat - track.spans[0].startBeat;
     const steps = segmentTimeline(seg, seconds);
-    expect(frameAt(steps, seg.settle! + 1)).not.toBe(target.frame);
-    expect(frameAt(steps, seg.settle! + 1.5 + 2)).toBe(target.frame);
+    // the last line ("…slowly curl the forehead…") is a slow move, so the
+    // elbows travel spans it; the knee follows 1.5 s after the travel ends
+    const last = seg.moves![seg.moves!.length - 1];
+    expect(last.over).toBeGreaterThanOrEqual(2.5);
+    expect(frameAt(steps, seg.settle! - 1)).not.toBe(target.frame);
+    expect(frameAt(steps, last.seconds + last.over! + 1.5 + 2)).toBe(target.frame);
+  });
+
+  it('moves at the tempo the line asks for', () => {
+    const clip = () => 3;
+    // "lower in slow motion": starts as the line starts, spans it and more
+    const awkward = pose('awkward');
+    const at = buildPoseTrack(awkward, 60);
+    const aplan = figurePlan(awkward, { track: at, beatSeconds: 1, leadBeats: at.barBeats, clipSeconds: clip })!;
+    const partThree = aplan.segments[2];
+    if (partThree.kind !== 'stages') throw new Error('stages expected');
+    const slow = partThree.moves!.find((mv) => label(partThree.motion, mv.stage) === 'Part three')!;
+    const line = at.events.find((e) => e.text === awkward.setup[4])!;
+    expect(slow.seconds).toBe(line.atBeat - at.spans[2].startBeat + at.barBeats); // line start
+    expect(slow.over).toBe(4.5);
+    // "in one motion, tip": a snap after the line
+    const stick = pose('balancing-stick');
+    const st = buildPoseTrack(stick, 60);
+    const splan = figurePlan(stick, { track: st, beatSeconds: 1, leadBeats: st.barBeats, clipSeconds: clip })!;
+    const s0 = splan.segments[0];
+    if (s0.kind !== 'stages') throw new Error('stages expected');
+    const tip = s0.moves!.find((mv) => label(s0.motion, mv.stage) === 'Tip to horizontal')!;
+    expect(tip.over).toBe(0.35);
+    // "inhale and curl the chest up": waits for an inhale, rides its first half
+    const cobra = pose('cobra');
+    const ct = buildPoseTrack(cobra, 60);
+    const cplan = figurePlan(cobra, { track: ct, beatSeconds: 1, leadBeats: ct.barBeats, clipSeconds: clip })!;
+    const c0 = cplan.segments[0];
+    if (c0.kind !== 'stages') throw new Error('stages expected');
+    const lift = c0.moves!.find((mv) => label(c0.motion, mv.stage) === 'Lift')!;
+    expect((lift.seconds - ct.barBeats) % ct.breathBeats).toBe(0);
+    expect(lift.over).toBe(ct.barBeats * 0.5);
   });
 
   it('leaves second sets and borrowed sheets to the segment-fraction entry', () => {

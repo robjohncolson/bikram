@@ -20,6 +20,8 @@ export { CLOSING_LINE, CLOSING_SECONDS, announceText, buildPoseTrack, buildClass
 export { DEFAULT_BAR_BEATS, poseBarBeats, breathBeats, quantizeBeats, poseGridSeconds } from './grid';
 export type { CueKind, CueEvent, CueLayer, CueOptions, PoseTrack, SegmentPosition, SegSpan } from './cues';
 export { figurePlan, figureFrameAt, planEndMotion, planEnd, segmentTimeline } from './figure';
+export { tempoOf } from './tempo';
+export type { Tempo, TempoKind } from './tempo';
 export type {
   FigurePlan,
   FigurePlanOptions,
