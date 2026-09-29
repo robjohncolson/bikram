@@ -10,7 +10,7 @@ push to `main` via Vercel's Git integration**; the CLI token on this machine is 
 
 ---
 
-## ✔ 2026-09-29 — LIVE FIGURE (uncommitted)
+## ✔ 2026-09-29 — LIVE FIGURE (`ec7207a`, pushed; Codex-reviewed, 6 findings fixed)
 
 Implemented `docs/live-figure-spec.md` §1–§7 as uncommitted working-tree changes (not reviewed
 by Codex yet, not committed, not pushed). What shipped:
@@ -64,11 +64,16 @@ Not done / open:
   (`figurePoseAt` follows the bridge sheet) but was not screenshotted.
 - At 360 px, `/pose/half-moon` overflows by 25 px because of the long timing pill. This was already
   there (69 px on HEAD); the new `minmax(0, 1fr)` header column reduced it.
-- Still to do: Codex review, commit, push, Ops status.
+- Done after this entry was written: Codex (gpt-6-astra) review — 6 findings (lazy-chunk
+  boundary, flag persistence, pause continuity, parity on the production path with a
+  deterministic midpoint tie-break in `render_motion.py` + `inbetween.ts`, wrap-to-0 blend
+  before a following travel, fallback frame) — all fixed; 214 tests / 21 files; pushed as
+  `ec7207a`; Ops told. **Next**: a phone check of class mode with the rig, the class-mode
+  bridge screenshot, then widen `RIG_LIVE` posture by posture (spec: `docs/live-figure-spec.md`).
 
 ---
 
-## ▶ RESUME HERE (2026-09-29) — NEXT TASK: THREE.JS LIVE FIGURE
+## 2026-09-29 (morning) — THE THREE.JS LIVE FIGURE TASK AS PLANNED (done above; kept for the workflow notes)
 
 **How to start a fresh session on this**: read `CLAUDE.md` (current, dense — it explains every
 module), then this section, then `journal/` (Robert's debriefs). Do not read the older entries
