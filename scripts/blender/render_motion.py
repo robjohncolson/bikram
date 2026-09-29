@@ -474,6 +474,10 @@ def compatible(q: Quaternion, ref: Quaternion) -> Quaternion:
     return -q if q.dot(ref) < 0 else q
 
 
+# two ways round a big turn scoring within this of each other are a tie
+MIDPOINT_TIE = 1e-6
+
+
 def midpoint_dir(name: str, a: Vector, b: Vector) -> Vector:
     """Halfway direction for a big turn from `a` to `b`: swept around the
     body's forward axis (a limb goes out to the side, not through the
@@ -487,7 +491,14 @@ def midpoint_dir(name: str, a: Vector, b: Vector) -> Vector:
         sc = m.dot(b)
         side = 1 if name.endswith('.L') else -1 if name.endswith('.R') else 0
         sc += 0.05 * side * m.x          # tie-break: a left limb sweeps out to +X
-        if sc > score:
+        if best is None or sc > score + MIDPOINT_TIE:
+            best, score = m, sc
+        elif abs(sc - score) <= MIDPOINT_TIE and (m.z, m.y) > (best.z, best.y):
+            # an exact tie in Blender came down to float32 noise (the side
+            # term is blind when the sweep axis is X: both ways keep the same
+            # x); the TS port (src/rig/inbetween.ts) must reproduce the pick,
+            # so a tie goes deterministically to the higher way round, then
+            # the one further back
             best, score = m, sc
     return best
 

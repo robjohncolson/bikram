@@ -138,13 +138,17 @@
 /* teaching layers flash for one breath after a coaching line: guides
    after an alignment line, the ghost after a mistake line (data-on) */
 .cm-figure .pose-motion-cell--guides,
-.cm-figure .pose-motion-cell--ghost {
+.cm-figure .pose-motion-cell--ghost,
+.cm-figure .figure-rig-layer--guides,
+.cm-figure .figure-rig-layer--ghost {
   opacity: 0;
   transition: opacity 0.4s ease;
 }
 
 .cm-figure .pose-motion-cell--guides[data-on],
-.cm-figure .pose-motion-cell--ghost[data-on] {
+.cm-figure .pose-motion-cell--ghost[data-on],
+.cm-figure .figure-rig-layer--guides[data-on],
+.cm-figure .figure-rig-layer--ghost[data-on] {
   opacity: 1;
 }
 
@@ -345,7 +349,9 @@
     animation: none !important;
   }
   .cm-figure .pose-motion-cell--guides,
-  .cm-figure .pose-motion-cell--ghost {
+  .cm-figure .pose-motion-cell--ghost,
+  .cm-figure .figure-rig-layer--guides,
+  .cm-figure .figure-rig-layer--ghost {
     transition: none;
   }
 }

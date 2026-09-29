@@ -1,7 +1,18 @@
-import { useEffect, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useRef, useState } from 'react';
 import type { CSSProperties } from 'react';
-import type { PoseMotion as Motion } from '../data';
+import type { PoseMotion as Motion, RigData } from '../data';
+import { loadRigData, motionId, rigDataIfLoaded } from '../data';
+import type { FigurePose } from '../pacer';
+import { frameForPose } from '../pacer';
+import { playAt, stageStartAt } from '../rig';
+import type { SheetBlend } from '../rig';
+import { RigBoundary } from './RigBoundary';
+import { rigShows, rigStatusAfter } from './rigFallback';
+import type { RigStatus } from './rigFallback';
 import './PoseMotion.css';
+
+// three.js and the rig renderer load only when a rig figure first mounts
+const FigureRig = lazy(() => import('./FigureRig'));
 
 /** A breath phase to follow and its length in seconds. */
 export interface BreathPhase {
@@ -18,6 +29,8 @@ export interface MotionLayers {
 const REDUCED = '(prefers-reduced-motion: reduce)';
 const LAYERS_KEY = 'yoga-motion-layers-v1';
 const DEFAULT_LAYERS: MotionLayers = { guides: true, ghost: false };
+/** steps per breath phase when PoseMotion tracks the rig's breath itself (a phase ≈ 40 renders) */
+const BREATH_STEPS = 40;
 
 function loadLayers(): MotionLayers {
   try {
@@ -85,6 +98,15 @@ function useReducedMotion(): boolean {
  * layer cells the sheet has are always mounted and switched by a
  * `data-on` attribute instead, so CSS can fade them in and out (class mode
  * flashes a layer for one breath after a coaching line).
+ *
+ * Renderer: `renderer="rig"` draws the live three.js figure (`FigureRig`)
+ * in the same box instead of the sprite cells — posed from the sheet's
+ * exported stage data (`loadRigData`), controlled by `pose` the way the
+ * sprite is by `frame`. The sprite shows while three and the data load,
+ * and takes over for good if the rig reports itself unavailable. Left to
+ * itself the rig walks the stages on the sheet's clock (`playAt`); the
+ * chips, play/pause, layer chips and breath all work the same, except that
+ * the rig breathes by opening its chest instead of the CSS swell.
  */
 export function PoseMotion({
   motion,
@@ -97,6 +119,9 @@ export function PoseMotion({
   layers,
   fadeLayers = false,
   frame: controlled,
+  renderer = 'sprite',
+  pose,
+  breathProgress,
 }: {
   motion: Motion;
   size?: number;
@@ -114,6 +139,12 @@ export function PoseMotion({
   fadeLayers?: boolean;
   /** controlled mode: show exactly this frame and never run the player */
   frame?: number;
+  /** which figure draws: the sprite sheet (default) or the live three.js rig */
+  renderer?: 'sprite' | 'rig';
+  /** the rig's controlled input (its `motion` may be a bridge's sheet); like `frame`, it stops the player */
+  pose?: FigurePose;
+  /** how far through the breath phase (0–1), when the parent tracks it (class mode) */
+  breathProgress?: number;
 }) {
   const [stored, setStored] = useState<MotionLayers>(loadLayers);
   const active = layers ?? stored;
@@ -125,10 +156,59 @@ export function PoseMotion({
     });
   const reduced = useReducedMotion();
   const [ownFrame, setFrame] = useState(0);
-  const [playing, setPlaying] = useState(autoplay && !reduced && controlled === undefined);
+  const [playing, setPlaying] = useState(autoplay && !reduced && controlled === undefined && pose === undefined);
   const frame = controlled === undefined ? ownFrame : Math.min(motion.frames - 1, Math.max(0, Math.round(controlled)));
   const frameRef = useRef(0);
   frameRef.current = ownFrame;
+
+  // ---- the live rig (renderer="rig")
+  const [rigStatus, setRigStatus] = useState<RigStatus>('loading');
+  const useRig = renderer === 'rig' && rigStatus !== 'failed';
+  const [ownBlend, setOwnBlend] = useState<SheetBlend>({ from: 0, to: 0, t: 1 });
+  const blendRef = useRef(ownBlend);
+  blendRef.current = ownBlend;
+  /**
+   * The rig is unavailable (no WebGL, a lost context, a chunk that would
+   * not load): hand the figure to the sprite for good. On its own clock the
+   * sprite picks up where the rig was — the frame nearest its pose — and
+   * keeps playing or stays paused as it was.
+   */
+  const rigUnavailable = () => {
+    if (pose === undefined) {
+      const b = blendRef.current;
+      setFrame(frameForPose(motion, b.from, b.to, b.t));
+    }
+    setRigStatus((st) => rigStatusAfter(st, 'failed'));
+  };
+  const rigId = useRig ? motionId(pose?.motion ?? motion) : undefined;
+  const [loaded, setLoaded] = useState<RigData | undefined>(undefined);
+  const failRef = useRef(rigUnavailable);
+  failRef.current = rigUnavailable;
+  useEffect(() => {
+    if (!rigId || rigDataIfLoaded(rigId)) return;
+    let alive = true;
+    loadRigData(rigId).then(
+      (d) => {
+        if (alive) setLoaded(d);
+      },
+      () => {
+        if (alive) failRef.current();
+      },
+    );
+    return () => {
+      alive = false;
+    };
+  }, [rigId]);
+  // the sheet the rig draws (a bridge's while one plays); undefined until it has loaded
+  const rigSheet = rigId ? (rigDataIfLoaded(rigId) ?? (loaded?.id === rigId ? loaded : undefined)) : undefined;
+  // the renderer stays mounted (one WebGL context) while another sheet loads;
+  // the sprite covers that moment
+  const lastSheet = useRef<RigData | undefined>(undefined);
+  if (rigSheet) lastSheet.current = rigSheet;
+  const mountedSheet = rigSheet ?? lastSheet.current;
+  const rigPlayer = useRig && pose === undefined;
+  /** the rig demonstration's own clock: seconds into `playAt`'s loop, frozen while paused */
+  const rigClock = useRef(0);
 
   // the OS preference turning on stops autonomous motion mid-play
   useEffect(() => {
@@ -136,7 +216,7 @@ export function PoseMotion({
   }, [reduced]);
 
   useEffect(() => {
-    if (!playing || controlled !== undefined) return;
+    if (!playing || controlled !== undefined || rigPlayer) return;
     let raf = 0;
     let last = performance.now();
     let rest = 0; // ms to hold on the final frame before looping
@@ -157,7 +237,25 @@ export function PoseMotion({
     };
     raf = requestAnimationFrame(tick);
     return () => cancelAnimationFrame(raf);
-  }, [playing, controlled, motion.fps, motion.frames]);
+  }, [playing, controlled, motion.fps, motion.frames, rigPlayer]);
+
+  // the rig on its own clock: walk the stages at the sheet's fps. The
+  // elapsed sheet time lives in `rigClock`, frozen on pause and rebased on
+  // resume, so a pause mid-travel resumes mid-travel (as the sprite keeps
+  // its frame); only a stage chip seeks, to the start of that stage's hold
+  useEffect(() => {
+    if (!playing || !rigPlayer || !rigSheet) return;
+    const fps = motion.fps;
+    const origin = performance.now() - rigClock.current * 1000;
+    let raf = requestAnimationFrame(function tick(now) {
+      rigClock.current = (now - origin) / 1000;
+      const b = playAt(rigSheet, fps, rigClock.current);
+      const cur = blendRef.current;
+      if (b.from !== cur.from || b.to !== cur.to || b.t !== cur.t) setOwnBlend({ from: b.from, to: b.to, t: b.t });
+      raf = requestAnimationFrame(tick);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [playing, rigPlayer, rigSheet, motion.fps]);
 
   const rows = Math.ceil(motion.frames / motion.cols);
   const col = frame % motion.cols;
@@ -176,6 +274,25 @@ export function PoseMotion({
     }) as CSSProperties;
   const stackStyle = { width: size, height: size } as CSSProperties;
   const breathing = breath && !reduced && breath.seconds > 0 ? breath : undefined;
+
+  // the rig's breath: the parent's progress, or tracked here from the phase
+  // flips (a posture page's resting breath), stepped so a phase is a few
+  // dozen renders rather than one per display frame
+  const [ownBreathP, setOwnBreathP] = useState(0);
+  const breathKey = useRig && breathProgress === undefined && breathing ? breathing.phase : undefined;
+  const breathMs = (breathing?.seconds ?? 0) * 1000;
+  useEffect(() => {
+    if (!breathKey || breathPaused || breathMs <= 0) return;
+    const t0 = performance.now();
+    let last = -1;
+    let raf = requestAnimationFrame(function tick(now) {
+      const p = Math.min(1, Math.round(((now - t0) / breathMs) * BREATH_STEPS) / BREATH_STEPS);
+      if (p !== last) setOwnBreathP((last = p));
+      if (p < 1) raf = requestAnimationFrame(tick);
+    });
+    return () => cancelAnimationFrame(raf);
+  }, [breathKey, breathPaused, breathMs]);
+
   // A CSS transition can't be paused, so on pause we pin the computed
   // transform inline (and drop the transition); on resume the inline pin
   // is removed and the transition carries on toward the phase's target.
@@ -192,35 +309,69 @@ export function PoseMotion({
       el.style.transform = '';
     }
   }, [breathPaused]);
-  if (breathing) (stackStyle as Record<string, string | number>)['--breath-dur'] = `${breathing.seconds}s`;
+  const rigShown = useRig && rigShows(rigStatus, rigSheet !== undefined);
+  if (breathing && !rigShown) (stackStyle as Record<string, string | number>)['--breath-dur'] = `${breathing.seconds}s`;
   const ghost = active.ghost ? motion.ghost : undefined;
   const guides = active.guides ? motion.guides : undefined;
   const interactive = !layers;
+  const rigBlend: SheetBlend = pose ? { from: pose.from, to: pose.to, t: pose.t } : ownBlend;
 
-  const current = motion.stages.reduce((acc, s, i) => (frame >= s.frame ? i : acc), 0);
+  const current = useRig
+    ? rigBlend.t >= 0.5
+      ? rigBlend.to
+      : rigBlend.from
+    : motion.stages.reduce((acc, s, i) => (frame >= s.frame ? i : acc), 0);
 
   return (
     <div className="pose-motion">
       <div className={'pose-motion-frame' + (frameClassName ? ` ${frameClassName}` : '')} aria-hidden>
-        <div ref={stackRef} className="pose-motion-stack" data-breath={breathing?.phase} style={stackStyle}>
-          {fadeLayers && motion.ghost ? (
-            <div
-              className="pose-motion-cell pose-motion-cell--ghost"
-              data-on={active.ghost || undefined}
-              style={cellStyle(motion.ghost)}
-            />
-          ) : (
-            ghost && <div className="pose-motion-cell pose-motion-cell--ghost" style={cellStyle(ghost)} />
+        <div
+          ref={stackRef}
+          className="pose-motion-stack"
+          data-breath={rigShown ? undefined : breathing?.phase}
+          data-renderer={rigShown ? 'rig' : 'sprite'}
+          style={stackStyle}
+        >
+          {!rigShown && (
+            <>
+              {fadeLayers && motion.ghost ? (
+                <div
+                  className="pose-motion-cell pose-motion-cell--ghost"
+                  data-on={active.ghost || undefined}
+                  style={cellStyle(motion.ghost)}
+                />
+              ) : (
+                ghost && <div className="pose-motion-cell pose-motion-cell--ghost" style={cellStyle(ghost)} />
+              )}
+              <div className="pose-motion-cell" style={cellStyle(motion.sprite)} />
+              {fadeLayers && motion.guides ? (
+                <div
+                  className="pose-motion-cell pose-motion-cell--guides"
+                  data-on={active.guides || undefined}
+                  style={cellStyle(motion.guides)}
+                />
+              ) : (
+                guides && <div className="pose-motion-cell pose-motion-cell--guides" style={cellStyle(guides)} />
+              )}
+            </>
           )}
-          <div className="pose-motion-cell" style={cellStyle(motion.sprite)} />
-          {fadeLayers && motion.guides ? (
-            <div
-              className="pose-motion-cell pose-motion-cell--guides"
-              data-on={active.guides || undefined}
-              style={cellStyle(motion.guides)}
-            />
-          ) : (
-            guides && <div className="pose-motion-cell pose-motion-cell--guides" style={cellStyle(guides)} />
+          {useRig && mountedSheet && (
+            <div className="pose-motion-rig" hidden={!rigShown}>
+              <RigBoundary onFail={rigUnavailable}>
+                <Suspense fallback={null}>
+                  <FigureRig
+                    data={mountedSheet}
+                    size={size}
+                    pose={rigBlend}
+                    layers={active}
+                    fadeLayers={fadeLayers}
+                    breath={breathing ? { phase: breathing.phase, progress: breathProgress ?? ownBreathP } : undefined}
+                    onReady={() => setRigStatus((st) => rigStatusAfter(st, 'ready'))}
+                    onUnavailable={rigUnavailable}
+                  />
+                </Suspense>
+              </RigBoundary>
+            </div>
           )}
         </div>
       </div>
@@ -269,6 +420,9 @@ export function PoseMotion({
                 onClick={() => {
                   setPlaying(false);
                   setFrame(s.frame);
+                  setOwnBlend({ from: i, to: i, t: 1 });
+                  // the one seek: the demonstration resumes from this stage's hold
+                  if (mountedSheet) rigClock.current = stageStartAt(mountedSheet, motion.fps, i);
                 }}
               >
                 {s.label}

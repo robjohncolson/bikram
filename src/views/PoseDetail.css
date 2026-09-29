@@ -137,6 +137,32 @@
   overflow: hidden;
 }
 
+/* sprite and live rig side by side (the rig rollout); wraps on a phone */
+.pd-figures {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-items: flex-start;
+  gap: 18px;
+  max-width: 100%;
+}
+
+.pd-figurecol {
+  margin: 0;
+  max-width: 100%;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+  min-width: 0;
+}
+
+.pd-figurelabel {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
 /* ——— summary */
 .pd-summary {
   margin-top: 30px;
@@ -559,7 +585,8 @@
 /* ————————————————————————————————————————————— responsive */
 @media (max-width: 640px) {
   .pd-header {
-    grid-template-columns: 1fr;
+    /* minmax: the side-by-side figures must wrap, not widen the column */
+    grid-template-columns: minmax(0, 1fr);
     justify-items: center;
     text-align: center;
     gap: 26px;

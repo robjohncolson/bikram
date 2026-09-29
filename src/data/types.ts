@@ -263,3 +263,60 @@ export interface Pose {
   /** the classical (Light on Yoga) view of the posture; merged in by poses/index.ts */
   classical?: ClassicalNote;
 }
+
+// ---------------------------------------------------------------- live rig
+
+/** A world-space vector (x to the mannequin's left, y backward, z up). */
+export type RigVec3 = [number, number, number];
+
+/**
+ * One bone in a rig stage, exactly as authored in the Blender posture
+ * module: the world direction the bone points (head → tail), or that
+ * direction plus a roll in degrees about it (see
+ * `scripts/blender/postures/README.md`).
+ */
+export type RigBoneEntry = RigVec3 | { dir: RigVec3; roll?: number };
+
+/** A stage pose: bone name → entry, plus the optional `pelvis.location` world offset. */
+export type RigStagePose = Record<string, RigBoneEntry>;
+
+/** A teaching guide: a line, or a pane perpendicular to x or y. */
+export type RigGuide =
+  | { from: RigVec3; to: RigVec3 }
+  | { plane: 'x' | 'y'; at: number; z?: [number, number]; w?: number };
+
+/** Ortho framing: the height the camera centres on and the metres it shows top to bottom. */
+export interface RigFrame {
+  center_z: number;
+  scale: number;
+}
+
+/** One held stage of a rig sheet (the same stages, in the same order, as the sprite's). */
+export interface RigStage {
+  label: string;
+  /** hold length in sheet frames */
+  hold: number;
+  /** camera view for this stage (else the sheet's) */
+  view?: string;
+  /** camera framing for this stage (else the sheet's) */
+  frame?: Partial<RigFrame>;
+  pose: RigStagePose;
+  guides?: RigGuide[];
+  /** the common mistake, laid over `pose` */
+  ghost?: RigStagePose;
+}
+
+/**
+ * A posture (or bridge) as the live three.js figure reads it: the Blender
+ * module's stages exported to JSON by `scripts/blender/export_rig.py`
+ * (GENERATED — `src/data/rig/<id>.json`).
+ */
+export interface RigData {
+  id: string;
+  view: string;
+  frame: RigFrame;
+  position: { start: Position; end: Position };
+  /** frames between two stages at the sheet's fps */
+  transition: number;
+  stages: RigStage[];
+}

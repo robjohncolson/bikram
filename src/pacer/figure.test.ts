@@ -4,17 +4,21 @@ import type { PoseMotion } from '../data';
 import {
   TRANSITION_FRAMES,
   breathFrame,
+  bridgeSteps,
   climaxStage,
   figureFrameAt,
   figurePlan,
+  figurePoseAt,
   frameAt,
+  frameForPose,
+  poseAt,
   planEndMotion,
   pulseFrame,
   segmentTimeline,
   stagesForLabel,
 } from './figure';
 import { segmentKey } from './grid';
-import type { FigureSegment } from './figure';
+import type { FigureSegment, FrameStep } from './figure';
 import { buildClassTrack, buildPoseTrack } from './cues';
 
 const pose = (id: string) => getPose(id)!;
@@ -423,5 +427,208 @@ describe('hand-off bridges', () => {
       ].sort(),
     );
     expect(bridgeFor('kneeling', 'supine')).toBeDefined(); // Kapalbhati → the closing savasana
+  });
+});
+
+describe('continuous poses for the live rig', () => {
+  /** the travels of a timeline, in order, each with its hop steps */
+  const travels = (steps: FrameStep[]) => {
+    const out: { blend: NonNullable<FrameStep['blend']>; steps: FrameStep[] }[] = [];
+    for (const s of steps) {
+      if (!s.blend) continue;
+      const last = out[out.length - 1];
+      if (last && last.blend === s.blend) last.steps.push(s);
+      else out.push({ blend: s.blend, steps: [s] });
+    }
+    return out;
+  };
+
+  it('gives every hop step of a staged timeline its travel, and t runs 0 → 1 across each', () => {
+    const seg = stagesSeg(pose('standing-head-to-knee'), 0);
+    const steps = segmentTimeline(seg, 70);
+    const m = seg.motion;
+    const hops = steps.filter((s) => !m.stages.some((st) => st.frame === s.frame));
+    // exactly the hop steps carry a blend: holds never do
+    for (const s of steps) expect(Boolean(s.blend), `frame ${s.frame}`).toBe(hops.includes(s));
+    const ts = travels(steps);
+    expect(ts.length).toBeGreaterThan(1);
+    for (const { blend, steps: hs } of ts) {
+      expect(blend.to).toBe(blend.from + 1);
+      // the travel's frames lead up to the `to` stage's hold
+      expect(hs[hs.length - 1].frame).toBe(m.stages[blend.to].frame - 1);
+      const end = hs[hs.length - 1].until;
+      expect(poseAt(steps, blend.start)!.t).toBeCloseTo(0, 9);
+      const mid = poseAt(steps, (blend.start + end) / 2)!;
+      expect(mid).toMatchObject({ motion: m, from: blend.from, to: blend.to });
+      expect(mid.t).toBeCloseTo(0.5, 9);
+      let prev = -1;
+      for (let x = blend.start; x < end; x += (end - blend.start) / 17) {
+        const p = poseAt(steps, x)!;
+        expect(p.t).toBeGreaterThanOrEqual(prev);
+        prev = p.t;
+      }
+      // the moment it arrives: the `to` stage's hold, or the next travel out of it
+      const after = poseAt(steps, end)!;
+      expect(after.from === after.to ? after.to : after.from).toBe(blend.to);
+    }
+  });
+
+  it('holds with from === to', () => {
+    const seg = stagesSeg(pose('standing-head-to-knee'), 0);
+    const steps = segmentTimeline(seg, 70);
+    const target = seg.targets[0];
+    expect(poseAt(steps, 69)).toEqual({ motion: seg.motion, from: target, to: target, t: 1 });
+    expect(poseAt(steps, 999)).toEqual({ motion: seg.motion, from: target, to: target, t: 1 });
+  });
+
+  it('walks the half moon spoken entry through the same stages as the sprite', () => {
+    const hm = pose('half-moon');
+    const track = buildPoseTrack(hm, 60);
+    const plan = figurePlan(hm, { track, beatSeconds: 1, leadBeats: track.barBeats, clipSeconds: () => 2 })!;
+    const seg = plan.segments[0];
+    if (seg.kind !== 'stages') throw new Error('stages expected');
+    const m = seg.motion;
+    const seconds = track.spans[0].endBeat - track.spans[0].startBeat;
+    const steps = segmentTimeline(seg, seconds);
+    const spriteStages: number[] = [];
+    const rigStages: number[] = [];
+    const push = (arr: number[], k: number) => {
+      if (arr[arr.length - 1] !== k) arr.push(k);
+    };
+    for (let x = 0; x < seconds; x += 0.05) {
+      const k = m.stages.findIndex((st) => st.frame === frameAt(steps, x));
+      if (k >= 0) push(spriteStages, k);
+      const p = poseAt(steps, x)!;
+      if (p.from === p.to) push(rigStages, p.to);
+    }
+    expect(rigStages).toEqual(spriteStages);
+    expect(rigStages.map((k) => label(m, k))).toEqual(['Stand', 'Arms up', 'Squeeze the arms', 'Right side']);
+  });
+
+  it('blends the cut back to stage 0 for the rig, leaving the sprite frames unchanged', () => {
+    const m = motion('half-moon');
+    const last = m.stages.length - 1;
+    const seg: Extract<FigureSegment, { kind: 'stages' }> = { kind: 'stages', motion: m, from: last, targets: [0] };
+    const steps = segmentTimeline(seg, 20);
+    const marker = steps.findIndex((s) => s.cut);
+    expect(marker).toBeGreaterThanOrEqual(0);
+    expect(steps[marker]).toMatchObject({ frame: m.stages[0].frame, cut: { from: last, seconds: TRANSITION_FRAMES / m.fps } });
+    // the sprite: a cut, straight onto stage 0's first frame
+    for (const x of [0, 0.3, 0.6, 5, 19.9]) expect(frameAt(steps, x)).toBe(m.stages[0].frame);
+    // the rig: last stage → 0 over the marker's window, then the hold
+    const w = TRANSITION_FRAMES / m.fps;
+    expect(poseAt(steps, 0)).toEqual({ motion: m, from: last, to: 0, t: 0 });
+    expect(poseAt(steps, w / 2)).toEqual({ motion: m, from: last, to: 0, t: 0.5 });
+    expect(poseAt(steps, w)).toEqual({ motion: m, from: 0, to: 0, t: 1 });
+    // an entry through the cut keeps its sprite frames: the marker adds no time
+    const hm = stagesSeg(pose('half-moon'), 4);
+    const hmSteps = segmentTimeline(hm, 36);
+    const shown = hmSteps.filter((s) => !s.cut);
+    expect(hmSteps.some((s) => s.cut)).toBe(true);
+    for (let x = 0; x < 36; x += 0.1) expect(frameAt(hmSteps, x)).toBe(frameAt(shown, x));
+  });
+
+  it('wraps through stage 0 into a following travel: last → 0 → 1, t continuous', () => {
+    const m = motion('half-moon');
+    const last = m.stages.length - 1;
+    const armsUp = m.stages.findIndex((st) => st.label === 'Arms up');
+    expect(armsUp).toBe(1);
+    // Stand (stage 0) is neutral, so no hold: the marker is followed at once by the hops into 1
+    const seg: Extract<FigureSegment, { kind: 'stages' }> = { kind: 'stages', motion: m, from: last, targets: [armsUp] };
+    const steps = segmentTimeline(seg, 20);
+    const marker = steps.findIndex((x) => x.cut);
+    expect(steps[marker + 1].blend).toMatchObject({ from: 0, to: 1, start: steps[marker].until });
+    // the sprite schedule is untouched by the marker
+    const shown = steps.filter((x) => !x.cut);
+    for (let x = 0; x < 20; x += 0.05) expect(frameAt(steps, x)).toBe(frameAt(shown, x));
+    // the rig: (last → 0) then (0 → 1) then the hold, never skipping the wrap
+    const seq: string[] = [];
+    let prev: { from: number; to: number; t: number } | undefined;
+    for (let x = 0; x < 20; x += 0.01) {
+      const p = poseAt(steps, x)!;
+      const key = `${p.from}>${p.to}`;
+      if (seq[seq.length - 1] !== key) {
+        // continuity at each hand-over: the old leg arrived, the new one leaves from where it arrived
+        if (prev) {
+          const arrived = prev.from === prev.to ? prev.to : prev.t > 0.98 ? prev.to : undefined;
+          expect(arrived, `${seq[seq.length - 1]} → ${key}`).toBe(p.from);
+          if (p.from !== p.to) expect(p.t).toBeLessThan(0.02);
+        }
+        seq.push(key);
+      }
+      prev = p;
+    }
+    expect(seq).toEqual([`${last}>0`, '0>1', '1>1']);
+    // the wrap takes its window (TRANSITION_FRAMES/fps) out of the travel, or half the travel when that is shorter
+    const start = steps[marker].until;
+    const travelEnd = steps.filter((x) => x.blend === steps[marker + 1].blend).at(-1)!.until;
+    const wrap = Math.min(TRANSITION_FRAMES / m.fps, (travelEnd - start) / 2);
+    expect(poseAt(steps, start + wrap / 2)).toMatchObject({ from: last, to: 0 });
+    expect(poseAt(steps, start + wrap / 2)!.t).toBeCloseTo(0.5, 9);
+    expect(poseAt(steps, start + wrap)).toMatchObject({ from: 0, to: 1, t: 0 });
+    expect(poseAt(steps, (start + wrap + travelEnd) / 2)!.t).toBeCloseTo(0.5, 9);
+  });
+
+  it('hands a rig pose back to the nearest sprite frame', () => {
+    const m = motion('half-moon');
+    const last = m.stages.length - 1;
+    expect(frameForPose(m, 3, 3, 1)).toBe(m.stages[3].frame);
+    expect(frameForPose(m, 2, 3, 0)).toBe(m.stages[2].frame);
+    expect(frameForPose(m, 2, 3, 1)).toBe(m.stages[3].frame);
+    // mid-travel: a hop frame strictly between the two holds, advancing with t
+    const f1 = frameForPose(m, 2, 3, 0.2);
+    const f2 = frameForPose(m, 2, 3, 0.8);
+    expect(f1).toBeGreaterThan(m.stages[2].frame);
+    expect(f2).toBeLessThan(m.stages[3].frame);
+    expect(f2).toBeGreaterThan(f1);
+    // the wrap: whichever side is nearer
+    expect(frameForPose(m, last, 0, 0.3)).toBe(m.stages[last].frame);
+    expect(frameForPose(m, last, 0, 0.7)).toBe(m.stages[0].frame);
+  });
+
+  it('breathes and pulses at progress 0 / 0.5 / 1', () => {
+    const pr = figurePlan(pose('pranayama'))!.segments[0] as Extract<FigureSegment, { kind: 'breath' }>;
+    const kb = figurePlan(pose('kapalbhati'))!.segments[0] as Extract<FigureSegment, { kind: 'pulse' }>;
+    const at = (seg: FigureSegment, breath?: { phase: 'inhale' | 'exhale'; progress: number }, beatProgress = 0) =>
+      figurePoseAt(seg, { seconds: 3, total: 150, beatProgress, breath });
+    expect(at(pr, { phase: 'inhale', progress: 0 })).toEqual({ motion: pr.motion, from: pr.exhale, to: pr.inhale, t: 0 });
+    expect(at(pr, { phase: 'inhale', progress: 0.5 })).toEqual({ motion: pr.motion, from: pr.exhale, to: pr.inhale, t: 0.5 });
+    expect(at(pr, { phase: 'inhale', progress: 1 })).toEqual({ motion: pr.motion, from: pr.exhale, to: pr.inhale, t: 1 });
+    expect(at(pr, { phase: 'exhale', progress: 0.5 })).toEqual({ motion: pr.motion, from: pr.inhale, to: pr.exhale, t: 0.5 });
+    expect(at(pr, { phase: 'exhale', progress: 1 }).t).toBe(1);
+    expect(at(pr)).toEqual({ motion: pr.motion, from: pr.inhale, to: pr.inhale, t: 1 });
+    const m = kb.motion;
+    const pump = m.stages.findIndex((s) => s.frame === kb.from);
+    expect(label(m, pump)).toBe('Pump');
+    expect(label(m, pump + 1)).toBe('Release');
+    expect(at(kb, undefined, 0)).toEqual({ motion: m, from: pump, to: pump + 1, t: 0 });
+    expect(at(kb, undefined, 0.25)).toEqual({ motion: m, from: pump, to: pump + 1, t: 0.5 });
+    expect(at(kb, undefined, 0.5)).toEqual({ motion: m, from: pump + 1, to: pump, t: 0 });
+    expect(at(kb, undefined, 1)).toEqual({ motion: m, from: pump + 1, to: pump, t: 1 });
+  });
+
+  it("blends a bridge's frames between its own stages, and the release before it", () => {
+    const rest = stagesSeg(pose('cobra'), 1);
+    const b = rest.bridge!;
+    const { steps, end } = bridgeSteps(rest);
+    const own = steps.filter((s) => s.motion === b);
+    // every bridge frame between one stage's first frame and the last stage's
+    // travels between consecutive stages (the last stage's hold does not)
+    const lastMark = b.stages[b.stages.length - 1].frame;
+    for (const s of own) {
+      const isMark = b.stages.some((st) => st.frame === s.frame);
+      if (!isMark && s.frame < lastMark) expect(s.blend, `bridge frame ${s.frame}`).toBeDefined();
+      if (s.frame >= lastMark) expect(s.blend).toBeUndefined();
+      if (s.blend) expect(s.blend.to).toBe(s.blend.from + 1);
+    }
+    expect(travels(own).map((x) => x.blend.to)).toEqual(b.stages.slice(1).map((_, i) => i + 1));
+    // the release on the cobra sheet (Lift → Lower) blends too
+    const release = steps.filter((s) => s.motion !== b);
+    expect(release.length).toBeGreaterThan(0);
+    expect(release.every((s) => s.blend)).toBe(true);
+    // figurePoseAt follows the bridge while it plays, then the segment's own sheet
+    const full = segmentTimeline(rest, 20);
+    expect(figurePoseAt(rest, { seconds: end - 0.01, total: 20, beatProgress: 0 }, full).motion).toBe(b);
+    expect(figurePoseAt(rest, { seconds: end, total: 20, beatProgress: 0 }, full).motion).toBe(rest.motion);
   });
 });

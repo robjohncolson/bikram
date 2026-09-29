@@ -4,10 +4,13 @@
 import { poses } from './poses';
 import { chakras, chakraById } from './chakras';
 import { muscles, muscleById } from './muscles';
-import { bridgeFor, motionUrls } from './motion';
+import { bridgeFor, motionId, motionUrls } from './motion';
+import { RIG_LIVE, applyFigureFlag, figureRenderer, hasRigData, loadRigData, rigBridgeIds, rigDataIfLoaded } from './rig';
 import type { ChakraId, MuscleId, Pose } from './types';
+export type { FigureOverride } from './rig';
 
-export { poses, chakras, chakraById, muscles, muscleById, motionUrls, bridgeFor };
+export { poses, chakras, chakraById, muscles, muscleById, motionUrls, bridgeFor, motionId };
+export { RIG_LIVE, applyFigureFlag, figureRenderer, hasRigData, loadRigData, rigBridgeIds, rigDataIfLoaded };
 export type * from './types';
 
 const poseById = new Map(poses.map((p) => [p.id, p]));

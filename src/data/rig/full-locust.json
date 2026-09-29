@@ -1,0 +1,158 @@
+{
+  "id": "full-locust",
+  "view": "side",
+  "frame": {"center_z": 0.4, "scale": 2.3},
+  "position": {"start": "prone", "end": "prone"},
+  "transition": 7,
+  "stages": [
+    {
+      "label": "Lie prone",
+      "hold": 4,
+      "pose": {
+        "pelvis.location": [0, -0.16, -0.88],
+        "pelvis": [0, -1, 0],
+        "spine.lower": [0, -1, 0],
+        "spine.upper": [0, -1, 0],
+        "neck": [0, -1, 0.05],
+        "head": [0, -1, 0.05],
+        "clavicle.L": [0.95, 0, -0.3],
+        "clavicle.R": [-0.95, 0, -0.3],
+        "upperarm.L": [0.05, 1, 0],
+        "upperarm.R": [-0.05, 1, 0],
+        "forearm.L": [0.02, 1, 0],
+        "forearm.R": [-0.02, 1, 0],
+        "hand.L": [0, 1, 0],
+        "hand.R": [0, 1, 0],
+        "thigh.L": [0, 1, 0],
+        "thigh.R": [0, 1, 0],
+        "shin.L": [0, 1, 0],
+        "shin.R": [0, 1, 0],
+        "foot.L": [0, 1, -0.15],
+        "foot.R": [0, 1, -0.15]
+      }
+    },
+    {
+      "label": "Arms out",
+      "hold": 5,
+      "view": "front",
+      "pose": {
+        "pelvis.location": [0, -0.16, -0.88],
+        "pelvis": [0, -1, 0],
+        "spine.lower": [0, -1, 0],
+        "spine.upper": [0, -1, 0],
+        "neck": [0, -1, 0.05],
+        "head": [0, -1, 0.05],
+        "clavicle.L": [0.95, 0, -0.3],
+        "clavicle.R": [-0.95, 0, -0.3],
+        "upperarm.L": [1, 0.12, 0.0],
+        "upperarm.R": [-1, 0.12, 0.0],
+        "forearm.L": [1, 0.12, 0.0],
+        "forearm.R": [-1, 0.12, 0.0],
+        "hand.L": [1, 0.12, 0.0],
+        "hand.R": [-1, 0.12, 0.0],
+        "thigh.L": [0, 1, 0],
+        "thigh.R": [0, 1, 0],
+        "shin.L": [0, 1, 0],
+        "shin.R": [0, 1, 0],
+        "foot.L": [0, 1, -0.15],
+        "foot.R": [0, 1, -0.15]
+      }
+    },
+    {
+      "label": "Toes pointed",
+      "hold": 4,
+      "pose": {
+        "pelvis.location": [0, -0.16, -0.88],
+        "pelvis": [0, -1, 0],
+        "spine.lower": [0, -1, 0],
+        "spine.upper": [0, -1, 0],
+        "neck": [0, -1, 0.05],
+        "head": [0, -1, 0.05],
+        "clavicle.L": [0.95, 0, -0.3],
+        "clavicle.R": [-0.95, 0, -0.3],
+        "upperarm.L": [1, 0.12, 0.0],
+        "upperarm.R": [-1, 0.12, 0.0],
+        "forearm.L": [1, 0.12, 0.0],
+        "forearm.R": [-1, 0.12, 0.0],
+        "hand.L": [1, 0.12, 0.0],
+        "hand.R": [-1, 0.12, 0.0],
+        "thigh.L": [0, 1, 0],
+        "thigh.R": [0, 1, 0],
+        "shin.L": [0, 1, 0],
+        "shin.R": [0, 1, 0],
+        "foot.L": [0, 0.95, -0.3],
+        "foot.R": [0, 0.95, -0.3]
+      }
+    },
+    {
+      "label": "Lift off the floor",
+      "hold": 10,
+      "pose": {
+        "pelvis.location": [0, -0.16, -0.88],
+        "pelvis": [0, -1, 0],
+        "spine.lower": [0, -0.94, 0.33],
+        "spine.upper": [0, -0.8, 0.6],
+        "neck": [0, -0.6, 0.8],
+        "head": [0, -0.55, 0.84],
+        "clavicle.L": [0.95, 0.1, 0.1],
+        "clavicle.R": [-0.95, 0.1, 0.1],
+        "upperarm.L": [1, 0.35, 0.45],
+        "upperarm.R": [-1, 0.35, 0.45],
+        "forearm.L": [1, 0.35, 0.45],
+        "forearm.R": [-1, 0.35, 0.45],
+        "hand.L": [1, 0.35, 0.45],
+        "hand.R": [-1, 0.35, 0.45],
+        "thigh.L": [0, 0.9, 0.42],
+        "thigh.R": [0, 0.9, 0.42],
+        "shin.L": [0, 0.9, 0.42],
+        "shin.R": [0, 0.9, 0.42],
+        "foot.L": [0, 0.9, 0.25],
+        "foot.R": [0, 0.9, 0.25]
+      },
+      "guides": [
+        {
+          "from": [0, -0.8, 0.27],
+          "to": [0, 0.1, 0.27]
+        },
+        {
+          "from": [0, -0.9, 0.53],
+          "to": [0, 0.95, 0.53]
+        }
+      ],
+      "ghost": {
+        "thigh.L": [0, 1, 0],
+        "thigh.R": [0, 1, 0],
+        "shin.L": [0, 1, 0],
+        "shin.R": [0, 1, 0],
+        "foot.L": [0, 1, -0.15],
+        "foot.R": [0, 1, -0.15]
+      }
+    },
+    {
+      "label": "Lower",
+      "hold": 4,
+      "pose": {
+        "pelvis.location": [0, -0.16, -0.88],
+        "pelvis": [0, -1, 0],
+        "spine.lower": [0, -1, 0],
+        "spine.upper": [0, -1, 0],
+        "neck": [0, -1, 0.05],
+        "head": [0, -1, 0.05],
+        "clavicle.L": [0.95, 0, -0.3],
+        "clavicle.R": [-0.95, 0, -0.3],
+        "upperarm.L": [1, 0.12, 0.0],
+        "upperarm.R": [-1, 0.12, 0.0],
+        "forearm.L": [1, 0.12, 0.0],
+        "forearm.R": [-1, 0.12, 0.0],
+        "hand.L": [1, 0.12, 0.0],
+        "hand.R": [-1, 0.12, 0.0],
+        "thigh.L": [0, 1, 0],
+        "thigh.R": [0, 1, 0],
+        "shin.L": [0, 1, 0],
+        "shin.R": [0, 1, 0],
+        "foot.L": [0, 1, -0.15],
+        "foot.R": [0, 1, -0.15]
+      }
+    }
+  ]
+}

@@ -22,3 +22,10 @@ export function motionUrls(): string[] {
     [m.sprite, m.guides, m.ghost].filter((u): u is string => Boolean(u)),
   );
 }
+
+const idBySprite = new Map(Object.entries(motionManifest).map(([id, m]) => [m.sprite, id]));
+
+/** The id a sheet belongs to (a posture id or `bridge:<start>-<end>`) — the live rig loads its data by it. */
+export function motionId(m: PoseMotion): string | undefined {
+  return idBySprite.get(m.sprite);
+}

@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
+import { useLocation } from 'react-router-dom';
 import type { CSSProperties, ReactNode } from 'react';
 import {
   BPM_MAX,
@@ -49,7 +50,7 @@ import type {
   WakeLock,
 } from '../pacer';
 import type { Pose } from '../data';
-import { poses } from '../data';
+import { applyFigureFlag, poses } from '../data';
 import {
   amendLastClass,
   applyEvidence,
@@ -217,6 +218,11 @@ function SpeakerOffIcon() {
 }
 
 export function Pacer() {
+  // ?figure=rig|sprite sets or clears the live-figure flag on arrival (class mode reads it)
+  const { search } = useLocation();
+  useEffect(() => {
+    applyFigureFlag(search);
+  }, [search]);
   const [settings, setSettings] = useState<PacerSettings>(restoreSettings);
   const [cues, setCues] = useState<CuePrefs>(restoreCues);
   const [voices, setVoices] = useState<VoiceChoice[]>([]);

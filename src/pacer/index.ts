@@ -19,7 +19,7 @@ export type { BeatEvent, BeatPhase, Metronome } from './metronome';
 export { CLOSING_LINE, CLOSING_SECONDS, announceText, buildPoseTrack, buildClassTrack, coachingMaterial, cueLayer, walkInSteps, segmentAtBeat, phaseAtBeat, nextSpokenCue, cueWhen, classMinutes } from './cues';
 export { DEFAULT_BAR_BEATS, poseBarBeats, breathBeats, quantizeBeats, poseGridSeconds } from './grid';
 export type { CueKind, CueEvent, CueLayer, CueOptions, PoseTrack, SegmentPosition, SegSpan } from './cues';
-export { figurePlan, figureFrameAt, planEndMotion, planEnd, segmentTimeline } from './figure';
+export { figurePlan, figureFrameAt, figurePoseAt, frameForPose, poseAt, planEndMotion, planEnd, segmentTimeline } from './figure';
 export { tempoOf } from './tempo';
 export type { Tempo, TempoKind } from './tempo';
 export type {
@@ -30,6 +30,8 @@ export type {
   FigureClock,
   FigureFrame,
   FrameStep,
+  FigurePose,
+  StepBlend,
 } from './figure';
 export { speechSupported, watchVoices, speak, stopSpeaking } from './voice';
 export type { VoiceChoice, SpeakOptions } from './voice';

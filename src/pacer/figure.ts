@@ -382,6 +382,40 @@ export interface FrameStep {
   motion: PoseMotion;
   frame: number;
   until: number;
+  /**
+   * the stage-to-stage travel this hop frame belongs to: from stage `from`
+   * to stage `to`, begun at `start` seconds (the live rig blends the two
+   * poses over ALL the travel's steps; the sprite just shows the frame).
+   * Every hop step of one travel shares the same object. A hold has none.
+   */
+  blend?: StepBlend;
+  /**
+   * a zero-length marker where the sheet CUTS back to stage 0 (the sprite
+   * has no frames for it and never shows the marker): the live rig blends
+   * from stage `from` to stage 0 over `seconds` instead of jumping
+   */
+  cut?: { from: number; seconds: number };
+}
+
+/** The travel a hop step belongs to (see `FrameStep.blend`). */
+export interface StepBlend {
+  from: number;
+  to: number;
+  start: number;
+}
+
+/** The hop steps of the travel into stage `i` from `t` seconds, `dt` apart; a cut marker when the hop is the cut to stage 0. */
+function hopSteps(m: PoseMotion, i: number, t: number, dt: number): FrameStep[] {
+  const frames = hopFrames(m, i);
+  if (frames.length === 0) {
+    if (i !== 0) return [];
+    const from = m.stages.length - 1;
+    return [{ motion: m, frame: m.stages[0].frame, until: t, cut: { from, seconds: TRANSITION_FRAMES / m.fps } }];
+  }
+  const blend: StepBlend = { from: i - 1, to: i, start: t };
+  let until = t;
+  // accumulated frame by frame, exactly as the sprite timeline always has
+  return frames.map((frame) => ({ motion: m, frame, until: (until += dt), blend }));
 }
 
 /**
@@ -401,15 +435,22 @@ export function bridgeSteps(seg: FigureSegment): { steps: FrameStep[]; end: numb
   if (from) {
     // the release: from the held stage through the source sheet's remaining stages (transition frames only)
     for (let i = from.stage + 1; i < from.motion.stages.length; i++) {
-      for (const f of hopFrames(from.motion, i)) {
-        t += 1 / from.motion.fps;
-        steps.push({ motion: from.motion, frame: f, until: t });
-      }
+      const hop = hopSteps(from.motion, i, t, 1 / from.motion.fps);
+      steps.push(...hop);
+      if (hop.length) t = hop[hop.length - 1].until;
     }
   }
+  // the bridge's own frames: its holds, and between them blends from one
+  // stage to the next (the frames `hopFrames` gives each stage)
+  const travelOf = new Map<number, number>();
+  for (let k = 1; k < b.stages.length; k++) for (const f of hopFrames(b, k)) travelOf.set(f, k);
+  let blend: StepBlend | undefined;
   for (let f = 0; f < b.frames; f++) {
+    const k = travelOf.get(f);
+    if (k === undefined) blend = undefined;
+    else if (!blend || blend.to !== k) blend = { from: k - 1, to: k, start: t };
     t += 1 / b.fps;
-    steps.push({ motion: b, frame: f, until: t });
+    steps.push(blend ? { motion: b, frame: f, until: t, blend } : { motion: b, frame: f, until: t });
   }
   return { steps, end: t };
 }
@@ -465,10 +506,9 @@ function stagedTimeline(seg: Extract<FigureSegment, { kind: 'stages' }>, seconds
     const budget = slice * 0.6 - transitionSeconds;
     if (setups.length && hold * setups.length > budget) hold = Math.max(0, budget / setups.length);
     for (const i of path) {
-      for (const f of hopFrames(m, i)) {
-        t += frameDt;
-        steps.push({ motion: m, frame: f, until: t });
-      }
+      const hop = hopSteps(m, i, t, frameDt);
+      steps.push(...hop);
+      if (hop.length) t = hop[hop.length - 1].until;
       if (i !== target && !isNeutral(m, i)) {
         t += hold;
         steps.push({ motion: m, frame: m.stages[i].frame, until: t });
@@ -519,10 +559,9 @@ function spokenTimeline(
     const hopCount = path.reduce((s, i) => s + hopFrames(m, i).length, 0);
     const frameDt = over !== undefined && hopCount > 0 ? over / hopCount : dt;
     for (const i of path) {
-      for (const f of hopFrames(m, i)) {
-        t += frameDt;
-        steps.push({ motion: m, frame: f, until: t });
-      }
+      const hop = hopSteps(m, i, t, frameDt);
+      steps.push(...hop);
+      if (hop.length) t = hop[hop.length - 1].until;
     }
     cur = to;
   };
@@ -612,4 +651,131 @@ export function figureFrameAt(seg: FigureSegment, clock: FigureClock, steps?: Fr
   return seg.kind === 'breath'
     ? { motion: seg.motion, frame: breathFrame(seg, clock.breath?.phase, clock.breath?.progress ?? 0) }
     : { motion: seg.motion, frame: pulseFrame(seg, clock.beatProgress) };
+}
+
+// ---------------------------------------------------------------------------
+// Continuous poses for the live rig. The sprite shows discrete frames; the
+// rig blends two stage poses. Same timelines, read continuously: a hop
+// step's `blend` says which travel it is part of, and the travel's eased
+// fraction replaces the frame index.
+// ---------------------------------------------------------------------------
+
+/** Where the live figure is: `t` (eased, 0–1) of the way from stage `from` to stage `to` of `motion`'s sheet. */
+export interface FigurePose {
+  motion: PoseMotion;
+  from: number;
+  to: number;
+  t: number;
+}
+
+const smoothstep = (x: number) => {
+  const c = Math.min(1, Math.max(0, x));
+  return c * c * (3 - 2 * c);
+};
+
+/** The held stage a frame belongs to: the last stage starting at or before it. */
+function stageOfFrame(m: PoseMotion, frame: number): number {
+  let k = 0;
+  m.stages.forEach((s, i) => {
+    if (s.frame <= frame) k = i;
+  });
+  return k;
+}
+
+const hold = (motion: PoseMotion, stage: number): FigurePose => ({ motion, from: stage, to: stage, t: 1 });
+
+/**
+ * The rig's pose at `t` seconds of a timeline. Inside a travel the blend
+ * runs smoothstep over the WHOLE travel (all its hop steps), which is how
+ * the sheets ease each transition; on a hold `from === to`, `t = 1`. Just
+ * after a cut marker (the sheet's jump back to stage 0) the rig blends
+ * from the stage it left to stage 0 over the marker's window; when a
+ * travel follows the marker at once, that window is carved out of the
+ * travel's own time (see above), never skipped.
+ */
+export function poseAt(steps: FrameStep[], t: number): FigurePose | undefined {
+  let i = steps.findIndex((s) => t < s.until);
+  if (i < 0) i = steps.length - 1;
+  const s = steps[i];
+  if (!s) return undefined;
+  if (s.blend) {
+    const b = s.blend;
+    let first = i;
+    while (first > 0 && steps[first - 1].blend === b) first--;
+    let end = s.until;
+    for (let j = i + 1; j < steps.length && steps[j].blend === b; j++) end = steps[j].until;
+    // a cut marker right before this travel (the sheet wrapped to stage 0
+    // and went straight on): the rig spends the start of the travel's own
+    // time on the wrap — its full window, or half the travel if shorter —
+    // then makes the travel in what remains, so rig time runs continuously
+    // through stage 0 while the sprite's frames stay exactly as they were
+    const cut = steps[first - 1];
+    let start = b.start;
+    if (cut?.cut && cut.motion === s.motion && cut.until === b.start) {
+      const wrapEnd = b.start + Math.min(cut.cut.seconds, (end - b.start) / 2);
+      if (t < wrapEnd) {
+        return { motion: s.motion, from: cut.cut.from, to: 0, t: smoothstep((t - b.start) / (wrapEnd - b.start)) };
+      }
+      start = wrapEnd;
+    }
+    const span = end - start;
+    return { motion: s.motion, from: b.from, to: b.to, t: span > 0 ? smoothstep((t - start) / span) : 1 };
+  }
+  const prev = steps[i - 1];
+  if (prev?.cut && prev.motion === s.motion && t >= prev.until && t < prev.until + prev.cut.seconds) {
+    return { motion: s.motion, from: prev.cut.from, to: 0, t: smoothstep((t - prev.until) / prev.cut.seconds) };
+  }
+  return hold(s.motion, stageOfFrame(s.motion, s.frame));
+}
+
+/**
+ * The continuous counterpart of `figureFrameAt`: where the live rig is at
+ * this moment of the class. Stages (and any bridge) through `poseAt`; a
+ * breath segment blends exhale → inhale over the inhale (and back over the
+ * exhale) with the same easing the sprite scrubs with; a pulse goes
+ * Pump → Release → Pump within each beat.
+ */
+export function figurePoseAt(seg: FigureSegment, clock: FigureClock, steps?: FrameStep[]): FigurePose {
+  if (seg.kind === 'stages') {
+    return poseAt(steps ?? segmentTimeline(seg, clock.total), clock.seconds) ?? hold(seg.motion, seg.from);
+  }
+  if (seg.bridge) {
+    const b = bridgeSteps(seg);
+    if (clock.seconds < b.end) {
+      const p = poseAt(b.steps, clock.seconds);
+      if (p) return p;
+    }
+  }
+  const m = seg.motion;
+  if (seg.kind === 'breath') {
+    const phase = clock.breath?.phase;
+    if (!phase) return hold(m, seg.inhale);
+    const e = easeInOut(Math.min(1, Math.max(0, clock.breath?.progress ?? 0)));
+    return phase === 'inhale'
+      ? { motion: m, from: seg.exhale, to: seg.inhale, t: e }
+      : { motion: m, from: seg.inhale, to: seg.exhale, t: e };
+  }
+  const pump = stageOfFrame(m, seg.from);
+  const release = Math.min(m.stages.length - 1, pump + 1);
+  const p = Math.min(1, Math.max(0, clock.beatProgress));
+  return p < 0.5
+    ? { motion: m, from: pump, to: release, t: smoothstep(p * 2) }
+    : { motion: m, from: release, to: pump, t: smoothstep(p * 2 - 1) };
+}
+
+/**
+ * The sprite frame nearest a rig pose — for handing a figure from the live
+ * rig back to the sprite mid-motion: a hold is its stage's first frame, a
+ * travel into stage b the hop frame `t` of the way through (`hopFrames`),
+ * and the cut back to stage 0 whichever side of it `t` is nearer.
+ */
+export function frameForPose(m: PoseMotion, from: number, to: number, t: number): number {
+  const n = m.stages.length;
+  const a = Math.min(n - 1, Math.max(0, from));
+  const b = Math.min(n - 1, Math.max(0, to));
+  if (a === b || t >= 1) return m.stages[b].frame;
+  if (t <= 0) return m.stages[a].frame;
+  const frames = b === a + 1 ? hopFrames(m, b) : [];
+  if (frames.length === 0) return m.stages[t < 0.5 ? a : b].frame;
+  return frames[Math.min(frames.length - 1, Math.floor(t * frames.length))];
 }

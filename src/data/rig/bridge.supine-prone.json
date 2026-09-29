@@ -1,0 +1,92 @@
+{
+  "id": "bridge:supine-prone",
+  "view": "side",
+  "frame": {"center_z": 0.35, "scale": 2.4},
+  "position": {"start": "supine", "end": "prone"},
+  "transition": 6,
+  "stages": [
+    {
+      "label": "Lie on the back",
+      "hold": 2,
+      "frame": {"center_z": 0.35, "scale": 2.4},
+      "pose": {
+        "pelvis.location": [0, -0.1, -0.88],
+        "pelvis": [0, -1, 0],
+        "spine.lower": [0, -1, 0],
+        "spine.upper": [0, -1, 0],
+        "neck": [0, -1, 0.05],
+        "head": [0, -1, 0],
+        "clavicle.R": [-0.998752, 0.049938, 0.0],
+        "clavicle.L": [0.998752, 0.049938, 0.0],
+        "upperarm.L": [0.1, 1, 0],
+        "upperarm.R": [-0.1, 1, 0],
+        "forearm.L": [0.1, 1, 0],
+        "forearm.R": [-0.1, 1, 0],
+        "hand.L": [0.1, 1, 0],
+        "hand.R": [-0.1, 1, 0],
+        "thigh.R": [-0.03, 1, 0],
+        "shin.R": [-0.03, 1, 0],
+        "foot.R": [0, 0.3, 1],
+        "thigh.L": [0.03, 1, 0],
+        "shin.L": [0.03, 1, 0],
+        "foot.L": [0, 0.3, 1]
+      }
+    },
+    {
+      "label": "Roll to the side",
+      "hold": 2,
+      "frame": {"center_z": 0.35, "scale": 2.4},
+      "pose": {
+        "pelvis.location": [0, -0.1, -0.8],
+        "pelvis": [0, -1, 0.2],
+        "spine.lower": [0, -1, 0.2],
+        "spine.upper": [0, -1, 0.15],
+        "neck": [0, -1, 0.0],
+        "head": [0, -1, -0.12],
+        "hipbone.L": [0, 0.2, 1],
+        "hipbone.R": [0, 0.2, -1],
+        "clavicle.L": [0, 0.05, 1],
+        "clavicle.R": [0, 0.05, -1],
+        "upperarm.R": [-0.8, -0.6, -0.05],
+        "forearm.R": [0.2, -1, 0],
+        "hand.R": [0.3, -1, 0],
+        "upperarm.L": [-0.619521, 0.318701, -0.717373],
+        "forearm.L": [-0.321356, -0.449694, -0.83337],
+        "hand.L": [-0.2, -1, -0.1],
+        "thigh.R": [0.0, 0.984562, 0.175034],
+        "shin.R": [0.0, 0.969983, -0.243172],
+        "foot.R": [-0.5, 0.4, 0],
+        "thigh.L": [-0.799127, 0.567244, -0.199076],
+        "shin.L": [0.526399, 0.841847, -0.11915],
+        "foot.L": [-0.5, 0.4, 0]
+      }
+    },
+    {
+      "label": "Lie on the front",
+      "hold": 3,
+      "frame": {"center_z": 0.35, "scale": 2.4},
+      "pose": {
+        "pelvis.location": [0, -0.1, -0.88],
+        "pelvis": [0, -1, 0],
+        "spine.lower": [0, -1, 0],
+        "spine.upper": [0, -1, 0],
+        "neck": [0, -1, 0.1],
+        "head": [0, -1, 0.1],
+        "clavicle.L": [1, 0, 0.0],
+        "clavicle.R": [-1, 0, 0.0],
+        "thigh.L": [0.02, 1, 0],
+        "thigh.R": [-0.02, 1, 0],
+        "shin.L": [0.0, 1, 0],
+        "shin.R": [0.0, 1, 0],
+        "foot.L": [0, 1, -0.12],
+        "foot.R": [0, 1, -0.12],
+        "upperarm.L": [0.12, 1, 0],
+        "upperarm.R": [-0.12, 1, 0],
+        "forearm.L": [0.12, 1, 0],
+        "forearm.R": [-0.12, 1, 0],
+        "hand.L": [0.12, 1, 0],
+        "hand.R": [-0.12, 1, 0]
+      }
+    }
+  ]
+}

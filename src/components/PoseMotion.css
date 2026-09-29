@@ -25,6 +25,16 @@
   flex: none;
 }
 
+/* the live rig (renderer="rig") sits in the same box as the sprite cells */
+.pose-motion-rig {
+  position: absolute;
+  inset: 0;
+}
+
+.pose-motion-rig[hidden] {
+  display: none;
+}
+
 /* the common-mistake figure: a faint warm echo under the real one */
 .pose-motion-cell--ghost {
   background: color-mix(in srgb, var(--ember) 55%, transparent);

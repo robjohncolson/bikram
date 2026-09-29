@@ -10,6 +10,64 @@ push to `main` via Vercel's Git integration**; the CLI token on this machine is 
 
 ---
 
+## ✔ 2026-09-29 — LIVE FIGURE (uncommitted)
+
+Implemented `docs/live-figure-spec.md` §1–§7 as uncommitted working-tree changes (not reviewed
+by Codex yet, not committed, not pushed). What shipped:
+- `scripts/blender/export_rig.py` (`npm run rig:export`) → `src/data/rig/*.json` + `skeleton.json`;
+  `scripts/blender/export_fixtures.py` (runs in Blender) → `src/rig/fixtures/*.json` (15 cases).
+- `src/rig/`, a pure TS rig (pose/inbetween/mirror/camera/body/sheet), with a parity test against
+  Blender on the PRODUCTION path (`applyStage`/`ghostPose`/`sheetPose`, no exclusions): every held
+  stage, the ghost and every in-between are within ≈5e-6 m (the fixtures' 5-decimal rounding).
+  After the Codex review, `render_motion.py` `midpoint_dir` got a deterministic tie rule
+  (`MIDPOINT_TIE = 1e-6`: on a tie the higher way round wins, then the one further back), mirrored
+  exactly in `src/rig/inbetween.ts`. Before it, an exact tie (the sweep axis X blinds the side
+  term) came down to float32 noise; the supine→prone bridge's right forearm/hand was one. The
+  fixtures were re-exported with the rule. **The `bridge:supine-prone` SPRITE SHEET was rendered
+  before this tie-break and may differ from the rig by that one limb's sweep until the next
+  `npm run motion bridge:supine-prone`** (not re-rendered yet, on purpose).
+- `src/components/FigureRig.tsx` + `figureRigScene.ts` (three r186, a lazy chunk of 557.8 kB /
+  140.1 kB gzip; the main bundle went 742.7 → 763.4 kB), `PoseMotion renderer/pose/breathProgress`,
+  `figure.ts` `poseAt`/`figurePoseAt`/`FrameStep.blend`/cut markers, class-mode wiring, the
+  PoseDetail side-by-side, and the rollout flag (`RIG_LIVE = {'half-moon'}`, `?figure=rig|sprite`).
+- Tests 162 → 214 (21 files). tsc, lint and build are clean.
+- Codex review fixes: `RigBoundary` (+ `rigFallback.ts` state machine) catches a rejected
+  FigureRig/three chunk and keeps the sprite (smoke-tested by blocking each chunk: no page error);
+  `applyFigureFlag(search)` owns the `yoga-figure-v1` side effect and `figureRenderer` is pure
+  (PoseDetail, Pacer, PacerClassMode call it whatever the posture); the rig demonstration keeps
+  its elapsed sheet time across pause/resume and only a chip seeks (`stageStartAt`); a cut marker
+  followed at once by a travel carves its wrap window out of that travel (`poseAt`); a rig that
+  fails mid-play hands the sprite the nearest frame (`frameForPose`) and keeps play/pause; the
+  class-mode breath clock is shifted by the pause so the rig chest resumes without a jump;
+  `export_fixtures.py` also writes `fixtures/skeleton-from-blender.json` and the skeleton test
+  compares the TS rig and export_rig.py's copy with it; the edge quad is disposed.
+
+Measured on this laptop (Intel iGPU via ANGLE D3D11, Chrome via ad-hoc Playwright): a blend frame
+at the class-mode size (390 px, DPR 1) takes 1.07 ms at 1× CPU and 5.0 ms at 4× CPU throttle. That
+is averaged over 120 frames, with the GPU included by one readback. Single frame + readback
+latency is 2.1 ms / 7.9 ms. At 780 px it is 5.7 ms / 8.2 ms at 4×. Inside the running class, with
+a readback after EVERY render, the median was ~24 ms. That number is the synchronous readback
+waiting behind the page's own compositing, not the edge pass; the batched figure is the honest one.
+
+Screenshots taken and checked: posture-page hero sprite beside live (dark + light); chips on Right
+side (front, guides), Backbend (side, face to screen right), Hands to feet (quarter), and the ghost
+on Right side; cobra Lift with `?figure=rig`; the 360 px phone layout; class mode Pranayama → Half
+Moon (entry, right side) → Awkward. Tuning that came from them: elliptical skin radii (round tubes
+looked fat from the side), BODY_SCALE 0.95, DEPTH_JUMP 0.05 m, normal crease at cos < 0.
+
+Not done / open:
+- The live figure is built from tubes and ellipsoids, not the subdivided skin. Bends show small
+  kinks at joints, and in Tadasana the chest shows two short armpit strokes the sprite lacks.
+- Strokes are jagged at DPR 1 (the edge pass runs on a 1× target with no supersampling).
+- Reduced motion and the context-loss fallback are implemented but were not exercised in a browser.
+- A class-mode BRIDGE with the rig (e.g. into savasana with `?figure=rig`) is unit-tested
+  (`figurePoseAt` follows the bridge sheet) but was not screenshotted.
+- At 360 px, `/pose/half-moon` overflows by 25 px because of the long timing pill. This was already
+  there (69 px on HEAD); the new `minmax(0, 1fr)` header column reduced it.
+- Still to do: Codex review, commit, push, Ops status.
+
+---
+
 ## ▶ RESUME HERE (2026-09-29) — NEXT TASK: THREE.JS LIVE FIGURE
 
 **How to start a fresh session on this**: read `CLAUDE.md` (current, dense — it explains every

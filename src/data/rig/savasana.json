@@ -1,0 +1,93 @@
+{
+  "id": "savasana",
+  "view": "side",
+  "frame": {"center_z": 0.35, "scale": 2.4},
+  "position": {"start": "supine", "end": "supine"},
+  "transition": 9,
+  "stages": [
+    {
+      "label": "Lie down",
+      "hold": 5,
+      "pose": {
+        "pelvis.location": [0, -0.1, -0.88],
+        "pelvis": [0, -1, 0],
+        "spine.lower": [0, -1, 0],
+        "spine.upper": [0, -1, 0],
+        "neck": [0, -1, 0.05],
+        "head": [0, -1, 0],
+        "clavicle.L": [1, 0.05, 0],
+        "clavicle.R": [-1, 0.05, 0],
+        "upperarm.L": [0.05, 1, 0],
+        "upperarm.R": [-0.05, 1, 0],
+        "forearm.L": [0.05, 1, 0],
+        "forearm.R": [-0.05, 1, 0],
+        "hand.L": [0.05, 1, 0],
+        "hand.R": [-0.05, 1, 0],
+        "thigh.L": [0.05, 0.55, 0.83],
+        "thigh.R": [-0.05, 0.55, 0.83],
+        "shin.L": [0, 0.55, -0.83],
+        "shin.R": [0, 0.55, -0.83],
+        "foot.L": [0, 1, -0.15],
+        "foot.R": [0, 1, -0.15]
+      }
+    },
+    {
+      "label": "Settle",
+      "hold": 6,
+      "pose": {
+        "pelvis.location": [0, -0.1, -0.88],
+        "pelvis": [0, -1, 0],
+        "spine.lower": [0, -1, 0],
+        "spine.upper": [0, -1, 0],
+        "neck": [0, -1, 0.05],
+        "head": [0, -1, 0],
+        "clavicle.L": [1, 0.05, 0],
+        "clavicle.R": [-1, 0.05, 0],
+        "upperarm.L": [0.1, 1, 0],
+        "upperarm.R": [-0.1, 1, 0],
+        "forearm.L": [0.1, 1, 0],
+        "forearm.R": [-0.1, 1, 0],
+        "hand.L": [0.1, 1, 0],
+        "hand.R": [-0.1, 1, 0],
+        "thigh.L": [0.03, 1, 0],
+        "thigh.R": [-0.03, 1, 0],
+        "shin.L": [0.03, 1, 0],
+        "shin.R": [-0.03, 1, 0],
+        "foot.L": [0, 0.3, 1],
+        "foot.R": [0, 0.3, 1]
+      }
+    },
+    {
+      "label": "Stillness",
+      "hold": 12,
+      "pose": {
+        "pelvis.location": [0, -0.1, -0.88],
+        "pelvis": [0, -1, 0],
+        "spine.lower": [0, -1, 0],
+        "spine.upper": [0, -1, 0],
+        "neck": [0, -1, 0.05],
+        "head": [0, -1, 0],
+        "clavicle.L": [1, 0.05, 0],
+        "clavicle.R": [-1, 0.05, 0],
+        "upperarm.L": [0.16, 1, 0],
+        "upperarm.R": [-0.16, 1, 0],
+        "forearm.L": [0.16, 1, 0],
+        "forearm.R": [-0.16, 1, 0],
+        "hand.L": [0.16, 1, 0],
+        "hand.R": [-0.16, 1, 0],
+        "thigh.L": [0.06, 1, 0],
+        "thigh.R": [-0.06, 1, 0],
+        "shin.L": [0.06, 1, 0],
+        "shin.R": [-0.06, 1, 0],
+        "foot.L": [0.35, 0.45, 0.8],
+        "foot.R": [-0.35, 0.45, 0.8]
+      },
+      "guides": [
+        {
+          "from": [0, -1.05, 0.0],
+          "to": [0, 1.1, 0.0]
+        }
+      ]
+    }
+  ]
+}

@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import type { CSSProperties } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { chakraById, getNeighbors, getPose, muscleById } from '../data';
+import { Link, useLocation, useParams } from 'react-router-dom';
+import { RIG_LIVE, applyFigureFlag, chakraById, figureRenderer, getNeighbors, getPose, hasRigData, muscleById } from '../data';
 import { band, loadStore, nodeP } from '../trainer';
 import type { ClassicalNote, MuscleId, Pose } from '../data';
 import { BodyMap } from '../components/BodyMap';
@@ -204,10 +204,31 @@ function ClassicalSection({ note, pose }: { note: ClassicalNote; pose: Pose }) {
   );
 }
 
-/** The hero figure, breathing at rest (6 in, 6 out); only it re-renders on each flip. */
-function HeroMotion({ motion }: { motion: NonNullable<Pose['motion']> }) {
+/**
+ * The hero figure, breathing at rest (6 in, 6 out); only it re-renders on
+ * each flip. For the live-rig rollout (`RIG_LIVE` postures, or every
+ * posture with `?figure=rig`) the live three.js figure stands BESIDE the
+ * sprite — same size, same breath — so the two can be compared.
+ */
+function HeroMotion({ pose, motion }: { pose: Pose; motion: NonNullable<Pose['motion']> }) {
   const breath = useRestingBreath(6);
-  return <PoseMotion motion={motion} size={170} frameClassName="pd-figurewrap" breath={breath} />;
+  const { search } = useLocation();
+  // the flag is applied whatever the posture, so ?figure=rig|sprite always sets or clears it
+  const override = useMemo(() => applyFigureFlag(search), [search]);
+  const live = hasRigData(pose.id) && (RIG_LIVE.has(pose.id) || figureRenderer(pose.id, override, 'page') === 'rig');
+  if (!live) return <PoseMotion motion={motion} size={170} frameClassName="pd-figurewrap" breath={breath} />;
+  return (
+    <div className="pd-figures">
+      <figure className="pd-figurecol">
+        <figcaption className="pd-figurelabel text-faint">sprite</figcaption>
+        <PoseMotion motion={motion} size={170} frameClassName="pd-figurewrap" breath={breath} />
+      </figure>
+      <figure className="pd-figurecol">
+        <figcaption className="pd-figurelabel text-faint">live</figcaption>
+        <PoseMotion motion={motion} size={170} frameClassName="pd-figurewrap" breath={breath} renderer="rig" />
+      </figure>
+    </div>
+  );
 }
 
 export function PoseDetail() {
@@ -290,7 +311,7 @@ export function PoseDetail() {
             </div>
           </div>
           {pose.motion ? (
-            <HeroMotion motion={pose.motion} />
+            <HeroMotion pose={pose} motion={pose.motion} />
           ) : (
             <div className="pd-figurewrap" aria-hidden>
               <PoseFigure pose={pose} size={140} />
