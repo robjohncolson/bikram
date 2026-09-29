@@ -21,8 +21,24 @@ def arms_along(axis, clav, squeeze=0.2):
     }
 
 
+
+# Tadasana: feet together (the rig rests hip-width, so the legs angle in
+# to bring the ankles side by side), arms down.
+TADASANA = {
+    'thigh.L': (-0.09, 0, -1), 'thigh.R': (0.09, 0, -1),
+    'shin.L': (-0.07, 0, -1), 'shin.R': (0.07, 0, -1),
+}
+
 UP = {
     **arms_along((0, 0, 1), (0, 0, 0.35)),
+    'spine.lower': (0, 0, 1), 'spine.upper': (0, 0, 1), 'neck': (0, 0, 1), 'head': (0, 0, 1),
+}
+
+# "Stretch the whole body up toward the ceiling": the same reach, lifted
+# out of the waist, arms pulled in tight.
+STRETCH = {
+    **arms_along((0, 0, 1), (0, 0, 0.4), squeeze=0.1),
+    'pelvis.location': (0, 0, 0.03),
     'spine.lower': (0, 0, 1), 'spine.upper': (0, 0, 1), 'neck': (0, 0, 1), 'head': (0, 0, 1),
 }
 
@@ -77,8 +93,9 @@ POSTURE = {
     'frame': {'center_z': 1.05, 'scale': 2.6},
     'transition': 7,
     'stages': [
-        {'label': 'Stand', 'pose': {}, 'hold': 4},
+        {'label': 'Stand', 'pose': TADASANA, 'hold': 4},
         {'label': 'Arms up', 'pose': UP, 'hold': 4},
+        {'label': 'Stretch up', 'pose': STRETCH, 'hold': 4},
         {'label': 'Step forward', 'pose': step('R', 'L'), 'hold': 3},
         {'label': 'Tip to horizontal', 'pose': stick('R', 'L'), 'hold': 10,
          'guides': stick_guides('R'), 'ghost': stick_ghost('R', 'L')},
@@ -86,6 +103,6 @@ POSTURE = {
         {'label': 'Left side', 'pose': stick('L', 'R'), 'hold': 6,
          'guides': stick_guides('L'), 'ghost': stick_ghost('L', 'R')},
         {'label': 'Rise', 'pose': UP, 'hold': 4},
-        {'label': 'Stand', 'pose': {}, 'hold': 4},
+        {'label': 'Stand', 'pose': TADASANA, 'hold': 4},
     ],
 }

@@ -21,8 +21,23 @@ def arms_overhead(axis=(0, 0, 1), squeeze=0.22):
     }
 
 
+
+# Tadasana: feet together (the rig rests hip-width, so the legs angle in
+# to bring the ankles side by side), arms down.
+TADASANA = {
+    'thigh.L': (-0.09, 0, -1), 'thigh.R': (0.09, 0, -1),
+    'shin.L': (-0.07, 0, -1), 'shin.R': (0.07, 0, -1),
+}
+
 UP = {
     **arms_overhead(),
+    'spine.lower': (0, 0, 1), 'spine.upper': (0, 0, 1), 'neck': (0, 0, 1), 'head': (0, 0, 1),
+}
+
+# "Lock the elbows and squeeze the arms in tight against the ears": the
+# same reach, arms pulled in to the head.
+SQUEEZE = {
+    **arms_overhead(squeeze=0.08),
     'spine.lower': (0, 0, 1), 'spine.upper': (0, 0, 1), 'neck': (0, 0, 1), 'head': (0, 0, 1),
 }
 
@@ -95,8 +110,9 @@ POSTURE = {
     'frame': {'center_z': 1.05, 'scale': 2.5},
     'transition': 7,
     'stages': [
-        {'label': 'Stand', 'pose': {}, 'hold': 4},
+        {'label': 'Stand', 'pose': TADASANA, 'hold': 4},
         {'label': 'Arms up', 'pose': UP, 'hold': 4},
+        {'label': 'Squeeze the arms', 'pose': SQUEEZE, 'hold': 4},
         {'label': 'Right side', 'pose': RIGHT, 'hold': 8,
          'guides': RIGHT_GUIDES, 'ghost': RIGHT_GHOST},
         {'label': 'Centre', 'pose': UP, 'hold': 3},
@@ -106,6 +122,6 @@ POSTURE = {
         {'label': 'Centre', 'pose': UP, 'hold': 3, 'view': 'side'},
         {'label': 'Hands to feet', 'pose': FOLD, 'hold': 8, 'view': 'quarter'},
         {'label': 'Rise', 'pose': UP, 'hold': 4, 'view': 'front'},
-        {'label': 'Stand', 'pose': {}, 'hold': 4},
+        {'label': 'Stand', 'pose': TADASANA, 'hold': 4},
     ],
 }

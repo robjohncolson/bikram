@@ -117,6 +117,9 @@ SIT = stage(SIT_THIGH, UPRIGHT, arms=HANDS_ON_THIGHS)
 
 HOLD = stage(SIT_THIGH, {**UPRIGHT, 'neck': (0, -0.5, 0.87), 'head': (0, -0.7, 0.7)})
 
+# "Tuck the chin tightly to the chest": still sitting, holding the heels.
+TUCK = stage(SIT_THIGH, {**UPRIGHT, 'neck': (0, -0.6, 0.8), 'head': (0, -0.92, 0.4)})
+
 ROLL = stage((0, -0.75, -0.66), {
     'pelvis': (0, -0.55, 0.83),
     'spine.lower': (0, -0.95, 0.3),
@@ -164,7 +167,8 @@ POSTURE = {
     'stages': [
         {'label': 'Sit on the heels', 'pose': SIT, 'hold': 4},
         {'label': 'Hold the heels', 'pose': HOLD, 'hold': 4},
-        {'label': 'Roll forward', 'pose': ROLL, 'hold': 5},
+        {'label': 'Tuck the chin', 'pose': TUCK, 'hold': 4},
+        {'label': 'Crown to the floor', 'pose': ROLL, 'hold': 5},
         {'label': 'Hips up', 'pose': HIPS_UP, 'hold': 10,
          'guides': HIPS_UP_GUIDES, 'ghost': HIPS_UP_GHOST},
         {'label': 'Rise', 'pose': HOLD, 'hold': 4},

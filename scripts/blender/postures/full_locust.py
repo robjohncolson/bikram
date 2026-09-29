@@ -87,7 +87,7 @@ POSTURE = {
     'stages': [
         {'label': 'Lie prone', 'pose': LIE, 'hold': 4},
         {'label': 'Arms out', 'pose': ARMS, 'hold': 5, 'view': 'front'},
-        {'label': 'Lift everything', 'pose': FLY, 'hold': 10,
+        {'label': 'Lift off the floor', 'pose': FLY, 'hold': 10,
          'guides': FLY_GUIDES, 'ghost': FLY_GHOST},
         {'label': 'Lower', 'pose': ARMS, 'hold': 4},
     ],

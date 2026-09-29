@@ -326,8 +326,21 @@ def build_camera(view: str, center_z: float, scale: float) -> bpy.types.Object:
 
 
 def configure_render(scene: bpy.types.Scene) -> None:
-    scene.render.engine = 'BLENDER_EEVEE'
-    scene.eevee.taa_render_samples = 4
+    # Only the Freestyle strokes survive (holdout body on a transparent
+    # film), so the engine underneath just resolves visibility. Cycles on
+    # the CPU at one sample gives identical strokes, three times faster than
+    # EEVEE on an integrated GPU, and scales across cores and parallel
+    # workers — so it is the default; MOTION_ENGINE=EEVEE brings EEVEE back.
+    if os.environ.get('MOTION_ENGINE', 'CYCLES').upper() == 'CYCLES':
+        scene.render.engine = 'CYCLES'
+        scene.cycles.device = 'CPU'
+        scene.cycles.samples = 1
+        scene.cycles.use_adaptive_sampling = False
+        scene.cycles.use_denoising = False
+        scene.cycles.max_bounces = 0
+    else:
+        scene.render.engine = 'BLENDER_EEVEE'
+        scene.eevee.taa_render_samples = 4
     scene.render.resolution_x = FRAME_PX
     scene.render.resolution_y = FRAME_PX
     scene.render.resolution_percentage = 100
@@ -770,14 +783,43 @@ def read_existing_manifest() -> dict[str, dict]:
     return entries
 
 
+ENTRIES_DIR = ROOT / '.motion-tmp' / 'entries'
+
+
+def merge_entries() -> None:
+    """Fold every worker's JSON sidecar into the manifest (and clear them)."""
+    entries = read_existing_manifest()
+    for f in sorted(ENTRIES_DIR.glob('*.json')) if ENTRIES_DIR.exists() else []:
+        e = json.loads(f.read_text(encoding='utf-8'))
+        entries[e['id']] = e
+        f.unlink()
+    write_manifest(entries)
+    print(f'manifest → {MANIFEST.relative_to(ROOT)} ({len(entries)} postures)')
+
+
 def main() -> None:
     argv = sys.argv[sys.argv.index('--') + 1:] if '--' in sys.argv else []
+    # `--merge`: only fold the workers' sidecars into the manifest
+    if argv == ['--merge']:
+        merge_entries()
+        return
+    # `--entry-only <ids>`: render, but leave the entries as sidecars for a
+    # later merge (the node wrapper runs one Blender per posture in parallel,
+    # and parallel writers must not race on the manifest)
+    entry_only = '--entry-only' in argv
+    argv = [a for a in argv if a != '--entry-only']
     files = sorted(POSTURES_DIR.glob('*.py'))
     if argv:
         files = [p for p in files if p.stem.replace('_', '-') in argv or p.stem in argv]
     if not files:
         print('no posture modules matched', argv)
         sys.exit(1)
+    if entry_only:
+        ENTRIES_DIR.mkdir(parents=True, exist_ok=True)
+        for path in files:
+            e = render_posture(path)
+            (ENTRIES_DIR / f"{e['id']}.json").write_text(json.dumps(e), encoding='utf-8')
+        return
     entries = read_existing_manifest()
     for path in files:
         e = render_posture(path)

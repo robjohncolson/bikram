@@ -30,6 +30,14 @@ def mirror(pose):
     return out
 
 
+
+# Tadasana: feet together (the rig rests hip-width, so the legs angle in
+# to bring the ankles side by side), arms down.
+TADASANA = {
+    'thigh.L': (-0.09, 0, -1), 'thigh.R': (0.09, 0, -1),
+    'shin.L': (-0.07, 0, -1), 'shin.R': (0.07, 0, -1),
+}
+
 ARMS_WIDE = {
     'upperarm.L': (1, 0, 0.1), 'upperarm.R': (-1, 0, 0.1),
     'forearm.L': (1, 0, 0.1), 'forearm.R': (-1, 0, 0.1),
@@ -61,6 +69,31 @@ RIGHT = {
 
 LEFT = mirror(RIGHT)
 
+# "Cross the right arm under the left at the elbows": arms crossed in
+# front, forearms still hanging forward and down.
+CROSS = {
+    'upperarm.L': (-0.6, -0.65, -0.38), 'upperarm.R': (0.55, -0.6, -0.58),
+    'forearm.L': (-0.1, -0.75, -0.65), 'forearm.R': (0.1, -0.75, -0.65),
+    'hand.L': (-0.1, -0.75, -0.65), 'hand.R': (0.1, -0.75, -0.65),
+}
+
+# "Twist the forearms around each other and press the palms together in
+# front of the face": the finished arm wrap, still standing tall.
+PALMS = {k: v for k, v in RIGHT.items() if k.split('.')[0] in ('upperarm', 'forearm', 'hand')}
+
+# "Pull the elbows down and sit the hips low": the wrap on two bent legs.
+SIT_LOW = {
+    **PALMS,
+    'pelvis.location': at(0, 0.08, -0.29),
+    'pelvis': (0, -0.3, 0.95),
+    'spine.lower': (0, -0.3, 0.95),
+    'spine.upper': (0, -0.15, 1),
+    'neck': (0, -0.05, 1), 'head': (0, 0, 1),
+    'thigh.L': (-0.03, -0.82, -0.57), 'thigh.R': (0.03, -0.82, -0.57),
+    'shin.L': (0, 0.64, -0.77), 'shin.R': (0, 0.64, -0.77),
+    'foot.L': (0, -0.89, -0.45), 'foot.R': (0, -0.89, -0.45),
+}
+
 # Guides (both sides): the vertical midline the crossed arms and crossed
 # legs both stack on, and the hip height to sit down to.
 GUIDES = [
@@ -85,14 +118,17 @@ POSTURE = {
     'frame': {'center_z': 0.98, 'scale': 2.1},
     'transition': 7,
     'stages': [
-        {'label': 'Stand', 'pose': {}, 'hold': 4},
+        {'label': 'Stand', 'pose': TADASANA, 'hold': 4},
         {'label': 'Arms wide', 'pose': ARMS_WIDE, 'hold': 3, 'view': 'front'},
-        {'label': 'Right side', 'pose': RIGHT, 'hold': 8,
+        {'label': 'Cross the arms', 'pose': CROSS, 'hold': 4, 'view': 'front'},
+        {'label': 'Palms together', 'pose': PALMS, 'hold': 4, 'view': 'front'},
+        {'label': 'Sit low', 'pose': SIT_LOW, 'hold': 4, 'view': 'front'},
+        {'label': 'Right leg over', 'pose': RIGHT, 'hold': 8,
          'guides': GUIDES, 'ghost': RIGHT_GHOST},
         {'label': 'Release', 'pose': ARMS_WIDE, 'hold': 3, 'view': 'front'},
         {'label': 'Left side', 'pose': LEFT, 'hold': 8,
          'guides': GUIDES, 'ghost': LEFT_GHOST},
         {'label': 'Release', 'pose': {}, 'hold': 4, 'view': 'front'},
-        {'label': 'Stand', 'pose': {}, 'hold': 4},
+        {'label': 'Stand', 'pose': TADASANA, 'hold': 4},
     ],
 }

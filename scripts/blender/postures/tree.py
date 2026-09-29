@@ -70,7 +70,36 @@ def tree_ghost(lift):
     }
 
 
-STAND = {}
+
+# Tadasana: feet together (the rig rests hip-width, so the legs angle in
+# to bring the ankles side by side), arms down.
+TADASANA = {
+    'thigh.L': (-0.09, 0, -1), 'thigh.R': (0.09, 0, -1),
+    'shin.L': (-0.07, 0, -1), 'shin.R': (0.07, 0, -1),
+}
+
+STAND = TADASANA
+
+
+# "Pour your weight into the left foot": tall on the left, right heel
+# just off the floor.
+WEIGHT = {
+    **standing_shift('L'),
+    'thigh.L': (-0.09, 0, -1), 'shin.L': (-0.07, 0, -1),
+    'thigh.R': (0.09, 0, -1), 'shin.R': (0.07, 0.08, -1),
+    'foot.R': (0, -0.85, -0.5),
+}
+
+
+def press(lift):
+    """The foot in place, hand still holding it, the folded knee pressed
+    further out and down toward the floor."""
+    s = -1 if lift == 'R' else 1
+    return {
+        **hold_foot(lift),
+        f'thigh.{lift}': (s * 0.72, -0.2, -0.66),
+        f'shin.{lift}': (-s * 0.85, -0.1, 0.52),
+    }
 
 POSTURE = {
     'id': 'tree',
@@ -78,9 +107,11 @@ POSTURE = {
     'frame': {'center_z': 1.0, 'scale': 2.2},
     'transition': 7,
     'stages': [
-        {'label': 'Stand', 'pose': STAND, 'hold': 3},
+        {'label': 'Stand', 'pose': STAND, 'hold': 4},
+        {'label': 'Weight on one foot', 'pose': WEIGHT, 'hold': 3},
         {'label': 'Lift right foot', 'pose': hold_foot('R'), 'hold': 3},
-        {'label': 'Right side', 'pose': tree('R'), 'hold': 9,
+        {'label': 'Press the knee down', 'pose': press('R'), 'hold': 4},
+        {'label': 'Palms together', 'pose': tree('R'), 'hold': 9,
          'guides': tree_guides('R'), 'ghost': tree_ghost('R')},
         {'label': 'Release', 'pose': STAND, 'hold': 3},
         {'label': 'Left side', 'pose': tree('L'), 'hold': 6,

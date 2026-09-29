@@ -87,8 +87,8 @@ POSTURE = {
     'frame': {'center_z': 0.98, 'scale': 2.1},
     'transition': 8,
     'stages': [
-        {'label': 'Stand', 'pose': {}, 'hold': 4},
-        {'label': 'Start', 'pose': START, 'hold': 4},
+        {'label': 'Stand', 'pose': {**FEET_TOGETHER}, 'hold': 4},
+        {'label': 'Knuckles under the chin', 'pose': START, 'hold': 4},
         {'label': 'Inhale', 'pose': INHALE, 'hold': 7,
          'guides': INHALE_GUIDES, 'ghost': INHALE_GHOST},
         {'label': 'Exhale', 'pose': EXHALE, 'hold': 7, 'view': 'side',
@@ -96,6 +96,6 @@ POSTURE = {
         {'label': 'Inhale', 'pose': INHALE, 'hold': 5},
         {'label': 'Exhale', 'pose': EXHALE, 'hold': 5, 'view': 'side'},
         {'label': 'Release', 'pose': {**FEET_TOGETHER}, 'hold': 4},
-        {'label': 'Stand', 'pose': {}, 'hold': 4},
+        {'label': 'Stand', 'pose': {**FEET_TOGETHER}, 'hold': 4},
     ],
 }

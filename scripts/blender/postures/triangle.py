@@ -33,7 +33,19 @@ ARMS_OUT = {
     'hand.L': (1, 0, 0), 'hand.R': (-1, 0, 0),
 }
 
+
+# Tadasana: feet together (the rig rests hip-width, so the legs angle in
+# to bring the ankles side by side), arms down.
+TADASANA = {
+    'thigh.L': (-0.09, 0, -1), 'thigh.R': (0.09, 0, -1),
+    'shin.L': (-0.07, 0, -1), 'shin.R': (0.07, 0, -1),
+}
+
 OPEN = {**stance('R', False), **ARMS_OUT}
+
+# "Turn the right foot out ninety degrees": the open stance, the right
+# foot pointing out along the line of the legs.
+TURN = {**OPEN, 'foot.R': (-0.95, -0.1, -0.3)}
 
 
 def bend(side):
@@ -87,15 +99,16 @@ POSTURE = {
     'frame': {'center_z': 1.0, 'scale': 2.5},
     'transition': 7,
     'stages': [
-        {'label': 'Stand', 'pose': {}, 'hold': 4},
+        {'label': 'Stand', 'pose': TADASANA, 'hold': 4},
         {'label': 'Arms out', 'pose': OPEN, 'hold': 4},
+        {'label': 'Turn the right foot', 'pose': TURN, 'hold': 3},
         {'label': 'Bend right knee', 'pose': bend('R'), 'hold': 3},
-        {'label': 'Right side', 'pose': triangle('R'), 'hold': 9,
+        {'label': 'Right hand down', 'pose': triangle('R'), 'hold': 9,
          'guides': triangle_guides('R'), 'ghost': triangle_ghost('R')},
         {'label': 'Centre', 'pose': OPEN, 'hold': 3},
         {'label': 'Left side', 'pose': triangle('L'), 'hold': 7,
          'guides': triangle_guides('L'), 'ghost': triangle_ghost('L')},
         {'label': 'Rise', 'pose': OPEN, 'hold': 3},
-        {'label': 'Stand', 'pose': {}, 'hold': 4},
+        {'label': 'Stand', 'pose': TADASANA, 'hold': 4},
     ],
 }

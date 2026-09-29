@@ -23,6 +23,13 @@ ARMS_FORWARD = {
 
 STAND = {**ARMS_FORWARD}
 
+# Tadasana: feet together (the rig rests hip-width, so the legs angle in
+# to bring the ankles side by side), arms down.
+TADASANA = {
+    'thigh.L': (-0.09, 0, -1), 'thigh.R': (0.09, 0, -1),
+    'shin.L': (-0.07, 0, -1), 'shin.R': (0.07, 0, -1),
+}
+
 # Part one: flat feet, shins angled forward, thighs toward level, chest
 # leaning forward over the knees.
 PART_1 = {
@@ -114,7 +121,10 @@ POSTURE = {
     'frame': {'center_z': 1.0, 'scale': 2.3},
     'transition': 8,
     'stages': [
-        {'label': 'Stand', 'pose': {}, 'hold': 4},
+        # the walk-in, one stage per spoken line: feet, then arms, then the sit
+        {'label': 'Stand', 'pose': TADASANA, 'hold': 4, 'view': 'front'},
+        {'label': 'Feet apart', 'pose': {}, 'hold': 4, 'view': 'front'},
+        {'label': 'Arms to shoulder height', 'pose': ARMS_FORWARD, 'hold': 4, 'view': 'side'},
         {'label': 'Part one', 'pose': PART_1, 'hold': 7,
          'guides': PART_1_GUIDES, 'ghost': PART_1_GHOST},
         {'label': 'Rise', 'pose': STAND, 'hold': 3},
@@ -124,6 +134,6 @@ POSTURE = {
         {'label': 'Part three', 'pose': PART_3, 'hold': 8,
          'guides': PART_3_GUIDES, 'ghost': PART_3_GHOST},
         {'label': 'Rise', 'pose': STAND, 'hold': 4},
-        {'label': 'Stand', 'pose': {}, 'hold': 4},
+        {'label': 'Stand', 'pose': TADASANA, 'hold': 4, 'view': 'front'},
     ],
 }

@@ -41,6 +41,14 @@ def prone(**over):
 
 LIE = prone()
 
+# "Lie face down with the chin reaching forward": arms still beside the
+# body, before they are fed underneath.
+LIE_BESIDE = prone(**{
+    'clavicle.L': (0.95, 0, -0.3), 'clavicle.R': (-0.95, 0, -0.3),
+    'upperarm.L': (0.05, 1, 0), 'upperarm.R': (-0.05, 1, 0),
+    'forearm.L': (0.02, 1, 0), 'forearm.R': (-0.02, 1, 0),
+})
+
 # One straight leg lifts from the hip to about forty-five degrees; hips stay down.
 UP45 = (0, 0.74, 0.67)
 FOOT45 = (0, 0.6, 0.8)
@@ -106,7 +114,8 @@ POSTURE = {
     'frame': {'center_z': 0.55, 'scale': 2.3},
     'transition': 7,
     'stages': [
-        {'label': 'Lie prone', 'pose': LIE, 'hold': 4},
+        {'label': 'Lie prone', 'pose': LIE_BESIDE, 'hold': 4},
+        {'label': 'Arms under the body', 'pose': LIE, 'hold': 5},
         {'label': 'Right leg', 'pose': RIGHT, 'hold': 6,
          'guides': leg_guides(), 'ghost': hip_hike('R')},
         {'label': 'Left leg', 'pose': LEFT, 'hold': 6,

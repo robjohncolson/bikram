@@ -205,6 +205,16 @@ FOLD_GHOST = diff({**FOLD, **_FOLD_GHOST_TORSO, **arms_to(
     _FOLD_GHOST_TORSO, {'L': grip(_ballL, 1)[0], 'R': grip(_ballR, -1)[0]}, (0, 0, -1),
     {'L': grip(_ballL, 1)[1], 'R': grip(_ballR, -1)[1]})}, FOLD)
 
+# "Square the torso over the extended leg and interlace your fingers
+# around the ball of the right foot": sitting tall, reaching for the foot.
+HOLD_FOOT = head_to_knee('R', -1, torso={
+    'pelvis': (0, -0.25, 0.97),
+    'spine.lower': (0, -0.35, 0.94),
+    'spine.upper': (0, -0.4, 0.92),
+    'neck': (0, -0.3, 0.95),
+    'head': (0, -0.35, 0.94),
+})
+
 POSTURE = {
     'id': 'head-to-knee-stretching',
     'view': 'side',
@@ -212,7 +222,8 @@ POSTURE = {
     'transition': 8,
     'stages': [
         {'label': 'Sit', 'pose': SIT, 'hold': 4},
-        {'label': 'Right leg', 'pose': RIGHT, 'hold': 7,
+        {'label': 'Hold the foot', 'pose': HOLD_FOOT, 'hold': 4},
+        {'label': 'Forehead to the right knee', 'pose': RIGHT, 'hold': 7,
          'guides': knee_guides('R', -1), 'ghost': knee_ghost('R', -1)},
         {'label': 'Left leg', 'pose': LEFT, 'hold': 7,
          'guides': knee_guides('L', 1), 'ghost': knee_ghost('L', 1)},

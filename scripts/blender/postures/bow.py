@@ -96,6 +96,12 @@ HOLD = gripping(**{
     'foot.L': (0, 0.3, 0.95), 'foot.R': (0, 0.3, 0.95),
 })
 
+# "Lie on your abdomen and bend both knees": shins up, arms still beside.
+BEND = prone(**{
+    'shin.L': SHIN_HOLD, 'shin.R': SHIN_HOLD,
+    'foot.L': (0, 0.3, 0.95), 'foot.R': (0, 0.3, 0.95),
+})
+
 # Kick: the legs push back into the hands, which draws the chest up; the
 # body rocks on the abdomen with thighs and chest off the floor.
 THIGH = (0, 0.8, 0.6)
@@ -138,6 +144,7 @@ POSTURE = {
     'transition': 7,
     'stages': [
         {'label': 'Lie prone', 'pose': LIE, 'hold': 4},
+        {'label': 'Bend the knees', 'pose': BEND, 'hold': 4},
         {'label': 'Hold the feet', 'pose': HOLD, 'hold': 5},
         {'label': 'Kick up', 'pose': KICK, 'hold': 10,
          'guides': KICK_GUIDES, 'ghost': KICK_GHOST},

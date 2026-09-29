@@ -30,7 +30,7 @@ const SYNONYMS: Record<string, string[]> = {
   prone: ['abdomen', 'belly', 'stomach'],
   hands: ['palms'],
   under: ['beneath'],
-  lift: ['raise', 'peel'],
+  lift: ['raise', 'peel', 'curl'],
   set: ['step', 'plant'],
 };
 

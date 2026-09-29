@@ -30,6 +30,23 @@ def both_arms(upper, fore, hand):
     }
 
 
+
+# Tadasana: feet together (the rig rests hip-width, so the legs angle in
+# to bring the ankles side by side), arms down.
+TADASANA = {
+    'thigh.L': (-0.09, 0, -1), 'thigh.R': (0.09, 0, -1),
+    'shin.L': (-0.07, 0, -1), 'shin.R': (0.07, 0, -1),
+}
+
+# "Fix all your weight into one leg and lock that knee": standing tall
+# on the left, the right heel just off the floor.
+LOCK = {
+    'pelvis.location': (0.03, 0, 0),
+    'thigh.L': (-0.09, 0, -1), 'shin.L': (-0.07, 0, -1),
+    'thigh.R': (0.09, 0, -1), 'shin.R': (0.07, 0.08, -1),
+    'foot.R': (0, -0.85, -0.5),
+}
+
 # Knee lifted, torso folded, straight arms holding the foot.
 HOLD = {
     'pelvis': (0, -0.5, 0.87),
@@ -105,7 +122,8 @@ POSTURE = {
     'frame': {'center_z': 1.0, 'scale': 2.4},
     'transition': 7,
     'stages': [
-        {'label': 'Stand', 'pose': {}, 'hold': 4},
+        {'label': 'Stand', 'pose': TADASANA, 'hold': 4},
+        {'label': 'Lock the knee', 'pose': LOCK, 'hold': 4},
         {'label': 'Hold the foot', 'pose': HOLD, 'hold': 4},
         {'label': 'Kick out', 'pose': KICK, 'hold': 5,
          'guides': guides(), 'ghost': KICK_GHOST},
@@ -116,6 +134,6 @@ POSTURE = {
         {'label': 'Left side', 'pose': mirror(HEAD_TO_KNEE), 'hold': 6,
          'guides': guides(-1), 'ghost': mirror(HEAD_TO_KNEE_GHOST)},
         {'label': 'Release', 'pose': {}, 'hold': 3},
-        {'label': 'Stand', 'pose': {}, 'hold': 4},
+        {'label': 'Stand', 'pose': TADASANA, 'hold': 4},
     ],
 }

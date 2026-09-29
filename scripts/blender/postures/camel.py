@@ -48,6 +48,17 @@ HIPS = {
     **HANDS_ON_HIPS,
 }
 
+# "Lift the chest, press the hips forward, and begin arching the upper
+# spine back": hands still on the hips, the arch just starting.
+ARCH = {
+    **kneel((0, 0.06, -1)),
+    'pelvis': (0, 0.05, 1),
+    'spine.lower': (0, 0.15, 0.99),
+    'spine.upper': (0, 0.3, 0.95),
+    'neck': (0, 0.4, 0.92), 'head': (0, 0.5, 0.87),
+    **HANDS_ON_HIPS,
+}
+
 HEAD_BACK = {
     **kneel((0, 0.12, -1)),
     'pelvis': (0, 0.1, 1),
@@ -167,8 +178,9 @@ POSTURE = {
     'stages': [
         {'label': 'Kneel', 'pose': KNEEL, 'hold': 4},
         {'label': 'Hands on hips', 'pose': HIPS, 'hold': 5},
+        {'label': 'Arch back', 'pose': ARCH, 'hold': 4},
         {'label': 'Head back', 'pose': HEAD_BACK, 'hold': 5},
-        {'label': 'Hold the heels', 'pose': HEELS, 'hold': 10,
+        {'label': 'Heels in hand', 'pose': HEELS, 'hold': 10,
          'guides': HEELS_GUIDES, 'ghost': HEELS_GHOST},
         {'label': 'Rise', 'pose': HIPS, 'hold': 4},
     ],

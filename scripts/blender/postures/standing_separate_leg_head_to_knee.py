@@ -35,8 +35,39 @@ def legs(front, back, drop=-0.2):
     }
 
 
+
+# Tadasana: feet together (the rig rests hip-width, so the legs angle in
+# to bring the ankles side by side), arms down.
+TADASANA = {
+    'thigh.L': (-0.09, 0, -1), 'thigh.R': (0.09, 0, -1),
+    'shin.L': (-0.07, 0, -1), 'shin.R': (0.07, 0, -1),
+}
+
 def split(front, back):
     return {**UP, **legs(front, back)}
+
+
+# "Keep the arms glued beside the ears, elbows locked": the split, arms
+# pulled in tight.
+def locked(front, back):
+    return {
+        **legs(front, back),
+        **arms_along((0, 0, 1), (0, 0, 0.4), squeeze=0.1),
+        'spine.lower': (0, 0, 1), 'spine.upper': (0, 0, 1), 'neck': (0, 0, 1), 'head': (0, 0, 1),
+    }
+
+
+# "Tuck the chin firmly to the chest and round down from the top of the
+# spine": the fold begins at the head, arms travelling with it.
+def tuck(front, back):
+    return {
+        **legs(front, back),
+        'pelvis': (0, -0.15, 1),
+        'spine.lower': (0, -0.3, 0.95),
+        'spine.upper': (0, -0.6, 0.8),
+        'neck': (0, -0.85, 0.3), 'head': (0, -0.6, -0.8),
+        **arms_along((0, -0.9, 0.2), (0, -0.3, 0.1), squeeze=0.12),
+    }
 
 
 def fold(front, back):
@@ -80,15 +111,17 @@ POSTURE = {
     'frame': {'center_z': 1.0, 'scale': 2.5},
     'transition': 7,
     'stages': [
-        {'label': 'Stand', 'pose': {}, 'hold': 4},
+        {'label': 'Stand', 'pose': TADASANA, 'hold': 4},
         {'label': 'Arms up', 'pose': UP, 'hold': 3},
         {'label': 'Face the right foot', 'pose': split('R', 'L'), 'hold': 4},
+        {'label': 'Elbows locked', 'pose': locked('R', 'L'), 'hold': 3},
+        {'label': 'Tuck the chin', 'pose': tuck('R', 'L'), 'hold': 4},
         {'label': 'Head to knee', 'pose': fold('R', 'L'), 'hold': 10,
          'guides': fold_guides('R'), 'ghost': fold_ghost('R', 'L')},
         {'label': 'Rise', 'pose': split('R', 'L'), 'hold': 3},
         {'label': 'Left side', 'pose': fold('L', 'R'), 'hold': 6,
          'guides': fold_guides('L'), 'ghost': fold_ghost('L', 'R')},
         {'label': 'Rise', 'pose': UP, 'hold': 3},
-        {'label': 'Stand', 'pose': {}, 'hold': 4},
+        {'label': 'Stand', 'pose': TADASANA, 'hold': 4},
     ],
 }

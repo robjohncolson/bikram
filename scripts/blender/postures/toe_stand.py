@@ -165,13 +165,21 @@ PRAYER_GHOST = diff(build(
 ), PRAYER)
 
 
+
+# Tadasana: feet together (the rig rests hip-width, so the legs angle in
+# to bring the ankles side by side), arms down.
+TADASANA = {
+    'thigh.L': (-0.09, 0, -1), 'thigh.R': (0.09, 0, -1),
+    'shin.L': (-0.07, 0, -1), 'shin.R': (0.07, 0, -1),
+}
+
 POSTURE = {
     'id': 'toe-stand',
     'view': 'quarter',
     'frame': {'center_z': 0.9, 'scale': 2.1},
     'transition': 8,
     'stages': [
-        {'label': 'Stand', 'pose': {}, 'hold': 4},
+        {'label': 'Stand', 'pose': TADASANA, 'hold': 4},
         {'label': 'Tree', 'pose': TREE, 'hold': 4},
         {'label': 'Fold', 'pose': FOLD, 'hold': 5},
         {'label': 'Sit to the heel', 'pose': SIT, 'hold': 5},
@@ -180,6 +188,6 @@ POSTURE = {
         {'label': 'Rise', 'pose': TREE, 'hold': 4},
         {'label': 'Left side', 'pose': mirror(PRAYER), 'hold': 8,
          'guides': mirror_guides(PRAYER_GUIDES), 'ghost': mirror(PRAYER_GHOST)},
-        {'label': 'Stand', 'pose': {}, 'hold': 4},
+        {'label': 'Stand', 'pose': TADASANA, 'hold': 4},
     ],
 }

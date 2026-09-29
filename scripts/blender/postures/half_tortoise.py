@@ -67,6 +67,17 @@ def reach(axis=ARMS_FWD):
     return arms
 
 
+# "Hinge forward from the hips in one piece": halfway down, arms and
+# torso still one line.
+HINGE = {
+    **SEATED,
+    'pelvis': (0, -0.4, 0.92),
+    'spine.lower': (0, -0.7, 0.71),
+    'spine.upper': (0, -0.8, 0.6),
+    'neck': (0, -0.85, 0.53), 'head': (0, -0.9, 0.44),
+    **reach((0, -0.92, 0.4)),
+}
+
 FOLD = {
     **SEATED,
     'pelvis': (0, -0.7, 0.35),
@@ -108,7 +119,8 @@ POSTURE = {
     'stages': [
         {'label': 'Sit on the heels', 'pose': SIT, 'hold': 4},
         {'label': 'Arms up', 'pose': UP, 'hold': 5},
-        {'label': 'Fold', 'pose': FOLD, 'hold': 10,
+        {'label': 'Hinge forward', 'pose': HINGE, 'hold': 4},
+        {'label': 'Forehead to the floor', 'pose': FOLD, 'hold': 10,
          'guides': FOLD_GUIDES, 'ghost': FOLD_GHOST},
         {'label': 'Rise', 'pose': UP, 'hold': 4},
     ],

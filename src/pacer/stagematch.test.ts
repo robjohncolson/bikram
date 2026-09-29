@@ -29,11 +29,14 @@ describe('stage matching', () => {
 
   it('maps the postures whose walk-in the figure follows', () => {
     // standing sheets open in Tadasana, so the first stage is a place to go
-    expect(mapped('half-moon')).toEqual(['Arms up', '—', 'Right side', 'Backbend', 'Hands to feet']);
-    expect(mapped('standing-head-to-knee')).toEqual(['—', 'Hold the foot', 'Kick out', 'Elbows down']);
-    expect(mapped('balancing-stick')).toEqual(['Arms up', '—', 'Step forward', 'Tip to horizontal', '—']);
+    expect(mapped('half-moon')).toEqual(['Arms up', 'Squeeze the arms', 'Right side', 'Backbend', 'Hands to feet']);
+    expect(mapped('standing-head-to-knee')).toEqual(['Lock the knee', 'Hold the foot', 'Kick out', 'Elbows down']);
+    expect(mapped('balancing-stick')).toEqual(['Arms up', 'Stretch up', 'Step forward', 'Tip to horizontal', '—']);
+    expect(mapped('awkward')).toEqual(['Feet apart', 'Arms to shoulder height', 'Part one', 'Part two', 'Part three']);
+    expect(mapped('eagle').slice(0, 4)).toEqual(['Arms wide', 'Palms together', 'Sit low', 'Right leg over']);
+    expect(mapped('spine-twisting')).toEqual(['Bend the knee', 'Step the foot over', 'Arm over the knee', 'Hand behind', 'Right side']);
     // floor sheets start IN their first stage, so its line moves nothing
-    expect(mapped('camel')).toEqual(['—', 'Hands on hips', '—', 'Head back', '—']);
+    expect(mapped('camel')).toEqual(['—', 'Hands on hips', 'Arch back', 'Head back', 'Heels in hand']);
     expect(mapped('cobra').slice(0, 2)).toEqual(['—', 'Hands under shoulders']);
   });
 

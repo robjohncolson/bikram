@@ -78,6 +78,15 @@ LIE = {
 # --- Teaching layers -------------------------------------------------------
 # Guides (side view): the floor line the knees stay down on, and the floor
 # line the shoulders settle onto — the arch of the low back lives between.
+# "Lower the shoulders and head to the floor": flat, arms still alongside.
+LIE_ARMS_DOWN = {
+    **LIE,
+    'clavicle.L': (0.95, -0.1, 0), 'clavicle.R': (-0.95, -0.1, 0),
+    'upperarm.L': (0.15, -1, 0), 'upperarm.R': (-0.15, -1, 0),
+    'forearm.L': (0.1, -1, 0), 'forearm.R': (-0.1, -1, 0),
+    'hand.L': (0, -1, 0), 'hand.R': (0, -1, 0),
+}
+
 LIE_GUIDES = [
     {'from': (0, -0.8, 0.0), 'to': (0, -0.2, 0.0)},
     {'from': (0, 0.15, 0.0), 'to': (0, 0.75, 0.0)},
@@ -100,7 +109,8 @@ POSTURE = {
         {'label': 'Kneel', 'pose': KNEEL, 'hold': 4},
         {'label': 'Sit between the heels', 'pose': SIT, 'hold': 5},
         {'label': 'Elbows down', 'pose': ELBOWS, 'hold': 5},
-        {'label': 'Lie back', 'pose': LIE, 'hold': 10,
+        {'label': 'Shoulders to the floor', 'pose': LIE_ARMS_DOWN, 'hold': 5},
+        {'label': 'Arms overhead', 'pose': LIE, 'hold': 10,
          'guides': LIE_GUIDES, 'ghost': LIE_GHOST},
         {'label': 'Rise', 'pose': SIT, 'hold': 4},
     ],

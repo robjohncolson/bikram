@@ -40,6 +40,27 @@ HINGE = {
     'hand.L': (1, 0, -0.1), 'hand.R': (-1, 0, -0.1),
 }
 
+
+# Tadasana: feet together (the rig rests hip-width, so the legs angle in
+# to bring the ankles side by side), arms down.
+TADASANA = {
+    'thigh.L': (-0.09, 0, -1), 'thigh.R': (0.09, 0, -1),
+    'shin.L': (-0.07, 0, -1), 'shin.R': (0.07, 0, -1),
+}
+
+# "Reach down and grip the heels from the outside": hinged flat, arms
+# reaching down the outside of the legs to the heels.
+GRIP = {
+    **wide(-0.02),
+    'pelvis': (0, -0.85, 0.53),
+    'spine.lower': (0, -0.95, -0.3), 'spine.upper': (0, -0.85, -0.5),
+    'neck': (0, -0.75, -0.65), 'head': (0, -0.7, -0.7),
+    'clavicle.L': (1, 0.1, -0.1), 'clavicle.R': (-1, 0.1, -0.1),
+    'upperarm.L': (0.7, 0.1, -0.7), 'upperarm.R': (-0.7, 0.1, -0.7),
+    'forearm.L': (0.45, 0.15, -0.88), 'forearm.R': (-0.45, 0.15, -0.88),
+    'hand.L': (-0.2, 0.3, -0.9), 'hand.R': (0.2, 0.3, -0.9),
+}
+
 FOLD = {
     **wide(-0.1),
     'pelvis': (0, -0.75, -0.66),
@@ -80,13 +101,14 @@ POSTURE = {
     'frame': {'center_z': 1.0, 'scale': 2.5},
     'transition': 7,
     'stages': [
-        {'label': 'Stand', 'pose': {}, 'hold': 4},
+        {'label': 'Stand', 'pose': TADASANA, 'hold': 4},
         {'label': 'Wide stance', 'pose': STANCE, 'hold': 3},
         {'label': 'Arms out', 'pose': ARMS_OUT, 'hold': 4},
         {'label': 'Fold', 'pose': HINGE, 'hold': 4},
+        {'label': 'Hold the heels', 'pose': GRIP, 'hold': 4},
         {'label': 'Head to floor', 'pose': FOLD, 'hold': 10,
          'guides': FOLD_GUIDES, 'ghost': FOLD_GHOST},
         {'label': 'Rise', 'pose': ARMS_OUT, 'hold': 4},
-        {'label': 'Stand', 'pose': {}, 'hold': 4},
+        {'label': 'Stand', 'pose': TADASANA, 'hold': 4},
     ],
 }

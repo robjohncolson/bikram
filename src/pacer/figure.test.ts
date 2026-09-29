@@ -59,7 +59,7 @@ describe('stagesForLabel', () => {
     expect(stagesForLabel(hk, 'First set — stretching', 2).map((i) => label(hk, i))).toEqual(['Both legs']);
     const cobra = motion('cobra');
     expect(stagesForLabel(cobra, 'Second set', 2).map((i) => label(cobra, i))).toEqual(['Lift']);
-    expect(label(motion('camel'), climaxStage(motion('camel')))).toBe('Hold the heels');
+    expect(label(motion('camel'), climaxStage(motion('camel')))).toBe('Heels in hand');
   });
 
   it('walks every side for "all three parts"', () => {
@@ -161,7 +161,7 @@ describe('segmentTimeline', () => {
     expect(frameAt(steps, 69)).toBe(at('Head to knee'));
     expect(frameAt(steps, 999)).toBe(at('Head to knee'));
     // and before the first transition frame we are on its first frame
-    expect(frameAt(steps, 0)).toBe(Math.max(1, at('Hold the foot') - TRANSITION_FRAMES));
+    expect(frameAt(steps, 0)).toBe(Math.max(1, at('Lock the knee') - TRANSITION_FRAMES));
   });
 
   it('cuts across the sheet end and shares time evenly between several targets', () => {
@@ -221,8 +221,8 @@ describe('spoken walk-in moves', () => {
     // Tadasana until the first line has been said, then the arms rise
     expect(frameAt(steps, 5)).toBe(m.stages[stage('Stand')].frame);
     expect(frameAt(steps, 6 + track.barBeats + 2 + 3)).toBe(m.stages[stage('Arms up')].frame);
-    // still arms up while the elbows line is said; bent to the right after its line
-    expect(frameAt(steps, 18 + track.barBeats)).toBe(m.stages[stage('Arms up')].frame);
+    // the elbows line squeezed the arms in; bent to the right only after its own line
+    expect(frameAt(steps, 18 + track.barBeats)).toBe(m.stages[stage('Squeeze the arms')].frame);
     expect(frameAt(steps, 18 + track.barBeats + 2 + 3)).toBe(m.stages[stage('Right side')].frame);
     expect(frameAt(steps, seconds - 1)).toBe(m.stages[stage('Right side')].frame);
   });

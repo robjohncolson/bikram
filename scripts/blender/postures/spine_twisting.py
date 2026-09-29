@@ -124,6 +124,21 @@ SIT = {
 SET_RIGHT = {**BASE, **LEGS_RIGHT, 'neck': (0, 0, 1), 'head': (0, 0, 1),
              **arms((1, -0.05, 0.2), (-1, 0.05, 0.2), 0)}
 
+# The seated arms (hands on the floor beside the hips) on their own.
+SIT_ARMS = {k: v for k, v in SIT.items() if k.split('.')[0] in ('clavicle', 'upperarm', 'forearm', 'hand')}
+
+# "Bend the left knee down to the floor, heel beside the right hip":
+# only the left leg folds; the right stays long.
+KNEE_DOWN = {**SIT, 'thigh.L': thL, 'shin.L': shL, 'foot.L': (-0.55, 0.83, -0.05)}
+
+# "Step the right foot over the left knee and plant it": both legs set,
+# hands still beside the hips.
+FOOT_OVER = {**BASE, **LEGS_RIGHT, 'neck': (0, 0, 1), 'head': (0, 0, 1), **SIT_ARMS}
+
+# "Bring the left arm over the outside of the right knee": the hook, the
+# right hand still beside the hip.
+ARM_OVER = {**SET_RIGHT, **{k: v for k, v in SIT_ARMS.items() if k.endswith('.R')}}
+
 # The twist: the spine rolls −25° low and −35° high (≈ −60° at the
 # shoulders, to the right); the clavicles ride it, left shoulder forward,
 # right shoulder back. The head follows a touch over the right shoulder.
@@ -198,7 +213,10 @@ POSTURE = {
     'transition': 8,
     'stages': [
         {'label': 'Sit', 'pose': SIT, 'hold': 3},
-        {'label': 'Set the legs', 'pose': SET_RIGHT, 'hold': 4},
+        {'label': 'Bend the knee', 'pose': KNEE_DOWN, 'hold': 4},
+        {'label': 'Step the foot over', 'pose': FOOT_OVER, 'hold': 4},
+        {'label': 'Arm over the knee', 'pose': ARM_OVER, 'hold': 4},
+        {'label': 'Hand behind', 'pose': SET_RIGHT, 'hold': 4},
         {'label': 'Right side', 'pose': RIGHT, 'hold': 9,
          'guides': RIGHT_GUIDES, 'ghost': RIGHT_GHOST},
         {'label': 'Change', 'pose': SET_LEFT, 'hold': 4},
