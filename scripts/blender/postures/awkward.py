@@ -7,6 +7,12 @@ part three presses the knees together on the toes and lowers until the hips
 hover just above the heels, spine straight. The side view shows the sit.
 Feet stay hip-width (the rest stance); the knees-together squeeze of part
 three is drawn with the thighs angled in.
+
+Checked after the reference photographs (2026-09-29): the three parts
+already match the 26 & 2 form (arms forward at shoulder height
+throughout; the classical photographs' overhead arms are not our form);
+Part one's upper back now lifts over the hip hinge (chest lifted, as the
+setup asks) instead of leaning with the pelvis.
 """
 
 def at(x, y, z):
@@ -36,9 +42,9 @@ PART_1 = {
     **ARMS_FORWARD,
     'pelvis.location': at(0, 0.25, -0.28),
     'pelvis': (0, -0.45, 0.89),
-    'spine.lower': (0, -0.5, 0.87),
-    'spine.upper': (0, -0.4, 0.92),
-    'neck': (0, -0.1, 1), 'head': (0, -0.05, 1),
+    'spine.lower': (0, -0.42, 0.91),
+    'spine.upper': (0, -0.22, 0.98),   # chest lifted over the hinge
+    'neck': (0, -0.05, 1), 'head': (0, 0, 1),
     'thigh.L': (0, -0.9, -0.42), 'thigh.R': (0, -0.9, -0.42),
     # shins steep enough that the knees stay over (not past) the toes
     'shin.L': (0, 0.35, -0.94), 'shin.R': (0, 0.35, -0.94),

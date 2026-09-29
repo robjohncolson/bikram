@@ -17,6 +17,10 @@ shoulder line) and a ghost of the common mistake.
 Refined after the reference photograph (2026-09-29): the trunk turns
 further (~75° at the shoulders, was ~60°) over the square hips, closer
 to the near right angle the photograph shows.
+
+Second pass (2026-09-29): in the set-up (Arm over the knee, Hand behind,
+Change) the shoulder girdle already turns 25° over the square spine, so
+the hooking arm reaches the far knee (it fell ~5 cm short).
 """
 import math
 import sys
@@ -138,8 +142,12 @@ SIT = {
                         (sx * 0.2, -0.5, -0.6)))},
 }
 
+# The set-up hook: the shoulder girdle turns a first 25° to the right over
+# the still-square spine (the left shoulder reaches forward) so the left
+# arm really reaches round the right knee to the left knee — square
+# shoulders left it ~5 cm short. The spine's roll comes in the twist.
 SET_RIGHT = {**BASE, **LEGS_RIGHT, 'neck': (0, 0, 1), 'head': (0, 0, 1),
-             **arms((1, -0.05, 0.2), (-1, 0.05, 0.2), 0)}
+             **arms(*turned(-25), 0)}
 
 # The seated arms (hands on the floor beside the hips) on their own.
 SIT_ARMS = {k: v for k, v in SIT.items() if k.split('.')[0] in ('clavicle', 'upperarm', 'forearm', 'hand')}

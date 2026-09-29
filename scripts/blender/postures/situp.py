@@ -5,8 +5,14 @@ straight legs, hands to the feet, forehead toward the knees.
 Lying recipe from the README (head toward -Y). The pelvis joint stays on
 the mat through every stage — only its direction changes — so the body
 hinges in place. Arms are placed with a small two-bone IK from a forward
-kinematics estimate of the shoulders. `pelvis.location` is in the pelvis
-bone's rest frame ((a, b, c) -> world (a, -c, b)); `shift` converts.
+kinematics estimate of the shoulders. `pelvis.location` is a world-space
+offset of the pelvis joint (the renderer maps it through the bone's rest
+matrix); `shift` is an identity left in place so the tables read as before.
+
+Refined after the reference photographs (2026-09-29): in Fold forward the
+back rounds up from the hips into a dome and the head tucks down toward
+the knees, the forehead over the knees (the torso lay long and flat with the head up, reaching past
+the knees); arms still solved to the balls of the feet.
 """
 import math
 import sys
@@ -116,8 +122,10 @@ def fold(bent=False):
         pelvis, lower, upper = (0, 0.2, 0.98), (0, 0.6, 0.8), (0, 0.9, 0.35)
         head_dirs = {'neck': (0, 0.8, -0.6), 'head': (0, 0.6, -0.8)}
     else:
-        pelvis, lower, upper = (0, 0.5, 0.87), (0, 0.8, 0.6), (0, 0.9, 0.4)
-        head_dirs = {'neck': (0, 0.95, 0.3), 'head': (0, 0.97, 0.2)}
+        # after the reference photographs: the back domes up from the
+        # hips and the head tucks down toward the knees
+        pelvis, lower, upper = (0, 0.3, 0.95), (0, 0.7, 0.71), (0, 0.99, 0.1)
+        head_dirs = {'neck': (0, 0.9, -0.42), 'head': (0, 0.85, -0.52)}
     neck = neck_of(pelvis, lower, upper)
     pose = {
         'pelvis.location': LOC,

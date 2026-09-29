@@ -3,8 +3,15 @@ Wind-Removing Pose — supine; hug the right knee, the left knee, then both.
 
 Lying recipe from the README (head toward -Y, legs +Y). The arms are
 solved with a tiny two-bone IK so the interlaced hands land on the shin
-just below the knee. `pelvis.location` is in the pelvis bone's rest frame,
-which maps (a, b, c) to world (a, -c, b) — `shift` converts.
+just below the knee. `pelvis.location` is a world-space offset of the
+pelvis joint (the renderer maps it through the bone's rest matrix); `shift`
+is an identity left in place so the stage tables read as before.
+
+Refined after the reference photographs (2026-09-29): the hugged shins
+lie near level with the feet above the hips (they sloped down to the
+mat), and the left knee and both knees are drawn as deep as the right
+(knee beside the ribcage toward the shoulder), the other leg flat and the
+head down. FLAT (the canonical supine pose the bridges use) is unchanged.
 """
 import math
 import sys
@@ -82,7 +89,7 @@ LONG_LEG = {'R': {'thigh.R': (-0.03, 1, 0), 'shin.R': (-0.03, 1, 0), 'foot.R': (
 
 THIGH_IN = _n((0, -0.55, 0.83))     # knee pulled toward the chest
 THIGH_NEAR = _n((0, -0.3, 0.95))    # knee drawn up, not yet pulled in
-SHIN_IN = _n((0, 0.9, -0.35))
+SHIN_IN = _n((0, 0.97, -0.08))  # shins near level, feet above the hips
 
 
 THIGH_DEEP = _n((0, -0.72, 0.69))   # knee pulled down beside the ribcage
@@ -147,10 +154,11 @@ def diff(pose, base):
     return {k: v for k, v in pose.items() if base.get(k) != v}
 
 
-def ghost(sides):
+def ghost(sides, thigh=THIGH_IN):
     """Common mistake: yanking with the arms so the shoulders peel off the
     mat, and (one knee) the extended leg going soft at the knee."""
-    return diff(hug(sides, lift=0.45, soft_leg=len(sides) == 1), hug(sides))
+    return diff(hug(sides, lift=0.45, soft_leg=len(sides) == 1, thigh=thigh),
+                hug(sides, thigh=thigh))
 
 
 # Guides: the floor line the shoulders and back stay long on, and the
@@ -174,11 +182,11 @@ POSTURE = {
         {'label': 'Right knee up', 'pose': knee_up('R'), 'hold': 4},
         {'label': 'Fingers below the knee', 'pose': hug('R'), 'hold': 4},
         {'label': 'Knee to the shoulder', 'pose': hug('R', thigh=THIGH_DEEP), 'hold': 8,
-         'guides': GUIDES, 'ghost': ghost('R')},
-        {'label': 'Left knee', 'pose': hug('L'), 'hold': 8,
-         'guides': GUIDES, 'ghost': ghost('L')},
-        {'label': 'Both knees', 'pose': hug('RL'), 'hold': 10,
-         'guides': GUIDES, 'ghost': ghost('RL')},
+         'guides': GUIDES, 'ghost': ghost('R', THIGH_DEEP)},
+        {'label': 'Left knee', 'pose': hug('L', thigh=THIGH_DEEP), 'hold': 8,
+         'guides': GUIDES, 'ghost': ghost('L', THIGH_DEEP)},
+        {'label': 'Both knees', 'pose': hug('RL', thigh=THIGH_DEEP), 'hold': 10,
+         'guides': GUIDES, 'ghost': ghost('RL', THIGH_DEEP)},
         {'label': 'Release', 'pose': FLAT, 'hold': 4},
     ],
 }

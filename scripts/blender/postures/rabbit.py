@@ -8,6 +8,11 @@ curl, so the arms are solved each stage by a tiny two-bone reach
 Side view: the face points screen-right (-Y), the heels sit screen-left.
 The palms land on the heels (`GRIP_HAND`); "Hips up" carries teaching
 guides and a ghost of the common mistake.
+
+Refined after the reference photographs (2026-09-29): Crown to the floor
+and Hips up now put the crown ON the floor just in front of the knees,
+forehead to the knees (both stopped short of the floor), and in Hips up
+the hips are the top of the wheel with the back rounding down from them.
 """
 import math
 import sys
@@ -133,20 +138,27 @@ HOLD = stage(SIT_THIGH, {**UPRIGHT, 'neck': (0, -0.5, 0.87), 'head': (0, -0.7, 0
 # "Tuck the chin tightly to the chest": still sitting, holding the heels.
 TUCK = stage(SIT_THIGH, {**UPRIGHT, 'neck': (0, -0.6, 0.8), 'head': (0, -0.92, 0.4)})
 
-ROLL = stage((0, -0.75, -0.66), {
-    'pelvis': (0, -0.55, 0.83),
-    'spine.lower': (0, -0.95, 0.3),
-    'spine.upper': (0, -0.8, -0.6),
-    'neck': (0, -0.2, -0.98),
-    'head': (0, 0.35, -0.94),
+# The curl down (after the reference photographs): the hips lift a little
+# off the heels, the back rounds and the head hangs straight down in front
+# of the knees so the crown really meets the floor, forehead to the knees
+# (it stopped ~13 cm above the floor, over the thighs).
+ROLL = stage((0, -0.55, -0.83), {
+    'pelvis': (0, -0.8, 0.6),
+    'spine.lower': (0, -0.85, -0.53),
+    'spine.upper': (0, -0.35, -0.94),
+    'neck': (0, -0.3, -0.95),
+    'head': (0, -0.08, -1),
 })
 
 HIPS_UP_THIGH = (0, -0.1, -1)
+# Hips lifted over the knees (after the reference photographs): the hips
+# are the top of the wheel and the back rounds down from them; the crown
+# rests on the floor just in front of the knees (it hovered ~8 cm up).
 HIPS_UP = stage(HIPS_UP_THIGH, {
-    'pelvis': (0, -0.7, 0.72),
-    'spine.lower': (0, -0.75, -0.66),
-    'spine.upper': (0, -0.05, -1),
-    'neck': (0, 0.45, -0.9),
+    'pelvis': (0, -0.9, 0.44),
+    'spine.lower': (0, -0.7, -0.71),
+    'spine.upper': (0, -0.15, -0.99),
+    'neck': (0, 0.2, -0.98),
     'head': (0, 0.35, -0.94),
 }, pole=(0, 0, 1), clav=(0.45, -0.3))
 _, _HIPS_UP_PJ = kneel(HIPS_UP_THIGH)

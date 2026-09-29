@@ -118,3 +118,23 @@ cosmetics (subdivision-pinched knees, the Pranayama waist nick, Full
 Locust's end-on head), not posture data. Locust's one-leg stages now take
 the quarter-back view and Half Moon's Hands to feet the side view; both
 figures follow the authored view.
+
+**Posing refinement, second pass (2026-09-29, `docs/posing-refinement-2-spec.md`).**
+The twelve postures the Iyengar book could not cover were checked against
+Wikimedia Commons photographs and the yogajala studio-form illustrations
+(both looked at locally only). Re-authored and re-rendered: toe-stand,
+spine-twisting (set-up hook only), eagle, standing-bow, balancing-stick,
+tree, awkward (Part one's chest only), standing-head-to-knee,
+wind-removing, situp, rabbit, plus `bridge:seated-supine` and
+`bridge:supine-seated` (the `_canon` sit-up / swivel hands), and after the
+Codex review `bridge:seated-kneeling` too (floor-planted hands laid flat so
+the fingertips no longer pass through the floor; `floor_check` now guards
+every midpoint). Pranayama and
+Kapalbhati already matched the studio form and were left alone. The eleven
+posture sheets were re-shot sprite vs live at every chip, layers off and on
+(91 stages): worst-edge median 2 px, p90 6 px; every changed stage matches.
+Eagle's Sit low and wrap stages now take the quarter view; both figures
+follow it. No `known` row changes: they remain rig cosmetics (rabbit's and
+toe-stand's folded knees still read a touch rounder live). The three bridges
+could not be re-shot (the dev route that showed bridges on a posture page
+is gone); their rendered sheets were read frame by frame instead.

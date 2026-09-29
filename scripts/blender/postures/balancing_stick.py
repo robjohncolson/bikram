@@ -5,6 +5,10 @@ Arms overhead with the palms steepled, a big step forward, then the whole
 body tips as one stick to horizontal on the standing leg: a T seen from the
 side. The mannequin faces -Y (screen-right in the side view); its right side
 is -X. Right foot forward first, so the right leg stands and the left lifts.
+
+Refined after the reference photographs (2026-09-29): the stick is one
+exactly level line fingertips to heel (arms, spine, head and lifted leg
+all horizontal; both ends rose slightly before).
 """
 
 
@@ -54,13 +58,16 @@ def step(front, back):
 
 
 def stick(stand, lift):
-    fwd = (0, -1, 0.02)
+    # One straight, level line fingertips to heel (after the reference
+    # photographs): arms, spine, head and the lifted leg all exactly
+    # horizontal — the old slight rise at both ends made a shallow V.
+    fwd = (0, -1, 0)
     return {
         **arms_along(fwd, (0, -0.35, 0)),
-        'pelvis': (0, -1, 0.05),
+        'pelvis': (0, -1, 0),
         'spine.lower': fwd, 'spine.upper': fwd, 'neck': fwd, 'head': fwd,
         f'thigh.{stand}': (0, 0, -1), f'shin.{stand}': (0, 0, -1),
-        f'thigh.{lift}': (0, 1, 0.03), f'shin.{lift}': (0, 1, 0.03),
+        f'thigh.{lift}': (0, 1, 0), f'shin.{lift}': (0, 1, 0),
         f'foot.{lift}': (0, 0.35, -0.94),
     }
 

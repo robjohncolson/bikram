@@ -10,6 +10,62 @@ push to `main` via Vercel's Git integration**; the CLI token on this machine is 
 
 ---
 
+## ✔ 2026-09-29 (late night) — THE OTHER TWELVE POSTURES REFINED (uncommitted)
+
+`docs/posing-refinement-2-spec.md`, as uncommitted working-tree changes (not reviewed, not
+committed). References: Wikimedia Commons photographs and the yogajala cheat-sheet illustrations,
+downloaded ONLY to `C:/Users/rober/Downloads/bikram-ref/` (outside the repo) and looked at; nothing
+from them is in the repo. Output = numbers in the posture/bridge modules (docstrings say what and why):
+- toe-stand — Fold folds over a bent standing knee and Sit to the heel sits lower, leaning forward:
+  the fingertips now reach the floor (the hands fell 24–32 cm short; reach warning gone).
+- spine-twisting — set-up only (Arm over the knee / Hand behind / Change): the shoulder girdle turns
+  a first 25° so the hooking arm reaches the knee (4.7 cm short; warning gone). Twist untouched.
+- eagle — deeper sit, torso inclined, legs solved to planted feet; right thigh laid ON the standing
+  thigh, shin wrapped behind the calf; elbows cross in front of the chest, palms before the face;
+  Sit low / Right leg over / Left side take the `quarter` view; ghost rebuilt with the same solver.
+- standing-bow — Kick and Full bow solved from the holding hand (`bow_leg`): thigh steep behind,
+  shin upright, foot above the head, chest level, front arm level.
+- balancing-stick — the stick exactly level fingertips to heel (both ends rose slightly).
+- tree — the Bikram form: lifted foot on the FRONT of the standing thigh by the hip crease, knee out
+  and down; palms really meet at the chest centre (they stood apart); holding hand reaches the foot.
+- awkward — already our form (arms forward throughout); Part one's chest lifts over the hinge.
+- standing-head-to-knee — Elbows down / Head to knee: back domes up from the hips and the head hangs
+  onto the knee; shoulders round forward; arms solved to the foot, elbows below the calf.
+- wind-removing — hugged shins near level (feet above the hips); left knee and both knees as deep as
+  the right. FLAT (canonical supine) untouched.
+- situp — Fold forward: back domes up, head tucked with the forehead over the knees.
+- rabbit — Crown to the floor and Hips up put the crown ON the floor in front of the knees (it
+  hovered 8–13 cm up); hips are the top of the wheel.
+- pranayama, kapalbhati — shape already right; untouched.
+- `bridges/_canon.py` — `sat_up` / `swivel` hands behind planted nearer the seat (3–4 cm short).
+  Canonical poses untouched. Codex review (same night): the floor-planted hands of `sat_up`, `swivel`
+  and `side_sit` were aimed down from a wrist 5 cm up, putting the fingertips ~4.5 cm through the
+  floor (pre-existing); they now lie flat along the floor. New `floor_check(pose, name)` in `_canon.py`
+  runs FK on every MID pose and prints `floor warning [...]` for any hand/foot tip below z = -0.005
+  (held midpoints only, not in-betweens). Changed bridges: seated-supine, supine-seated, seated-kneeling.
+  Also: toe_stand / wind_removing / situp docstrings now say `pelvis.location` is world space and
+  `shift` an identity.
+Reach warnings: none left in any posture or bridge module. Re-rendered (one `npm run motion`): the 11
+postures above + bridge:seated-supine + bridge:supine-seated (+ bridge:seated-kneeling after the
+review; 85 files in `public/motion/`, one per
+stem; manifest `position` fields unchanged). `npm run rig:export`; Blender `export_fixtures.py`
+(changed: spine-twisting--hand-behind--right-side--50). `npm test` 253/25 green (no assertion
+touched), `tsc -b`, lint, build clean. Sprite vs live re-shot for the 11 postures (91 stages, median
+2 px / p90 6 px); bridges not re-shot (no page route), their sheets read frame by frame.
+Commons files used (licences from `bikram-ref/commons/LICENSES.md`):
+Bikram_Yoga_sequence_of_asanas.jpg (CC BY 4.0, BMC article figure) · Bpose12.jpg, Bpose1.jpg
+(CC BY-SA 4.0, Ambermarquez31) · Ardha-Matsyendrasana / Garudasana / Natarajasana / Vriksasana /
+Utkatasana / Utthita-Hasta-Padangusthasana / Paschimotanasana "Yoga-Asana Nina-Mel" (CC BY 3.0,
+Kennguru) · Ardha Matsyendrasana – Half Lord of the Fishes, Garuḍāsana – Eagle Pose 2 in side view,
+Utkatasana Side View (CC BY 2.0, lululemon athletica) · Garudasana.jpg (CC BY-SA 4.0, Yogini Asha) ·
+Vivek Natarajasana.jpg (CC0) · Natarajasana-yoga-posture-dancer.jpg (CC BY-SA 3.0, Jfbongarçon) ·
+Tuladandasana – Virabhadrasana III (CC BY-SA 4.0, Robert Lindermayr) · Tuladandasana.jpg,
+Dandayamana-Janushirasana.jpg, Rabbit pose.jpg (CC BY-SA 3.0, Drchirag patel) · Yagnesh Dhruvasan.jpg
+(CC BY 4.0) · A style of pavanamuktasana.JPG (CC BY-SA 3.0, Thamizhpparithi Maari).
+Still open: commit + push; Codex review.
+
+---
+
 ## ✔ 2026-09-29 (night) — POSTURES REFINED AFTER THE REFERENCE PHOTOGRAPHS (uncommitted)
 
 `docs/posing-refinement-spec.md`, as uncommitted working-tree changes (Codex-reviewed, fixes

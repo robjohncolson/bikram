@@ -6,8 +6,15 @@ Right side first: the right foot sits in the left hip crease (half lotus),
 the left leg is the standing leg. Everything is placed from WORLD positions
 of a few landmarks (pelvis joint, standing ankle, hands) and solved with a
 tiny two-bone IK, so the standing foot stays planted while the hips drop.
-`pelvis.location` is in the pelvis bone's rest frame ((a, b, c) -> world
-(a, -c, b)); `shift` converts. `mirror` builds the left side.
+`pelvis.location` is a world-space offset of the pelvis joint (the
+renderer maps it through the bone's rest matrix); `shift` is an identity
+left in place so the stage tables read as before. `mirror` builds the left side.
+
+Refined after the reference photographs (2026-09-29): Fold folds the
+torso down over a bent standing knee so the fingertips really reach the
+floor ahead of the foot, and Sit to the heel sits lower (pelvis joint at
+0.30 m) leaning forward over the knee with the fingertips on the floor —
+both hands fell 24-32 cm short of the floor before.
 """
 import math
 import sys
@@ -113,19 +120,19 @@ TREE = build(
 )
 
 FOLD = build(
-    pelvis_at=(0, 0.18, 0.62), spine=((0, -0.55, 0.83), (0, -0.85, 0.35), (0, -0.9, -0.1)),
-    neck=(0, -0.7, -0.6), head=(0, -0.5, -0.85),
+    pelvis_at=(0, 0.16, 0.58), spine=((0, -0.6, 0.8), (0, -0.82, -0.2), (0, -0.5, -0.86)),
+    neck=(0, -0.3, -0.95), head=(0, -0.2, -0.98),
     stand_ankle=(0.10, 0, 0.10), stand_foot=FLAT_FOOT, knee_hint=(0, -1, 0.2),
     tree_thigh=(-0.85, -0.3, -0.4),
-    wrists=(0.2, -0.58, 0.06), hands=(0, -0.8, -0.6), elbow_hint=(0.3, 1, 0),
+    wrists=(0.19, -0.36, 0.12), hands=(0, -0.45, -0.9), elbow_hint=(0.3, 1, 0),
 )
 
 SIT = build(
-    pelvis_at=(0, 0.05, 0.34), spine=((0, -0.35, 0.94), (0, -0.3, 0.95), (0, -0.2, 0.98)),
-    neck=(0, -0.2, 0.98), head=(0, -0.3, 0.95),
+    pelvis_at=(0, 0.06, 0.30), spine=((0, -0.6, 0.8), (0, -0.75, 0.66), (0, -0.7, 0.7)),
+    neck=(0, -0.5, 0.87), head=(0, -0.45, 0.89),
     stand_ankle=(0.10, 0, 0.17), stand_foot=TOE_FOOT, knee_hint=(0, -1, 0.1),
     tree_thigh=(-0.9, -0.45, 0.05),
-    wrists=(0.2, -0.4, 0.06), hands=(0, -0.8, -0.6), elbow_hint=(0.3, 1, 0),
+    wrists=(0.19, -0.42, 0.12), hands=(0, -0.45, -0.9), elbow_hint=(0.3, 1, 0),
 )
 
 PRAYER = build(

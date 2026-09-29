@@ -23,6 +23,13 @@ Each stage carries its own camera `frame`: the bridge opens on the framing
 of the sheets that end in its start position and finishes on the framing
 of the sheets that open in its end position, so the cut into the next
 sheet changes the pose by a frame and never the zoom.
+
+2026-09-29: `sat_up` and `swivel` plant the hands behind a little nearer
+the seat, so the straight arms reach the floor (3-4 cm short before); the
+floor-planted hands of `sat_up`, `swivel` and `side_sit` lie flat along
+the floor (aimed down from a wrist 5 cm up, their fingertips went ~4.5 cm
+through it), and `floor_check` runs on every midpoint so a hand or foot
+tip below the floor prints a warning.
 """
 import importlib.util
 import math
@@ -136,6 +143,47 @@ def shoulders(pose, pelvis_at):
     return {s: _add(neck, _n(pose[f'clavicle.{s}']), 0.2044) for s in 'LR'}
 
 
+# Rest (head -> tail) offsets of the limb bones, the README's rig table: a
+# bone a pose omits points along its rest direction in world space.
+_REST = {
+    'clavicle': ((0.20, 0, 0.04), 0.204), 'upperarm': ((0.02, 0, -0.29), 0.2907),
+    'forearm': ((0.01, 0, -0.25), 0.2502), 'hand': ((0, 0, -0.10), 0.10),
+    'hipbone': ((0.10, 0, -0.02), 0.102), 'thigh': ((0, 0, -0.44), 0.44),
+    'shin': ((0, 0, -0.44), 0.44), 'foot': ((0, -0.16, -0.08), 0.179),
+}
+
+
+def _dir(pose, bone, side):
+    e = pose.get(f'{bone}.{side}')
+    if e is None:
+        r = _REST[bone][0]
+        e = (r[0] if side == 'L' else -r[0], r[1], r[2])
+    elif isinstance(e, dict):
+        e = e['dir']
+    return _n(e)
+
+
+def floor_check(pose, name):
+    """Warn (stderr) if any hand or foot tip of `pose` lies below the floor
+    (z < -0.005): forward kinematics from the pelvis joint through the
+    chain helpers, so a midpoint can never sink a hand or foot silently."""
+    at = _add((0, 0, 1.0), pose.get('pelvis.location', (0, 0, 0)))
+    torso = {b: (pose.get(b, (0, 0, 1)) if not isinstance(pose.get(b), dict) else pose[b]['dir'])
+             for b, _ in TORSO}
+    neck = chain(at, torso, TORSO)
+    for s in 'LR':
+        arm_tip = _add(neck, _dir(pose, 'clavicle', s), _REST['clavicle'][1])
+        leg_tip = _add(at, _dir(pose, 'hipbone', s), _REST['hipbone'][1])
+        for bone in ('upperarm', 'forearm', 'hand'):
+            arm_tip = _add(arm_tip, _dir(pose, bone, s), _REST[bone][1])
+        for bone in ('thigh', 'shin', 'foot'):
+            leg_tip = _add(leg_tip, _dir(pose, bone, s), _REST[bone][1])
+        for what, tip in ((f'hand.{s}', arm_tip), (f'foot.{s}', leg_tip)):
+            if tip[2] < -0.005:
+                print(f'floor warning [{Path(__file__).stem}]: {name} {what} tip at '
+                      f'z = {tip[2]:.3f} m, below the floor', file=sys.stderr)
+
+
 # --- midpoints -----------------------------------------------------------------
 def side_lying():
     """Rolled onto the right side on the way between lying on the back and
@@ -197,7 +245,11 @@ def sat_up():
         leg(pose, s, hip, (sx * 0.1, at[1] + 0.56, 0.08), (0, 0, 1), (0, 1, -0.2))
     sh = shoulders(pose, at)
     for s, sx in (('L', 1), ('R', -1)):
-        arm(pose, s, sh[s], (sx * 0.26, at[1] - 0.26, 0.05), (0, -1, 0), (0, -0.3, -1))
+        # palms planted a little closer behind the hips (at 0.26 m back the
+        # straight arms fell ~4 cm short of the floor), the hand laid flat
+        # along the floor, fingers pointing back (a hand aimed down from a
+        # wrist this low put the fingertips through the floor)
+        arm(pose, s, sh[s], (sx * 0.24, at[1] - 0.17, 0.05), (0, -1, 0), (sx * 0.15, -1, -0.12))
     return pose
 
 
@@ -216,8 +268,11 @@ def swivel():
         hip = (0.10 if s == 'L' else -0.10, at[1], at[2] - 0.02)
         leg(pose, s, hip, (-0.66, at[1] + sy * 0.12, 0.08), (0, 0, 1), (-1, 0, -0.2))
     sh = shoulders(pose, at)
-    for s, sy in (('L', -1), ('R', 1)):
-        arm(pose, s, sh[s], (0.28, at[1] + sy * 0.22, 0.05), (1, 0, 0), (0.3, 0, -1))
+    # the hand behind (+Y) plants nearer the seat: at 0.22 m it fell ~3 cm
+    # short of the floor
+    for s, sy, reach_y in (('L', -1, 0.22), ('R', 1, 0.14)):
+        # hand flat on the floor, fingers pointing away to the side
+        arm(pose, s, sh[s], (0.22, at[1] + sy * reach_y, 0.05), (1, 0, 0), (1, 0, -0.12))
     return pose
 
 
@@ -264,7 +319,8 @@ def side_sit():
     leg(pose, 'L', (0.10, at[1], 0.12), (0.42, at[1] + 0.12, 0.06), (0.2, -1, 0.1), (0.3, 0.4, 1))
     leg(pose, 'R', (-0.10, at[1], 0.12), (0.26, at[1] + 0.02, 0.06), (0.1, -1, 0.1), (0.3, 0.4, 1))
     sh = shoulders(pose, at)
-    arm(pose, 'R', sh['R'], (-0.40, at[1] - 0.05, 0.05), (1, 0.3, 0), (-0.3, -0.2, -1))
+    # hand flat on the floor, fingers pointing out to the side
+    arm(pose, 'R', sh['R'], (-0.40, at[1] - 0.05, 0.05), (1, 0.3, 0), (-1, -0.3, -0.12))
     arm(pose, 'L', sh['L'], (0.26, at[1] - 0.30, 0.20), (1, 0, -0.2), (0, -0.6, -1))
     return pose
 
@@ -279,6 +335,8 @@ MID = {
     'knees-down': ('Knees to the side', knees_down(), {'center_z': 0.45, 'scale': 1.75}),
     'kneel': ('Kneel down', CANON['kneeling'], {'center_z': 0.7, 'scale': 2.3}),
 }
+for _key, (_label, _pose, _frame) in MID.items():
+    floor_check(_pose, _key)
 
 
 def bridge(start, end, mids, views=None, end_frame=None):
