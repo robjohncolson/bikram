@@ -26,7 +26,8 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
 - `src/views/` — one file pair per route: Timeline (`/`), PoseDetail
   (`/pose/:id`), Explorer (`/explore?lens=chakra|muscle&id=…`), Trainer
   (`/train`), KnowledgeMap (`/train/map`), Pacer (`/pace`), Today
-  (`/today`, the opt-in Moon-days lens).
+  (`/today`, the opt-in Moon-days lens), Library (`/library`) and
+  LibraryPose (`/library/:id`) — both lazy routes (see `src/data/library/`).
 - `src/pacer/` — the breath-pacer engine (views import only from its
   `index.ts`). `timing.ts` is pure math (settings clamp, phase/beat
   conversions, presets; unit-tested); `metronome.ts` wraps Web Audio with
@@ -250,6 +251,36 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   omit rather than guess). ORIGINAL WORDING ONLY: the book is cited, never
   quoted; Wikipedia supplies facts, never sentences. Neither lineage
   "corrects" the other. Rendered by PoseDetail's `ClassicalSection`.
+- `src/data/library/` — the POSTURE LIBRARY, a second collection beside the
+  26 & 2 and never mixed into it (not the class, trainer, coach or
+  `RIG_LIVE`). First family: ten inversions (headstand, shoulderstand and
+  variations). One `LibraryAsana` per file (`<id>.ts`, contract in
+  `types.ts`: steps with an optional rig `stage`, hold, cautions, links,
+  sutras); `index.ts` is the access layer (views import only from it) and
+  joins the illustrated index's facts by id (Sanskrit, pages, figures,
+  grade, roots — never duplicated). FAITHFUL TO THE LINEAGE, IN OUR WORDS:
+  Patanjali gives no technique or cautions, so steps, holds and cautions
+  follow Iyengar's book (read for facts, never copied); cautions come from
+  the lineage, attributed and page-cited (`LineageNote {text, page}`, shown
+  as "What the lineage asks") — no modern additions.
+  `scripts/library-originality-gate.py` checks every changed text file (from
+  git) plus the spec and these docs against both local extractions (zero
+  required, output in `docs/library.md`). Sutras: II.46 + II.47 always,
+  II.48 only in its own meaning, never II.49 on a posture.
+  Rig data: `scripts/blender/library/<id>.py` (the posture contract plus a
+  per-stage `notice` from a fixed vocabulary and `palms: 'back'` where the
+  hands carry the back; `_lib.py` = shared solvers and the floor/reach/palm-
+  contact checks, silent), exported by `npm run rig:export` to
+  `src/data/rig/library/<id>.json` (a subfolder: `RIG_LIVE` and
+  `rig-data.test.ts` never see it), loaded as `loadRigData('library:<id>')`.
+  Live figure only — `render_motion.py` renders no sprites for them; the
+  preview does: `npm run motion:preview library:halasana` →
+  `.motion-tmp/preview-library.halasana.png`. The page draws it with
+  `components/LiveFigure.tsx` (PoseMotion's rig path without the sprite)
+  driven by `useSheetPlayer`, so the step list follows and scrubs the figure
+  (steps never point back to an earlier stage). The library draws
+  `groundedSheetPose` (FigureRig `grounded`: shared floor contacts carried
+  straight, `liftToFloor` as a guard); the 26 & 2 draws `sheetPose`.
 - Forgetting decay: `trainer/bkt.ts` decays each leaf's P(known) back
   toward its prior between practice sessions. The half-life stretches
   only with SPACED correct answers (`KcState.spaced`: a hit ≥ 6 h after

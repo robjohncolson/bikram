@@ -49,6 +49,9 @@ ROOT = Path(__file__).resolve().parents[2]
 POSTURES_DIR = Path(__file__).resolve().parent / 'postures'
 BRIDGES_DIR = Path(__file__).resolve().parent / 'bridges'
 MODULE_DIRS = (POSTURES_DIR, BRIDGES_DIR)
+# the posture library (`library:<id>`): live figure only, so never in
+# MODULE_DIRS (no sprites, no manifest) - the stage preview still finds it
+LIBRARY_DIR = Path(__file__).resolve().parent / 'library'
 POSITIONS = ('standing', 'supine', 'prone', 'kneeling', 'seated')
 OUT_DIR = ROOT / 'public' / 'motion'
 MANIFEST = ROOT / 'src' / 'data' / 'motion' / 'manifest.ts'
@@ -784,12 +787,18 @@ def module_id(path: Path) -> str:
     """The id a module file stands for: `toe_stand.py` → `toe-stand`,
     `bridges/supine_prone.py` → `bridge:supine-prone`."""
     stem = path.stem.replace('_', '-')
+    if path.parent == LIBRARY_DIR:
+        return f'library:{stem}'
     return f'bridge:{stem}' if path.parent == BRIDGES_DIR else stem
 
 
 def module_path(pose_id: str) -> Path:
     for p in module_files():
         if module_id(p) == pose_id or p.stem == pose_id:
+            return p
+    if pose_id.startswith('library:'):
+        p = LIBRARY_DIR / (pose_id.split(':', 1)[1].replace('-', '_') + '.py')
+        if p.exists():
             return p
     raise FileNotFoundError(f'no posture or bridge module for {pose_id!r}')
 

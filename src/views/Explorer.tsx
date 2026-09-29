@@ -238,6 +238,9 @@ export function Explorer() {
           through the muscles doing the work. Every selection lives in the
           address bar, so any view can be shared.
         </p>
+        <p className="ex-library text-soft">
+          <Link to="/library">Beyond the sequence: the posture library →</Link>
+        </p>
         <div className="ex-seg" role="group" aria-label="Choose a lens">
           <button
             type="button"

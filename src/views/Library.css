@@ -1,0 +1,74 @@
+/* ————————————————————————————————————————————— Library
+   The posture library's index: families as sections, postures as text
+   cards (no figures on this page — see Library.tsx). */
+
+.lib-hero {
+  display: grid;
+  gap: 12px;
+  margin-bottom: 34px;
+}
+
+.lib-title {
+  font-size: clamp(30px, 6vw, 44px);
+  line-height: 1.1;
+}
+
+.lib-lede {
+  font-size: clamp(15px, 1.9vw, 17px);
+  line-height: 1.6;
+  max-width: 60ch;
+}
+
+.lib-family + .lib-family {
+  margin-top: 40px;
+}
+
+.lib-family-title {
+  font-size: clamp(22px, 3.6vw, 28px);
+}
+
+.lib-family-blurb {
+  margin-top: 6px;
+  max-width: 60ch;
+  line-height: 1.55;
+}
+
+.lib-grid {
+  list-style: none;
+  margin: 18px 0 0;
+  padding: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+  gap: 12px;
+}
+
+.lib-card {
+  display: grid;
+  gap: 4px;
+  align-content: start;
+  justify-items: start;
+  height: 100%;
+  padding: 16px 18px;
+  transition: border-color 0.18s ease, transform 0.18s ease;
+}
+
+.lib-card:hover {
+  border-color: color-mix(in srgb, var(--ember) 45%, var(--border));
+  transform: translateY(-1px);
+}
+
+.lib-card-sanskrit {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.lib-card-english {
+  font-size: 14px;
+  color: var(--text-soft);
+}
+
+.lib-card-grade {
+  margin-top: 8px;
+}

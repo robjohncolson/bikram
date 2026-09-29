@@ -304,6 +304,10 @@ export interface RigStage {
   guides?: RigGuide[];
   /** the common mistake, laid over `pose` */
   ghost?: RigStagePose;
+  /** library sheets only: the regions whose work the bones cannot show (see `NoticeRegion`) */
+  notice?: NoticeRegion[];
+  /** library sheets only: the palms carry the back here (contact-checked in Blender and in library.test.ts) */
+  palms?: 'back';
 }
 
 /**
@@ -319,4 +323,89 @@ export interface RigData {
   /** frames between two stages at the sheet's fps */
   transition: number;
   stages: RigStage[];
+}
+
+// ---------------------------------------------------------------- the library
+
+/**
+ * The body regions a library stage can ask you to NOTICE: the work the tube
+ * rig's bones cannot show (a neck kept long, shoulders that lift, the
+ * breath). A fixed vocabulary, shared with the Blender helper
+ * (`scripts/blender/library/_lib.py NOTICE`) and pinned by
+ * `library.test.ts`. Rendered as text chips for now; it is the hook for a
+ * later layer that draws them.
+ */
+export type NoticeRegion =
+  | 'neck'
+  | 'shoulders'
+  | 'upper-back'
+  | 'lower-back'
+  | 'core'
+  | 'hips'
+  | 'hamstrings'
+  | 'quads'
+  | 'calves'
+  | 'feet'
+  | 'wrists'
+  | 'breath';
+
+/**
+ * One point the lineage makes — B.K.S. Iyengar, The Illustrated Light on
+ * Yoga — in OUR words, with the printed page it comes from (the book's
+ * printed pages run 1–162; `library.test.ts` holds every reference to it).
+ */
+export interface LineageNote {
+  text: string;
+  /** printed page in The Illustrated Light on Yoga */
+  page: number;
+}
+
+/** Library families; the union grows as later families are added. */
+export type LibraryFamily = 'inversion';
+
+/**
+ * One posture of the LIBRARY — the wider classical repertoire, a second
+ * collection beside the 26 & 2 and never mixed into it (not in the class,
+ * the trainer or the coach). Drawn only by the live figure from
+ * `src/data/rig/library/<id>.json`.
+ *
+ * Only what is ours lives here. The Sanskrit name, printed page, scan page,
+ * photograph numbers, grade and name roots come from
+ * `classical/illustrated-index.json` by `id` and are never duplicated.
+ * FAITHFUL TO THE LINEAGE, IN OUR WORDS: Patanjali gives no technique or
+ * cautions for any asana, so steps, holds and cautions follow the hatha
+ * lineage as Iyengar teaches it in the book (read for facts, never
+ * copied: `scripts/library-originality-gate.py` checks every file), and
+ * every caution carries its page. No modern additions.
+ */
+export interface LibraryAsana {
+  /** = the illustrated index's `romanised` id (rig sheet `library:<id>`) */
+  id: string;
+  family: LibraryFamily;
+  /** our English label (may reuse the index's) */
+  english: string;
+  /**
+   * How to do it, 5–9 steps, second person, calm. `stage` ties a step to the
+   * rig stage it describes (index into the sheet's stages): the page
+   * highlights it while that stage plays, and clicking it scrubs there.
+   */
+  steps: { text: string; stage?: number }[];
+  /** how long, as the book gives it (with its page) */
+  hold: string;
+  /** what the lineage asks: the book's own cautions, attributed and page-cited — nothing it does not say */
+  cautions: LineageNote[];
+  /** what leads in: library ids or 26 & 2 pose ids */
+  prepares?: string[];
+  /** what to do after: library ids or 26 & 2 pose ids */
+  counter?: string[];
+  /** 26 & 2 pose ids with the same action, if any */
+  related?: string[];
+  /**
+   * Sutras that bear on it. Patanjali names no asana and gives no
+   * technique: every entry cites II.46 and II.47, II.48 only in its own
+   * meaning; II.49 (breath practice, which follows posture) is not a
+   * posture sutra. `note` is ONE sentence of ours saying what the sutra
+   * itself says, applied minimally — no claims it does not make.
+   */
+  sutras: { id: string; note: string }[];
 }

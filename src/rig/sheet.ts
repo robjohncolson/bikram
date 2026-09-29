@@ -7,8 +7,9 @@
 import type { RigData } from '../data/types';
 import type { Midpoints } from './inbetween';
 import { blend, midpoints } from './inbetween';
+import type { Vec3 } from './math';
 import type { RigPose } from './pose';
-import { applyStage, ghostPose } from './pose';
+import { applyStage, ghostPose, solve } from './pose';
 
 interface SheetCache {
   stages: (RigPose | undefined)[];
@@ -58,6 +59,68 @@ export function sheetPose(data: RigData, from: number, to: number, t: number): R
     c.mids.set(key, m);
   }
   return blend(stagePose(data, a), stagePose(data, b), t, m);
+}
+
+/**
+ * A pose kept out of the floor: when any joint lies below z = 0, the whole
+ * figure rises by that much (else the same object comes back). The library's
+ * inversions need it — a blend is rooted at the pelvis, so between two
+ * stages that both rest on the crown or the shoulders the slerped chain
+ * dips the head a centimetre or two into the mat; a lift of that size reads
+ * as the body rolling over its contact, a dip reads as a bug. Only the
+ * library's live figure asks for it (FigureRig `grounded`); the 26 & 2's
+ * sheets are drawn exactly as authored.
+ */
+export function liftToFloor(pose: RigPose): RigPose {
+  let low = 0;
+  for (const b of Object.values(solve(pose))) low = Math.min(low, b.head[2], b.tail[2]);
+  if (low >= 0) return pose;
+  const [x, y, z] = pose.pelvisLocation;
+  return { ...pose, pelvisLocation: [x, y, z - low] };
+}
+
+/** Every joint of a solved pose, as the list of bone ends. */
+function jointsOf(pose: RigPose): Vec3[] {
+  const out: Vec3[] = [];
+  for (const b of Object.values(solve(pose))) out.push(b.head, b.tail);
+  return out;
+}
+
+/** Joints on the mat (within this of the floor) and staying put (within this across) count as a shared contact. */
+const CONTACT_Z = 0.03;
+const CONTACT_XY = 0.03;
+
+/**
+ * A blend that keeps its footing: the joints both stages rest on (the
+ * crown and forearms of a headstand, the shoulders of a shoulderstand) are
+ * carried straight from one stage's place to the other's, rather than
+ * swung on the pelvis-rooted chain.
+ */
+export function anchorToContacts(data: RigData, from: number, to: number, t: number): RigPose {
+  const blended = sheetPose(data, from, to, t);
+  if (from === to || t <= 0 || t >= 1) return blended;
+  const ja = jointsOf(stagePose(data, from));
+  const jb = jointsOf(stagePose(data, to));
+  const shared: number[] = [];
+  ja.forEach((a, i) => {
+    const b = jb[i];
+    if (a[2] < CONTACT_Z && b[2] < CONTACT_Z && Math.hypot(a[0] - b[0], a[1] - b[1]) < CONTACT_XY) shared.push(i);
+  });
+  if (!shared.length) return blended;
+  const jt = jointsOf(blended);
+  const off: Vec3 = [0, 0, 0];
+  for (const i of shared) for (let k = 0; k < 3; k++) off[k] += (ja[i][k] + (jb[i][k] - ja[i][k]) * t - jt[i][k]) / shared.length;
+  const [x, y, z] = blended.pelvisLocation;
+  return { ...blended, pelvisLocation: [x + off[0], y + off[1], z + off[2]] };
+}
+
+/**
+ * What the library's live figure draws (FigureRig `grounded`): the blend
+ * kept on its shared contacts, then `liftToFloor` as the last guard. The
+ * 26 & 2 draws `sheetPose` exactly.
+ */
+export function groundedSheetPose(data: RigData, from: number, to: number, t: number): RigPose {
+  return liftToFloor(anchorToContacts(data, from, to, t));
 }
 
 /** A stage blend, as the renderer takes it. */

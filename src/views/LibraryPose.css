@@ -1,0 +1,322 @@
+/* ————————————————————————————————————————————— LibraryPose
+   One library posture: the live figure beside its steps (stacked on a
+   phone), then cautions in plain sight, links, the tradition, the source. */
+
+.lp-crumbs {
+  margin-bottom: 22px;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+.lp-crumbs a:hover {
+  color: var(--ember-text);
+}
+
+.lp-head {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  margin-bottom: 26px;
+}
+
+.lp-title {
+  font-size: clamp(30px, 6vw, 44px);
+  line-height: 1.1;
+}
+
+.lp-sanskrit {
+  font-family: var(--font-display);
+  font-size: 19px;
+  font-style: italic;
+  color: var(--text-soft);
+}
+
+.lp-grade {
+  margin-top: 6px;
+}
+
+.lp-h {
+  font-size: 22px;
+  margin-bottom: 12px;
+}
+
+/* ——— figure + steps */
+.lp-main {
+  display: grid;
+  grid-template-columns: minmax(0, auto) minmax(0, 1fr);
+  gap: 32px;
+  align-items: start;
+}
+
+.lp-figure {
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  position: sticky;
+  top: calc(var(--nav-height) + 16px);
+  max-width: 340px;
+}
+
+/* a rounded square, not a circle: the inversions reach into the corners */
+.lp-disc {
+  display: grid;
+  place-items: center;
+  padding: 10px;
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--border);
+  background: radial-gradient(
+    circle at 32% 26%,
+    color-mix(in srgb, var(--ember) 9%, var(--bg-sunken)),
+    var(--bg-sunken) 72%
+  );
+  color: var(--text);
+}
+
+.lp-disc--empty {
+  box-sizing: content-box;
+}
+
+.lp-disc:focus-visible {
+  border-radius: var(--radius-lg);
+}
+
+.lp-nofigure {
+  max-width: 300px;
+  padding: 16px 18px;
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--radius-md);
+  font-size: 14.5px;
+  line-height: 1.55;
+}
+
+.lp-notice {
+  font-size: 13.5px;
+  color: var(--text-soft);
+  text-align: center;
+}
+
+.lp-notice-label {
+  font-weight: 700;
+  color: var(--text);
+}
+
+.lp-notice-chip {
+  font-weight: 600;
+  color: var(--stretches);
+}
+
+.lp-notice-sep {
+  color: var(--text-faint);
+}
+
+.lp-steplist {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.lp-step-btn {
+  display: grid;
+  grid-template-columns: 26px 1fr;
+  gap: 10px;
+  width: 100%;
+  padding: 10px 12px;
+  border: 1px solid transparent;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  font-size: 15.5px;
+  line-height: 1.55;
+  text-align: left;
+}
+
+button.lp-step-btn {
+  cursor: pointer;
+  transition: background 0.18s ease, border-color 0.18s ease;
+}
+
+button.lp-step-btn:hover {
+  background: var(--bg-sunken);
+}
+
+.lp-step.is-current .lp-step-btn {
+  background: var(--ember-soft);
+  border-color: color-mix(in srgb, var(--ember) 40%, var(--border));
+}
+
+.lp-step-n {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--ember-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.lp-hold {
+  margin-top: 16px;
+  padding: 0 12px;
+  font-size: 15px;
+  line-height: 1.55;
+  color: var(--text-soft);
+}
+
+.lp-hold-label {
+  margin-right: 6px;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ember-text);
+}
+
+/* ——— cautions: in plain sight */
+.lp-cautions {
+  margin-top: 36px;
+  padding: 20px 22px;
+  border-left: 4px solid var(--ember);
+}
+
+.lp-cautions-intro {
+  margin-bottom: 12px;
+  font-size: 14px;
+  line-height: 1.55;
+}
+
+.lp-cite {
+  font-size: 12.5px;
+  white-space: nowrap;
+}
+
+.lp-cautionlist {
+  margin: 0;
+  padding-left: 20px;
+  display: grid;
+  gap: 8px;
+  line-height: 1.6;
+}
+
+/* ——— links */
+.lp-links {
+  margin-top: 28px;
+  display: grid;
+  gap: 14px;
+}
+
+.lp-linkrow-title {
+  font-family: var(--font-body);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--text-faint);
+  margin-bottom: 6px;
+}
+
+.lp-linkrow-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lp-link {
+  --pill: var(--text-soft);
+  font-size: 13.5px;
+}
+
+.lp-link:hover {
+  --pill: var(--ember-text);
+}
+
+.lp-link[data-kind='sequence'] {
+  --pill: var(--ember-text);
+}
+
+.lp-link-tag {
+  font-size: 11px;
+  opacity: 0.8;
+}
+
+/* ——— the tradition */
+.lp-tradition {
+  margin-top: 32px;
+  padding: 20px 22px;
+}
+
+.lp-tradition-intro {
+  font-size: 14.5px;
+  line-height: 1.6;
+  max-width: 62ch;
+}
+
+.lp-sutras {
+  list-style: none;
+  margin: 16px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 16px;
+}
+
+.lp-sutra-head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+}
+
+.lp-sutra-id {
+  font-weight: 700;
+  color: var(--ember-text);
+  font-variant-numeric: tabular-nums;
+}
+
+.lp-sutra-sk {
+  font-family: var(--font-display);
+  font-style: italic;
+  color: var(--text-soft);
+}
+
+.lp-sutra-topic {
+  font-weight: 600;
+  margin-top: 2px;
+}
+
+.lp-sutra-note {
+  margin-top: 2px;
+  line-height: 1.6;
+}
+
+.lp-source {
+  margin-top: 28px;
+  font-size: 13px;
+}
+
+.lp-missing {
+  display: grid;
+  gap: 12px;
+  justify-items: start;
+  padding-top: 72px;
+}
+
+/* ——— phone: stack */
+@media (max-width: 760px) {
+  .lp-main {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 22px;
+  }
+
+  .lp-figure {
+    position: static;
+    max-width: 100%;
+  }
+
+  .lp-cautions,
+  .lp-tradition {
+    padding: 16px 16px;
+  }
+}

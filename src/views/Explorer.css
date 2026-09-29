@@ -21,6 +21,17 @@
   max-width: 56ch;
 }
 
+/* the way out to the library (a second collection, not a lens) */
+.ex-library {
+  margin-top: 8px;
+  font-size: 14.5px;
+  font-weight: 600;
+}
+
+.ex-library a:hover {
+  color: var(--ember-text);
+}
+
 /* segmented lens control */
 .ex-seg {
   display: inline-flex;

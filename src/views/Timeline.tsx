@@ -293,6 +293,9 @@ export function Timeline() {
             <p className="tl-end-note text-faint">
               <Link to="/today">Moon days — an optional lens for today’s practice →</Link>
             </p>
+            <p className="tl-end-note text-faint">
+              <Link to="/library">The posture library — beyond the twenty-six →</Link>
+            </p>
           </div>
         </div>
       </div>

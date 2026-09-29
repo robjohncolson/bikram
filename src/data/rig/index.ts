@@ -14,6 +14,9 @@
 import type { RigData } from '../types';
 
 const files = import.meta.glob<RigData>(['./*.json', '!./skeleton.json'], { import: 'default' });
+// the posture library (`library:<id>`): its own folder, so the 26 & 2's
+// globs here (RIG_LIVE, the bridges) never see it; each file its own chunk
+const libraryFiles = import.meta.glob<RigData>('./library/*.json', { import: 'default' });
 
 const loaded = new Map<string, RigData>();
 const pending = new Map<string, Promise<RigData>>();
@@ -21,18 +24,25 @@ const pending = new Map<string, Promise<RigData>>();
 /** File stem of an id: `bridge:supine-prone` → `bridge.supine-prone` (no colons on Windows). */
 const stemOf = (id: string) => id.replace(':', '.');
 
-/** Whether a rig sheet exists for this id (a posture or `bridge:<a>-<b>`). */
-export function hasRigData(id: string): boolean {
-  return `./${stemOf(id)}.json` in files;
+const LIBRARY = 'library:';
+
+/** The lazy loader of an id's sheet, if there is one. */
+function loaderOf(id: string): (() => Promise<RigData>) | undefined {
+  return id.startsWith(LIBRARY) ? libraryFiles[`./library/${id.slice(LIBRARY.length)}.json`] : files[`./${stemOf(id)}.json`];
 }
 
-/** The rig sheet for a posture or bridge id, lazily loaded (and kept once loaded). */
+/** Whether a rig sheet exists for this id (a posture, `bridge:<a>-<b>` or `library:<id>`). */
+export function hasRigData(id: string): boolean {
+  return loaderOf(id) !== undefined;
+}
+
+/** The rig sheet for a posture, bridge or library id, lazily loaded (and kept once loaded). */
 export function loadRigData(id: string): Promise<RigData> {
   const done = loaded.get(id);
   if (done) return Promise.resolve(done);
   let p = pending.get(id);
   if (!p) {
-    const load = files[`./${stemOf(id)}.json`];
+    const load = loaderOf(id);
     p = load
       ? load().then((d) => {
           loaded.set(id, d);

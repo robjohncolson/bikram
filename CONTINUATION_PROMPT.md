@@ -10,6 +10,39 @@ push to `main` via Vercel's Git integration**; the CLI token on this machine is 
 
 ---
 
+## ✔ 2026-09-29 — THE POSTURE LIBRARY, FIRST FAMILY: INVERSIONS (uncommitted)
+
+`docs/library-inversions-spec.md`, as uncommitted working-tree changes (not reviewed, not
+committed). A second collection beside the 26 & 2, never mixed into it (`docs/library.md`):
+- Ten inversions as live-figure-only rig sheets: `scripts/blender/library/*.py` (+ `_lib.py`:
+  solvers, the floor check over every stage/ghost, the `notice` vocabulary). Reach and floor
+  checks silent for every stage. `render_motion.py` finds them only for the preview
+  (`npm run motion:preview library:halasana`); no sprites, manifest untouched.
+- `npm run rig:export` → `src/data/rig/library/<id>.json`; `loadRigData('library:<id>')`. RIG_LIVE,
+  the 26 & 2 JSONs, `public/motion/`, the trainer, class and coach unchanged.
+- Parity: four new Blender fixtures (headstand, shoulderstand, plough, legs level held stages),
+  max joint error ~5e-6 m (tolerance 1e-4); the existing fixtures re-exported byte-identical.
+- Content `src/data/library/` (`LibraryAsana` in `types.ts`), pages `/library` (text cards) and
+  `/library/:id` (`LiveFigure` + `useSheetPlayer`; steps follow and scrub the figure; notice
+  chips; cautions open; links; "The tradition"; source line). `PoseMotion`'s layer/reduced-motion
+  helpers moved to `components/figurePrefs.ts` unchanged. Entry points: Explorer and the
+  Timeline footer. NOT in the top nav: a fifth link overflows the 320 px nav by 50 px.
+- Originality gate `scripts/library-originality-gate.py`: 0 matches, both books (file list from git; see docs/library.md).
+- `npm test` 273 / 28 green; tsc, lint, build clean. `/pose/half-moon` pixel-identical to HEAD
+  (reduced motion); a class start differs by 12 anti-aliased pixels on one pill edge.
+REVIEW + DIRECTION PASS (same day, Codex review + Robert): cautions now come from the lineage
+(Iyengar's book, attributed and page-cited, "What the lineage asks"; no modern additions);
+steps and holds follow the book (the headstand's weight on the head, p. 87); sutra notes say only
+what II.46/47/48 say, II.49 dropped. Palms placed on the back with grounded elbows (contact-checked),
+headstand crown and shoulderstand upper back calibrated onto the floor guide, no trunk aimed exactly
+upside down, return stages added (steps never point back), reduced-motion stage naming fixed,
+library blends drawn contact-anchored (`groundedSheetPose`); gate derived from git. 282 / 29 green.
+Not done / known: the figure is drawn small in the supine sheets (a 2.6 m frame, because the
+camera pivots on the Y axis and the plough reaches far past the crown); the reclining angle's
+hands hold the shins (the rig's arms are a hand short of its feet); no breath on the library
+figure; the headstand text follows the book (weight on the head) where the Codex review wanted
+the forearms to carry it; `notice` is text only (the hook for drawing the hard-to-see work later).
+
 ## ✔ 2026-09-29 (late night) — THE OTHER TWELVE POSTURES REFINED (uncommitted)
 
 `docs/posing-refinement-2-spec.md`, as uncommitted working-tree changes (not reviewed, not

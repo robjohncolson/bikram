@@ -10,6 +10,8 @@ import { RigBoundary } from './RigBoundary';
 import { rigShows, rigStatusAfter } from './rigFallback';
 import type { RigStatus } from './rigFallback';
 import { useOrbit } from './useOrbit';
+import { loadLayers, saveLayers, useReducedMotion } from './figurePrefs';
+import type { MotionLayers } from './figurePrefs';
 import './PoseMotion.css';
 
 // three.js and the rig renderer load only when a rig figure first mounts
@@ -21,54 +23,10 @@ export interface BreathPhase {
   seconds: number;
 }
 
-/** Which teaching layers to draw under/over the figure. */
-export interface MotionLayers {
-  guides: boolean;
-  ghost: boolean;
-}
+export type { MotionLayers } from './figurePrefs';
 
-const REDUCED = '(prefers-reduced-motion: reduce)';
-const LAYERS_KEY = 'yoga-motion-layers-v1';
-const DEFAULT_LAYERS: MotionLayers = { guides: true, ghost: false };
 /** steps per breath phase when PoseMotion tracks the rig's breath itself (a phase ≈ 40 renders) */
 const BREATH_STEPS = 40;
-
-function loadLayers(): MotionLayers {
-  try {
-    const raw = localStorage.getItem(LAYERS_KEY);
-    if (!raw) return DEFAULT_LAYERS;
-    const v = JSON.parse(raw) as Partial<MotionLayers> | null;
-    return {
-      guides: typeof v?.guides === 'boolean' ? v.guides : DEFAULT_LAYERS.guides,
-      ghost: typeof v?.ghost === 'boolean' ? v.ghost : DEFAULT_LAYERS.ghost,
-    };
-  } catch {
-    return DEFAULT_LAYERS;
-  }
-}
-
-function saveLayers(v: MotionLayers): void {
-  try {
-    localStorage.setItem(LAYERS_KEY, JSON.stringify(v));
-  } catch {
-    /* storage blocked: the choice just won't stick */
-  }
-}
-
-/** Live `prefers-reduced-motion`, following OS changes while mounted. */
-function useReducedMotion(): boolean {
-  const [reduced, setReduced] = useState(
-    () => typeof window !== 'undefined' && !!window.matchMedia?.(REDUCED).matches,
-  );
-  useEffect(() => {
-    const mq = window.matchMedia?.(REDUCED);
-    if (!mq) return;
-    const onChange = () => setReduced(mq.matches);
-    mq.addEventListener('change', onChange);
-    return () => mq.removeEventListener('change', onChange);
-  }, []);
-  return reduced;
-}
 
 /**
  * Animated line-art figure. Draws one cell of a rendered sprite sheet

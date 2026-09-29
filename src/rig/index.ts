@@ -19,5 +19,5 @@ export { MAX_ELEVATION, cameraAt, clampElevation, orbitBetween, stageCamera, wit
 export type { BodySegment } from './body';
 export { SKIN_FIT, SUBSURF_SHRINK, bodyRecipe, bodySegments, guideSegments, hingeBone, isLeaf, jointCenter, jointRadii, placeBone, placeJoint, radiusAlong, vertexRadii } from './body';
 export type { JointRecipe, Radii3, RimRecipe, TubeRecipe } from './body';
-export { LOOP_REST, playAt, sheetPose, stageGhost, stagePose, stageStartAt } from './sheet';
+export { LOOP_REST, anchorToContacts, groundedSheetPose, liftToFloor, playAt, sheetPose, stageGhost, stagePose, stageStartAt } from './sheet';
 export type { SheetBlend } from './sheet';

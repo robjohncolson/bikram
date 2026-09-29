@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import type { RigData } from '../data';
-import { breathe, cubicBezier, guideSegments, orbitBetween, sheetPose, stageCamera, stageGhost, unsmoothstep, withOffset } from '../rig';
+import { breathe, cubicBezier, groundedSheetPose, guideSegments, orbitBetween, sheetPose, stageCamera, stageGhost, unsmoothstep, withOffset } from '../rig';
 import type { ViewOffset } from '../rig';
 import type { RigColors, RigScene, RGBA } from './figureRigScene';
 import './FigureRig.css';
@@ -25,6 +25,8 @@ export interface FigureRigProps {
   fadeLayers?: boolean;
   /** a hand orbit added to the authored camera (posture pages; never in class mode) */
   viewOffset?: ViewOffset;
+  /** keep blends on their contacts and out of the floor (`groundedSheetPose`; the library — never the 26 & 2) */
+  grounded?: boolean;
   /** the first frame has been drawn (the sprite can step aside) */
   onReady?: () => void;
   /** WebGL unavailable, the context lost, or three failed to load: the sprite takes over */
@@ -85,7 +87,7 @@ function useMedia(query: string): boolean {
  * change: a held stage is one render, and there is no loop of its own.
  * Reduced motion snaps to the target stage and drops the breath.
  */
-export default function FigureRig({ data, size, pose, layers, breath, fadeLayers = false, viewOffset, onReady, onUnavailable }: FigureRigProps) {
+export default function FigureRig({ data, size, pose, layers, breath, fadeLayers = false, viewOffset, grounded = false, onReady, onUnavailable }: FigureRigProps) {
   const wrapRef = useRef<HTMLDivElement>(null);
   const figureRef = useRef<HTMLCanvasElement>(null);
   const ghostRef = useRef<HTMLCanvasElement>(null);
@@ -146,7 +148,8 @@ export default function FigureRig({ data, size, pose, layers, breath, fadeLayers
     if (!scene || !colors || !out.figure || !out.ghost || !out.guides || size <= 0) return;
     try {
       scene.setSize(size);
-      const figure = breathe(sheetPose(sheet, from, pose.to, t), amount);
+      const blended = grounded ? groundedSheetPose(sheet, from, pose.to, t) : sheetPose(sheet, from, pose.to, t);
+      const figure = breathe(blended, amount);
       const ghost = drawGhost && holdStage !== undefined ? stageGhost(sheet, holdStage) : undefined;
       // the camera eases like the sheets' (smoothstep on the linear fraction)
       const authored = orbitBetween(stageCamera(sheet, from), stageCamera(sheet, pose.to), unsmoothstep(t));
@@ -166,7 +169,7 @@ export default function FigureRig({ data, size, pose, layers, breath, fadeLayers
     } catch {
       unavailable.current?.();
     }
-  }, [scene, colors, size, sheet, from, pose.to, t, amount, drawGhost, holdStage, guideLines, offAz, offEl]);
+  }, [scene, colors, size, sheet, from, pose.to, t, amount, drawGhost, holdStage, guideLines, offAz, offEl, grounded]);
 
   const style = { width: size, height: size };
   return (

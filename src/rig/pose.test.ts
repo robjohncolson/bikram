@@ -28,7 +28,7 @@ const fixtures = Object.values(
   import.meta.glob<Fixture>(['./fixtures/*.json', '!./fixtures/skeleton-from-blender.json', '!./fixtures/skin-fit-from-blender.json'], { eager: true, import: 'default' }),
 );
 const sheets = Object.fromEntries(
-  Object.values(import.meta.glob<RigData>('../data/rig/*.json', { eager: true, import: 'default' }))
+  Object.values(import.meta.glob<RigData>(['../data/rig/*.json', '../data/rig/library/*.json'], { eager: true, import: 'default' }))
     .filter((d) => 'stages' in d)
     .map((d) => [d.id, d]),
 );
@@ -77,6 +77,9 @@ describe('parity with render_motion.py', () => {
       'half-moon--arms-up--right-side--50',
       'half-moon--arms-up--right-side--75',
       'half-moon--stand--arms-up--50',
+      // the library's upside-down held stages (antiparallel aims)
+      'library.salamba-sirsasana-i--headstand',
+      'library.salamba-sarvangasana-i--shoulderstand',
     ]) {
       expect(cases.has(c), c).toBe(true);
     }

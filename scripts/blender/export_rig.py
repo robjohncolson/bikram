@@ -11,6 +11,9 @@ helpers, exactly as `render_motion.py` does), and writes
 
     src/data/rig/<file_stem>.json   one per module: the stages as authored
     src/data/rig/skeleton.json      the rig tables (joints, bones, radii…)
+    src/data/rig/library/<id>.json  the posture library (`library/`, live figure
+                                    only: a subfolder, so RIG_LIVE's `./*.json`
+                                    glob never sees it)
 
 The rig tables below are COPIED from `render_motion.py` (which imports bpy
 and so cannot be imported here). `src/rig/skeleton.test.ts` compares the
@@ -33,8 +36,10 @@ HERE = Path(__file__).resolve().parent
 POSTURES_DIR = HERE / 'postures'
 BRIDGES_DIR = HERE / 'bridges'
 MODULE_DIRS = (POSTURES_DIR, BRIDGES_DIR)
+LIBRARY_DIR = HERE / 'library'
 POSITIONS = ('standing', 'supine', 'prone', 'kneeling', 'seated')
 OUT_DIR = ROOT / 'src' / 'data' / 'rig'
+LIBRARY_OUT = OUT_DIR / 'library'
 
 # --- copied from render_motion.py (keep in sync; skeleton.test.ts compares this
 # copy and the TS rig with skeleton-from-blender.json, written inside Blender) ----
@@ -122,10 +127,17 @@ def module_files() -> list[Path]:
     return [p for d in MODULE_DIRS if d.exists() for p in sorted(d.glob('*.py')) if not p.name.startswith('_')]
 
 
+def library_files() -> list[Path]:
+    """The posture library's sheets (`_lib.py` is their shared helper)."""
+    return sorted(p for p in LIBRARY_DIR.glob('*.py') if not p.name.startswith('_')) if LIBRARY_DIR.exists() else []
+
+
 def module_id(path: Path) -> str:
-    """`toe_stand.py` → `toe-stand`, `bridges/supine_prone.py` → `bridge:supine-prone`
-    (copied from render_motion.py)."""
+    """`toe_stand.py` → `toe-stand`, `bridges/supine_prone.py` → `bridge:supine-prone`,
+    `library/halasana.py` → `library:halasana` (copied from render_motion.py)."""
     stem = path.stem.replace('_', '-')
+    if path.parent == LIBRARY_DIR:
+        return f'library:{stem}'
     return f'bridge:{stem}' if path.parent == BRIDGES_DIR else stem
 
 
@@ -187,7 +199,7 @@ def export_module(path: Path) -> dict:
             if k in st:
                 s[k] = clean(st[k])
         s['pose'] = clean(st['pose'])
-        for k in ('guides', 'ghost'):
+        for k in ('guides', 'ghost', 'notice', 'palms'):
             if st.get(k):
                 s[k] = clean(st[k])
         out['stages'].append(s)
@@ -247,7 +259,19 @@ def main() -> None:
     for old in OUT_DIR.glob('*.json'):
         if old.name not in written:
             old.unlink()
-    print(f'rig data -> {OUT_DIR.relative_to(ROOT)} ({len(files)} modules + skeleton)')
+    # the library: `library:<id>` → library/<id>.json
+    lib = library_files()
+    LIBRARY_OUT.mkdir(parents=True, exist_ok=True)
+    kept = set()
+    for p in lib:
+        data = export_module(p)
+        name = f"{data['id'].split(':', 1)[1]}.json"
+        write(LIBRARY_OUT / name, data)
+        kept.add(name)
+    for old in LIBRARY_OUT.glob('*.json'):
+        if old.name not in kept:
+            old.unlink()
+    print(f'rig data -> {OUT_DIR.relative_to(ROOT)} ({len(files)} modules + skeleton, {len(lib)} library sheets)')
 
 
 if __name__ == '__main__':

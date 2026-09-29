@@ -1,4 +1,4 @@
-import { useEffect } from 'react';
+import { Suspense, lazy, useEffect } from 'react';
 import { NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import { Timeline } from './views/Timeline';
 import { PoseDetail } from './views/PoseDetail';
@@ -8,6 +8,11 @@ import { KnowledgeMap } from './views/KnowledgeMap';
 import { Pacer } from './views/Pacer';
 import { Today } from './views/Today';
 import './App.css';
+
+// the posture library is a second collection: its pages (and the book
+// indexes they read) load only when visited
+const Library = lazy(() => import('./views/Library').then((m) => ({ default: m.Library })));
+const LibraryPose = lazy(() => import('./views/LibraryPose').then((m) => ({ default: m.LibraryPose })));
 
 function ScrollToTop() {
   const { pathname } = useLocation();
@@ -44,6 +49,22 @@ export default function App() {
           <Route path="/train/map" element={<KnowledgeMap />} />
           <Route path="/pace" element={<Pacer />} />
           <Route path="/today" element={<Today />} />
+          <Route
+            path="/library"
+            element={
+              <Suspense fallback={null}>
+                <Library />
+              </Suspense>
+            }
+          />
+          <Route
+            path="/library/:id"
+            element={
+              <Suspense fallback={null}>
+                <LibraryPose />
+              </Suspense>
+            }
+          />
         </Routes>
       </main>
     </>

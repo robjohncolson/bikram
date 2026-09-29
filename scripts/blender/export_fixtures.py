@@ -91,6 +91,12 @@ def main() -> None:
         ('savasana', 'Stillness'),
         ('cobra', 'Lift'),
         ('camel', 'Kneel'),
+        # the library's inversions: upside-down aims send whole chains through
+        # the antiparallel branch of rotation_difference
+        ('library:salamba-sirsasana-i', 'Headstand'),
+        ('library:salamba-sarvangasana-i', 'Shoulderstand'),
+        ('library:halasana', 'Arms long'),
+        ('library:urdhva-dandasana', 'Legs level'),
     ]
     for pid, label in held:
         p = posture(pid)
