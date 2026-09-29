@@ -227,7 +227,15 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   next class is planned from. Read `journal/` before proposing a
   sequence. `CoachDebrief` (the done screen) opens the conversation on
   the practitioner's behalf and sends invalid proposals back with the
-  rules they broke.
+  rules they broke. The system prompt ends with the TRADITION brief
+  (`src/data/classical/sutras-brief.md`, imported `?raw`): the eight
+  limbs, asana, pranayama, the kleshas, practice and non-attachment, in
+  original wording, each paragraph citing its sutras by id; the coach may
+  cite a sutra and must never present tradition as physiology.
+  `sutras-index.json` holds all 196 sutras (id, ASCII transliteration,
+  our own topic label, theme, Iyengar's page) — cited, never quoted;
+  `docs/sutras-originality-gate.py` checks every committed word against
+  a local extraction of the book (`docs/sutras-index.md`).
 - `src/data/segments/` — per-posture class-time structure (sides, sets,
   the floor series' savasana/sit-up interludes) in four range files,
   merged onto `Pose.segments` by `poses/index.ts`. Segments partition

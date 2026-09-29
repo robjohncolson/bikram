@@ -4,6 +4,7 @@
  * the caller passes the live journal, mastery and tonight's program.
  */
 import { chakras, muscles, poses } from '../data';
+import sutrasBrief from '../data/classical/sutras-brief.md?raw';
 import type { Pose } from '../data';
 import type { ClassProgram } from '../pacer';
 import { classMinutes as programMinutes } from '../pacer';
@@ -111,6 +112,10 @@ export function buildSystemPrompt(ctx: CoachContext): string {
     '',
     '== The 26 postures ==',
     poses.map(poseLine).join('\n'),
+    '',
+    '== The tradition (Patanjali, as read by Iyengar) ==',
+    'You may cite a sutra by id when naming a principle. Do not present tradition as physiology. Attribute traditional claims to the tradition and keep explanations in your own words.',
+    sutrasBrief.trim(),
   ].join('\n');
 }
 

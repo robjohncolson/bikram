@@ -1,0 +1,1962 @@
+[
+  {
+    "id": "I.1",
+    "pada": 1,
+    "n": 1,
+    "sanskrit": "atha yoganusasanam",
+    "topic": "Entering the study of yoga",
+    "page": 48,
+    "pdfPage": 70,
+    "theme": "other"
+  },
+  {
+    "id": "I.2",
+    "pada": 1,
+    "n": 2,
+    "sanskrit": "yogah cittavrtti nirodhah",
+    "topic": "Quieting the activity of mind",
+    "page": 49,
+    "pdfPage": 71,
+    "theme": "samadhi"
+  },
+  {
+    "id": "I.3",
+    "pada": 1,
+    "n": 3,
+    "sanskrit": "tada drastuh svarupe avasthanam",
+    "topic": "Awareness resting in its identity",
+    "page": 52,
+    "pdfPage": 74,
+    "theme": "samadhi"
+  },
+  {
+    "id": "I.4",
+    "pada": 1,
+    "n": 4,
+    "sanskrit": "vrtti sarupyam itaratra",
+    "topic": "Mistaking mental movement for oneself",
+    "page": 53,
+    "pdfPage": 75,
+    "theme": "other"
+  },
+  {
+    "id": "I.5",
+    "pada": 1,
+    "n": 5,
+    "sanskrit": "vrttayah pancatayyah klista aklistah",
+    "topic": "Five patterns with differing consequences",
+    "page": 54,
+    "pdfPage": 76,
+    "theme": "other"
+  },
+  {
+    "id": "I.6",
+    "pada": 1,
+    "n": 6,
+    "sanskrit": "pramana viparyaya vikalpa nidra smrtayah",
+    "topic": "Mapping the five mental patterns",
+    "page": 56,
+    "pdfPage": 78,
+    "theme": "other"
+  },
+  {
+    "id": "I.7",
+    "pada": 1,
+    "n": 7,
+    "sanskrit": "pratyaksa anumana agamah pramanani",
+    "topic": "Three routes to grounded knowledge",
+    "page": 57,
+    "pdfPage": 79,
+    "theme": "other"
+  },
+  {
+    "id": "I.8",
+    "pada": 1,
+    "n": 8,
+    "sanskrit": "viparyayah mithyajnanam atadrupa pratistham",
+    "topic": "Error lacks its supposed basis",
+    "page": 58,
+    "pdfPage": 80,
+    "theme": "other"
+  },
+  {
+    "id": "I.9",
+    "pada": 1,
+    "n": 9,
+    "sanskrit": "sabdajnana anupati vastusunyah vikalpah",
+    "topic": "Words without a corresponding object",
+    "page": 59,
+    "pdfPage": 81,
+    "theme": "other"
+  },
+  {
+    "id": "I.10",
+    "pada": 1,
+    "n": 10,
+    "sanskrit": "abhava pratyaya alambana vrttih nidra",
+    "topic": "Sleep as a mental pattern",
+    "page": 59,
+    "pdfPage": 81,
+    "theme": "other"
+  },
+  {
+    "id": "I.11",
+    "pada": 1,
+    "n": 11,
+    "sanskrit": "anubhuta visaya asampramosah smrtih",
+    "topic": "Memory retains an experienced object",
+    "page": 61,
+    "pdfPage": 83,
+    "theme": "other"
+  },
+  {
+    "id": "I.12",
+    "pada": 1,
+    "n": 12,
+    "sanskrit": "abhyasa vairagyabhyam tannirodhah",
+    "topic": "Repeated practice alongside releasing attachment",
+    "page": 61,
+    "pdfPage": 83,
+    "theme": "other"
+  },
+  {
+    "id": "I.13",
+    "pada": 1,
+    "n": 13,
+    "sanskrit": "tatra sthitau yatnah abhyasah",
+    "topic": "Practice cultivates continuity of steadiness",
+    "page": 63,
+    "pdfPage": 85,
+    "theme": "other"
+  },
+  {
+    "id": "I.14",
+    "pada": 1,
+    "n": 14,
+    "sanskrit": "sa tu dirghakala nairantarya satkara asevitah drdhabhumih",
+    "topic": "Consistency gives practice its footing",
+    "page": 63,
+    "pdfPage": 85,
+    "theme": "other"
+  },
+  {
+    "id": "I.15",
+    "pada": 1,
+    "n": 15,
+    "sanskrit": "drsta anusravika visaya vitrsnasya vasikarasamjna vairagyam",
+    "topic": "Relinquishing thirst for promised experiences",
+    "page": 64,
+    "pdfPage": 86,
+    "theme": "other"
+  },
+  {
+    "id": "I.16",
+    "pada": 1,
+    "n": 16,
+    "sanskrit": "tatparam purusakhyateh gunavaitrsnyam",
+    "topic": "Discernment releases attachment to nature",
+    "page": 66,
+    "pdfPage": 88,
+    "theme": "kaivalya"
+  },
+  {
+    "id": "I.17",
+    "pada": 1,
+    "n": 17,
+    "sanskrit": "vitarka vicara ananda asmitarupa anugamat samprajnatah",
+    "topic": "Absorption with progressively subtler supports",
+    "page": 68,
+    "pdfPage": 90,
+    "theme": "samadhi"
+  },
+  {
+    "id": "I.18",
+    "pada": 1,
+    "n": 18,
+    "sanskrit": "viramapratyaya abhyasapurvah samskarasesah anyah",
+    "topic": "Stillness with residual impressions remaining",
+    "page": 70,
+    "pdfPage": 92,
+    "theme": "samadhi"
+  },
+  {
+    "id": "I.19",
+    "pada": 1,
+    "n": 19,
+    "sanskrit": "bhavapratyayah videha prakrtilayanam",
+    "topic": "Absorption associated with inherited conditions",
+    "page": 72,
+    "pdfPage": 94,
+    "theme": "samadhi"
+  },
+  {
+    "id": "I.20",
+    "pada": 1,
+    "n": 20,
+    "sanskrit": "sraddha virya smrti samadhiprajna purvakah itaresam",
+    "topic": "Qualities that sustain the path",
+    "page": 73,
+    "pdfPage": 95,
+    "theme": "samadhi"
+  },
+  {
+    "id": "I.21",
+    "pada": 1,
+    "n": 21,
+    "sanskrit": "tivrasamveganam asannah",
+    "topic": "Intensity brings the goal nearer",
+    "page": 76,
+    "pdfPage": 98,
+    "theme": "samadhi"
+  },
+  {
+    "id": "I.22",
+    "pada": 1,
+    "n": 22,
+    "sanskrit": "mrdu madhya adhimatratvat tatah api visesah",
+    "topic": "Differences in the degree of commitment",
+    "page": 76,
+    "pdfPage": 98,
+    "theme": "other"
+  },
+  {
+    "id": "I.23",
+    "pada": 1,
+    "n": 23,
+    "sanskrit": "Isvara pranidhanat va",
+    "topic": "Devotion as another doorway",
+    "page": 78,
+    "pdfPage": 100,
+    "theme": "samadhi"
+  },
+  {
+    "id": "I.24",
+    "pada": 1,
+    "n": 24,
+    "sanskrit": "klesa karma vipaka asayaih aparamrstah purusavisesah Isvarah",
+    "topic": "Isvara outside affliction and consequence",
+    "page": 78,
+    "pdfPage": 100,
+    "theme": "other"
+  },
+  {
+    "id": "I.25",
+    "pada": 1,
+    "n": 25,
+    "sanskrit": "tatra niratisayam sarvajnabijam",
+    "topic": "Unsurpassed knowing attributed to Isvara",
+    "page": 79,
+    "pdfPage": 101,
+    "theme": "other"
+  },
+  {
+    "id": "I.26",
+    "pada": 1,
+    "n": 26,
+    "sanskrit": "sa esah purvesam api guruh kalena anavacchedat",
+    "topic": "Teaching beyond the limits of time",
+    "page": 80,
+    "pdfPage": 102,
+    "theme": "other"
+  },
+  {
+    "id": "I.27",
+    "pada": 1,
+    "n": 27,
+    "sanskrit": "tasya vacakah pranavah",
+    "topic": "Pranava as the sign of Isvara",
+    "page": 80,
+    "pdfPage": 102,
+    "theme": "other"
+  },
+  {
+    "id": "I.28",
+    "pada": 1,
+    "n": 28,
+    "sanskrit": "tajjapah tadarthabhavanam",
+    "topic": "Repetition joined with contemplating meaning",
+    "page": 81,
+    "pdfPage": 103,
+    "theme": "other"
+  },
+  {
+    "id": "I.29",
+    "pada": 1,
+    "n": 29,
+    "sanskrit": "tatah pratyakcetana adhigamah api antaraya abhavah ca",
+    "topic": "Inward awareness and fewer impediments",
+    "page": 82,
+    "pdfPage": 104,
+    "theme": "other"
+  },
+  {
+    "id": "I.30",
+    "pada": 1,
+    "n": 30,
+    "sanskrit": "vyadhi styana samsaya pramada alasya avirati bhrantidarsana alabdhabhumikatva anavasthitatvani cittaviksepah te antarayah",
+    "topic": "Nine impediments that scatter attention",
+    "page": 83,
+    "pdfPage": 105,
+    "theme": "other"
+  },
+  {
+    "id": "I.31",
+    "pada": 1,
+    "n": 31,
+    "sanskrit": "duhkha daurmanasya angamejayatva svasaprasvasah viksepa sahabhuvah",
+    "topic": "Signs accompanying a distracted mind",
+    "page": 84,
+    "pdfPage": 106,
+    "theme": "other"
+  },
+  {
+    "id": "I.32",
+    "pada": 1,
+    "n": 32,
+    "sanskrit": "tatpratisedhartham ekatattva abhyasah",
+    "topic": "Returning attention to one principle",
+    "page": 85,
+    "pdfPage": 107,
+    "theme": "dharana"
+  },
+  {
+    "id": "I.33",
+    "pada": 1,
+    "n": 33,
+    "sanskrit": "maitri karuna mudita upeksanam sukha duhkha punya apunya visayanam bhavanatah cittaprasadanam",
+    "topic": "Cultivating responses that settle attention",
+    "page": 86,
+    "pdfPage": 108,
+    "theme": "other"
+  },
+  {
+    "id": "I.34",
+    "pada": 1,
+    "n": 34,
+    "sanskrit": "pracchardana vidharanabhyam va pranasya",
+    "topic": "Exhalation and pausing as supports",
+    "page": 87,
+    "pdfPage": 109,
+    "theme": "pranayama"
+  },
+  {
+    "id": "I.35",
+    "pada": 1,
+    "n": 35,
+    "sanskrit": "visayavati va pravrttih utpanna manasah sthiti nibandhani",
+    "topic": "Sensory experience can steady attention",
+    "page": 87,
+    "pdfPage": 109,
+    "theme": "dharana"
+  },
+  {
+    "id": "I.36",
+    "pada": 1,
+    "n": 36,
+    "sanskrit": "visoka va jyotismati",
+    "topic": "Luminosity unburdened by grief",
+    "page": 88,
+    "pdfPage": 110,
+    "theme": "dharana"
+  },
+  {
+    "id": "I.37",
+    "pada": 1,
+    "n": 37,
+    "sanskrit": "vitaraga visayam va cittam",
+    "topic": "Contemplating a mind without craving",
+    "page": 89,
+    "pdfPage": 111,
+    "theme": "dharana"
+  },
+  {
+    "id": "I.38",
+    "pada": 1,
+    "n": 38,
+    "sanskrit": "svapna nidra jnana alambanam va",
+    "topic": "Dream and sleep as contemplative supports",
+    "page": 89,
+    "pdfPage": 111,
+    "theme": "dharana"
+  },
+  {
+    "id": "I.39",
+    "pada": 1,
+    "n": 39,
+    "sanskrit": "yathabhimata dhyanat va",
+    "topic": "Meditation with a chosen support",
+    "page": 90,
+    "pdfPage": 112,
+    "theme": "dhyana"
+  },
+  {
+    "id": "I.40",
+    "pada": 1,
+    "n": 40,
+    "sanskrit": "paramanu paramamahattvantah asya vasikarah",
+    "topic": "Attention across the range of scale",
+    "page": 91,
+    "pdfPage": 113,
+    "theme": "dharana"
+  },
+  {
+    "id": "I.41",
+    "pada": 1,
+    "n": 41,
+    "sanskrit": "ksinavrtteh abhijatasya iva maneh grahitr grahana grahyesu tatstha tadanjanata samapattih",
+    "topic": "Clear absorption reflects its object",
+    "page": 93,
+    "pdfPage": 115,
+    "theme": "samadhi"
+  },
+  {
+    "id": "I.42",
+    "pada": 1,
+    "n": 42,
+    "sanskrit": "tatra sabda artha jnana vikalpaih sankirna savitarka samapattih",
+    "topic": "Absorption still mixed with conceptual distinctions",
+    "page": 94,
+    "pdfPage": 116,
+    "theme": "samadhi"
+  },
+  {
+    "id": "I.43",
+    "pada": 1,
+    "n": 43,
+    "sanskrit": "smrtiparisuddhau svarupasunya iva arthamatranirbhasa nirvitarka",
+    "topic": "Object apparent without remembered overlays",
+    "page": 95,
+    "pdfPage": 117,
+    "theme": "samadhi"
+  },
+  {
+    "id": "I.44",
+    "pada": 1,
+    "n": 44,
+    "sanskrit": "etayaiva savicara nirvicara ca suksmavisaya vyakhyata",
+    "topic": "Subtle objects and modes of reflection",
+    "page": 96,
+    "pdfPage": 118,
+    "theme": "samadhi"
+  },
+  {
+    "id": "I.45",
+    "pada": 1,
+    "n": 45,
+    "sanskrit": "suksmavisayatvam ca alinga paryavasanam",
+    "topic": "Subtle inquiry reaches unmanifest nature",
+    "page": 97,
+    "pdfPage": 119,
+    "theme": "samadhi"
+  },
+  {
+    "id": "I.46",
+    "pada": 1,
+    "n": 46,
+    "sanskrit": "ta eva sabijah samadhih",
+    "topic": "Supported absorption retains a seed",
+    "page": 98,
+    "pdfPage": 120,
+    "theme": "samadhi"
+  },
+  {
+    "id": "I.47",
+    "pada": 1,
+    "n": 47,
+    "sanskrit": "nirvicara vaisaradye adhyatmaprasadah",
+    "topic": "Clarity accompanying absorption beyond reflection",
+    "page": 99,
+    "pdfPage": 121,
+    "theme": "samadhi"
+  },
+  {
+    "id": "I.48",
+    "pada": 1,
+    "n": 48,
+    "sanskrit": "rtambhara tatra prajna",
+    "topic": "Insight answerable to what is",
+    "page": 101,
+    "pdfPage": 123,
+    "theme": "samadhi"
+  },
+  {
+    "id": "I.49",
+    "pada": 1,
+    "n": 49,
+    "sanskrit": "sruta anumana prajnabhyam anyavisaya visesarthatvat",
+    "topic": "Direct insight and mediated knowledge differ",
+    "page": 101,
+    "pdfPage": 123,
+    "theme": "samadhi"
+  },
+  {
+    "id": "I.50",
+    "pada": 1,
+    "n": 50,
+    "sanskrit": "tajjah samskarah anyasamskara pratibandhi",
+    "topic": "Insight interrupts older mental imprints",
+    "page": 102,
+    "pdfPage": 124,
+    "theme": "samadhi"
+  },
+  {
+    "id": "I.51",
+    "pada": 1,
+    "n": 51,
+    "sanskrit": "tasyapi nirodhe sarvanirodhat nirbijah samadhih",
+    "topic": "Letting even that imprint cease",
+    "page": 103,
+    "pdfPage": 125,
+    "theme": "samadhi"
+  },
+  {
+    "id": "II.1",
+    "pada": 2,
+    "n": 1,
+    "sanskrit": "tapah svadhyaya Isvarapranidhanani kriyayogah",
+    "topic": "Discipline study and devotion together",
+    "page": 108,
+    "pdfPage": 130,
+    "theme": "limbs"
+  },
+  {
+    "id": "II.2",
+    "pada": 2,
+    "n": 2,
+    "sanskrit": "samadhi bhavanarthah klesa tanukaranarthasca",
+    "topic": "Practice weakens affliction and supports absorption",
+    "page": 109,
+    "pdfPage": 131,
+    "theme": "kleshas"
+  },
+  {
+    "id": "II.3",
+    "pada": 2,
+    "n": 3,
+    "sanskrit": "avidya asmita raga dvesa abhinivesah klesah",
+    "topic": "Five roots of troubled experience",
+    "page": 111,
+    "pdfPage": 133,
+    "theme": "kleshas"
+  },
+  {
+    "id": "II.4",
+    "pada": 2,
+    "n": 4,
+    "sanskrit": "avidya ksetram uttaresam prasupta tanu vicchinna udaranam",
+    "topic": "Misapprehension nourishes the other afflictions",
+    "page": 113,
+    "pdfPage": 135,
+    "theme": "kleshas"
+  },
+  {
+    "id": "II.5",
+    "pada": 2,
+    "n": 5,
+    "sanskrit": "anitya asuci duhkha anatmasu nitya suci sukha atma khyatih avidya",
+    "topic": "Confusing impermanence and suffering with security",
+    "page": 113,
+    "pdfPage": 135,
+    "theme": "kleshas"
+  },
+  {
+    "id": "II.6",
+    "pada": 2,
+    "n": 6,
+    "sanskrit": "drk darsanasaktyoh ekatmata iva asmita",
+    "topic": "Conflating awareness with its instruments",
+    "page": 114,
+    "pdfPage": 136,
+    "theme": "kleshas"
+  },
+  {
+    "id": "II.7",
+    "pada": 2,
+    "n": 7,
+    "sanskrit": "sukha anusayi ragah",
+    "topic": "Pleasure leaves a pull toward repetition",
+    "page": 115,
+    "pdfPage": 137,
+    "theme": "kleshas"
+  },
+  {
+    "id": "II.8",
+    "pada": 2,
+    "n": 8,
+    "sanskrit": "duhkha anusayi dvesah",
+    "topic": "Pain leaves a pull toward rejection",
+    "page": 116,
+    "pdfPage": 138,
+    "theme": "kleshas"
+  },
+  {
+    "id": "II.9",
+    "pada": 2,
+    "n": 9,
+    "sanskrit": "svarasavahi vidusah api tatha arudhah abhinivesah",
+    "topic": "Clinging persists even with learning",
+    "page": 116,
+    "pdfPage": 138,
+    "theme": "kleshas"
+  },
+  {
+    "id": "II.10",
+    "pada": 2,
+    "n": 10,
+    "sanskrit": "te pratiprasavaheyah suksmah",
+    "topic": "Tracing subtle afflictions toward their source",
+    "page": 117,
+    "pdfPage": 139,
+    "theme": "kleshas"
+  },
+  {
+    "id": "II.11",
+    "pada": 2,
+    "n": 11,
+    "sanskrit": "dhyanaheyah tadvrttayah",
+    "topic": "Meditation addresses active afflictive patterns",
+    "page": 118,
+    "pdfPage": 140,
+    "theme": "dhyana"
+  },
+  {
+    "id": "II.12",
+    "pada": 2,
+    "n": 12,
+    "sanskrit": "klesamulah karmasayah drsta adrsta janma vedaniyah",
+    "topic": "Affliction underlies the accumulation of karma",
+    "page": 119,
+    "pdfPage": 141,
+    "theme": "karma"
+  },
+  {
+    "id": "II.13",
+    "pada": 2,
+    "n": 13,
+    "sanskrit": "sati mule tadvipakah jati ayuh bhogah",
+    "topic": "Karmic roots and conditions of life",
+    "page": 121,
+    "pdfPage": 143,
+    "theme": "karma"
+  },
+  {
+    "id": "II.14",
+    "pada": 2,
+    "n": 14,
+    "sanskrit": "te hlada paritapa phalah punya apunya hetutvat",
+    "topic": "Actions bear differing kinds of experience",
+    "page": 121,
+    "pdfPage": 143,
+    "theme": "karma"
+  },
+  {
+    "id": "II.15",
+    "pada": 2,
+    "n": 15,
+    "sanskrit": "parinama tapa samskara duhkhaih gunavrtti virodhat ca duhkham eva sarvam vivekinah",
+    "topic": "Discernment notices instability within experience",
+    "page": 122,
+    "pdfPage": 144,
+    "theme": "kleshas"
+  },
+  {
+    "id": "II.16",
+    "pada": 2,
+    "n": 16,
+    "sanskrit": "heyam duhkham anagatam",
+    "topic": "Preventing suffering still to come",
+    "page": 123,
+    "pdfPage": 145,
+    "theme": "kleshas"
+  },
+  {
+    "id": "II.17",
+    "pada": 2,
+    "n": 17,
+    "sanskrit": "drastrdrsyayoh samyogah heyahetuh",
+    "topic": "Entangling the witness with appearances",
+    "page": 124,
+    "pdfPage": 146,
+    "theme": "kleshas"
+  },
+  {
+    "id": "II.18",
+    "pada": 2,
+    "n": 18,
+    "sanskrit": "prakasa kriya sthiti silam bhutendriyatmakam bhogapavargartham drsyam",
+    "topic": "Nature supports experience and release",
+    "page": 125,
+    "pdfPage": 147,
+    "theme": "other"
+  },
+  {
+    "id": "II.19",
+    "pada": 2,
+    "n": 19,
+    "sanskrit": "visesa avisesa lingamatra alingani gunaparvani",
+    "topic": "Four levels of natural manifestation",
+    "page": 126,
+    "pdfPage": 148,
+    "theme": "other"
+  },
+  {
+    "id": "II.20",
+    "pada": 2,
+    "n": 20,
+    "sanskrit": "drasta drsimatrah suddhah api pratyayanupasyah",
+    "topic": "Awareness witnesses the contents of thought",
+    "page": 129,
+    "pdfPage": 151,
+    "theme": "other"
+  },
+  {
+    "id": "II.21",
+    "pada": 2,
+    "n": 21,
+    "sanskrit": "tadarthah eva drsyasya atma",
+    "topic": "Appearances serve the witnessing principle",
+    "page": 130,
+    "pdfPage": 152,
+    "theme": "other"
+  },
+  {
+    "id": "II.22",
+    "pada": 2,
+    "n": 22,
+    "sanskrit": "krtartham prati nastam api anastam tadanya-sadharanatvat",
+    "topic": "Nature remains available to other witnesses",
+    "page": 130,
+    "pdfPage": 152,
+    "theme": "kaivalya"
+  },
+  {
+    "id": "II.23",
+    "pada": 2,
+    "n": 23,
+    "sanskrit": "sva svamisaktyoh svarupopalabdhi hetuh samyogah",
+    "topic": "Association reveals observer and observed",
+    "page": 131,
+    "pdfPage": 153,
+    "theme": "other"
+  },
+  {
+    "id": "II.24",
+    "pada": 2,
+    "n": 24,
+    "sanskrit": "tasya hetuh avidya",
+    "topic": "Misapprehension sustains their mistaken association",
+    "page": 134,
+    "pdfPage": 156,
+    "theme": "kleshas"
+  },
+  {
+    "id": "II.25",
+    "pada": 2,
+    "n": 25,
+    "sanskrit": "tad abhavat samyogabhavah hanam taddrseh kaivalyam",
+    "topic": "Ending confusion frees the witness",
+    "page": 135,
+    "pdfPage": 157,
+    "theme": "kaivalya"
+  },
+  {
+    "id": "II.26",
+    "pada": 2,
+    "n": 26,
+    "sanskrit": "vivekakhyatih aviplava hanopayah",
+    "topic": "Unwavering discernment as the remedy",
+    "page": 136,
+    "pdfPage": 158,
+    "theme": "kaivalya"
+  },
+  {
+    "id": "II.27",
+    "pada": 2,
+    "n": 27,
+    "sanskrit": "tasya saptadha prantabhumih prajna",
+    "topic": "Seven stages of maturing insight",
+    "page": 137,
+    "pdfPage": 159,
+    "theme": "kaivalya"
+  },
+  {
+    "id": "II.28",
+    "pada": 2,
+    "n": 28,
+    "sanskrit": "yoganganusthanat asuddhiksaye jnanadiptih avivekakhyateh",
+    "topic": "Practising the limbs clarifies discernment",
+    "page": 139,
+    "pdfPage": 161,
+    "theme": "limbs"
+  },
+  {
+    "id": "II.29",
+    "pada": 2,
+    "n": 29,
+    "sanskrit": "yama niyama asana pranayama pratyahara dharana dhyana samadhayah astau angani",
+    "topic": "Eight connected dimensions of practice",
+    "page": 140,
+    "pdfPage": 162,
+    "theme": "limbs"
+  },
+  {
+    "id": "II.30",
+    "pada": 2,
+    "n": 30,
+    "sanskrit": "ahimsa satya asteya brahmacarya aparigrahah yamah",
+    "topic": "Five restraints for ethical relationship",
+    "page": 142,
+    "pdfPage": 164,
+    "theme": "yama-niyama"
+  },
+  {
+    "id": "II.31",
+    "pada": 2,
+    "n": 31,
+    "sanskrit": "jati desa kala samaya anavacchinnah sarvabhaumah mahavratam",
+    "topic": "Ethical commitments without situational exceptions",
+    "page": 143,
+    "pdfPage": 165,
+    "theme": "yama-niyama"
+  },
+  {
+    "id": "II.32",
+    "pada": 2,
+    "n": 32,
+    "sanskrit": "sauca santosa tapah svadhyaya Isvarapranidhanani niyamah",
+    "topic": "Five observances for daily cultivation",
+    "page": 144,
+    "pdfPage": 166,
+    "theme": "yama-niyama"
+  },
+  {
+    "id": "II.33",
+    "pada": 2,
+    "n": 33,
+    "sanskrit": "vitarkabadhane pratipaksabhavanam",
+    "topic": "Meeting harmful impulses with their opposites",
+    "page": 145,
+    "pdfPage": 167,
+    "theme": "yama-niyama"
+  },
+  {
+    "id": "II.34",
+    "pada": 2,
+    "n": 34,
+    "sanskrit": "vitarkah himsadayah krta karita anumoditah lobha krodha moha purvakah mrdu madhya adhimatrah duhkha ajnana anantaphalah iti pratipaksabhavanam",
+    "topic": "Considering harm across degrees of participation",
+    "page": 148,
+    "pdfPage": 170,
+    "theme": "yama-niyama"
+  },
+  {
+    "id": "II.35",
+    "pada": 2,
+    "n": 35,
+    "sanskrit": "ahimsapratisthayam tatsannidhau vairatyagah",
+    "topic": "Nonviolence and the easing of hostility",
+    "page": 149,
+    "pdfPage": 171,
+    "theme": "yama-niyama"
+  },
+  {
+    "id": "II.36",
+    "pada": 2,
+    "n": 36,
+    "sanskrit": "satyapratisthayam kriyaphalasrayatvam",
+    "topic": "Truthfulness and the fruition of action",
+    "page": 150,
+    "pdfPage": 172,
+    "theme": "yama-niyama"
+  },
+  {
+    "id": "II.37",
+    "pada": 2,
+    "n": 37,
+    "sanskrit": "asteyapratisthayam sarvaratnopasthanam",
+    "topic": "Nonstealing and the arrival of treasures",
+    "page": 150,
+    "pdfPage": 172,
+    "theme": "yama-niyama"
+  },
+  {
+    "id": "II.38",
+    "pada": 2,
+    "n": 38,
+    "sanskrit": "brahmacaryapratisthayam viryalabhah",
+    "topic": "Continence and the gathering of strength",
+    "page": 151,
+    "pdfPage": 173,
+    "theme": "yama-niyama"
+  },
+  {
+    "id": "II.39",
+    "pada": 2,
+    "n": 39,
+    "sanskrit": "aparigrahasthairye janmakathamta sambodhah",
+    "topic": "Nonpossessiveness and understanding birth",
+    "page": 152,
+    "pdfPage": 174,
+    "theme": "yama-niyama"
+  },
+  {
+    "id": "II.40",
+    "pada": 2,
+    "n": 40,
+    "sanskrit": "saucat svangajugupsa paraih asamsargah",
+    "topic": "Cleanliness changes attachment to bodies",
+    "page": 153,
+    "pdfPage": 175,
+    "theme": "yama-niyama"
+  },
+  {
+    "id": "II.41",
+    "pada": 2,
+    "n": 41,
+    "sanskrit": "sattvasuddhi saumanasya aikagrya indriyajaya atmadarsana yogyatvani ca",
+    "topic": "Purification prepares attention for self inquiry",
+    "page": 154,
+    "pdfPage": 176,
+    "theme": "yama-niyama"
+  },
+  {
+    "id": "II.42",
+    "pada": 2,
+    "n": 42,
+    "sanskrit": "santosat anuttamah sukhalabhah",
+    "topic": "Contentment as a source of happiness",
+    "page": 155,
+    "pdfPage": 177,
+    "theme": "yama-niyama"
+  },
+  {
+    "id": "II.43",
+    "pada": 2,
+    "n": 43,
+    "sanskrit": "kaya indriya siddhih asuddhiksayat tapasah",
+    "topic": "Discipline and the refinement of capacities",
+    "page": 155,
+    "pdfPage": 177,
+    "theme": "yama-niyama"
+  },
+  {
+    "id": "II.44",
+    "pada": 2,
+    "n": 44,
+    "sanskrit": "svadhyayat istadevata samprayogah",
+    "topic": "Study in relation to chosen divinity",
+    "page": 156,
+    "pdfPage": 178,
+    "theme": "yama-niyama"
+  },
+  {
+    "id": "II.45",
+    "pada": 2,
+    "n": 45,
+    "sanskrit": "samadhisiddhih Isvarapranidhanat",
+    "topic": "Devotion supports the fulfilment of absorption",
+    "page": 157,
+    "pdfPage": 179,
+    "theme": "samadhi"
+  },
+  {
+    "id": "II.46",
+    "pada": 2,
+    "n": 46,
+    "sanskrit": "sthira sukham asanam",
+    "topic": "Posture combines steadiness with ease",
+    "page": 157,
+    "pdfPage": 179,
+    "theme": "asana"
+  },
+  {
+    "id": "II.47",
+    "pada": 2,
+    "n": 47,
+    "sanskrit": "prayatna saithilya ananta samapattibhyam",
+    "topic": "Softening effort and contemplating boundlessness",
+    "page": 159,
+    "pdfPage": 181,
+    "theme": "asana"
+  },
+  {
+    "id": "II.48",
+    "pada": 2,
+    "n": 48,
+    "sanskrit": "tatah dvandvah anabhighatah",
+    "topic": "Opposites lose their disturbing force",
+    "page": 160,
+    "pdfPage": 182,
+    "theme": "asana"
+  },
+  {
+    "id": "II.49",
+    "pada": 2,
+    "n": 49,
+    "sanskrit": "tasmin satisvasa prasvasayoh gativicchedah pranayamah",
+    "topic": "Breath discipline follows established posture",
+    "page": 160,
+    "pdfPage": 182,
+    "theme": "pranayama"
+  },
+  {
+    "id": "II.50",
+    "pada": 2,
+    "n": 50,
+    "sanskrit": "bahya abhyantara stambha vrttih desa kala samkhyabhih paridrstah dirgha suksmah",
+    "topic": "Breath phases observed through several measures",
+    "page": 164,
+    "pdfPage": 186,
+    "theme": "pranayama"
+  },
+  {
+    "id": "II.51",
+    "pada": 2,
+    "n": 51,
+    "sanskrit": "bahya abhyantara visaya aksepi caturthah",
+    "topic": "A fourth mode beyond ordinary phases",
+    "page": 166,
+    "pdfPage": 188,
+    "theme": "pranayama"
+  },
+  {
+    "id": "II.52",
+    "pada": 2,
+    "n": 52,
+    "sanskrit": "tatah ksiyate prakasa avaranam",
+    "topic": "Breath practice and less obscured clarity",
+    "page": 166,
+    "pdfPage": 188,
+    "theme": "pranayama"
+  },
+  {
+    "id": "II.53",
+    "pada": 2,
+    "n": 53,
+    "sanskrit": "dharanasu ca yogyata manasah",
+    "topic": "Preparing attention for sustained concentration",
+    "page": 167,
+    "pdfPage": 189,
+    "theme": "dharana"
+  },
+  {
+    "id": "II.54",
+    "pada": 2,
+    "n": 54,
+    "sanskrit": "svavisaya asamprayoge cittasya svarupanukarah iva indriyanam pratyaharah",
+    "topic": "Senses follow attention away from objects",
+    "page": 168,
+    "pdfPage": 190,
+    "theme": "pratyahara"
+  },
+  {
+    "id": "II.55",
+    "pada": 2,
+    "n": 55,
+    "sanskrit": "tatah parama vasyata indriyanam",
+    "topic": "Withdrawal develops command of sensing",
+    "page": 170,
+    "pdfPage": 192,
+    "theme": "pratyahara"
+  },
+  {
+    "id": "III.1",
+    "pada": 3,
+    "n": 1,
+    "sanskrit": "desa bandhah cittasya dharana",
+    "topic": "Choosing where attention is held",
+    "page": 178,
+    "pdfPage": 200,
+    "theme": "dharana"
+  },
+  {
+    "id": "III.2",
+    "pada": 3,
+    "n": 2,
+    "sanskrit": "tatra pratyaya ekatanata dhyanam",
+    "topic": "Continuity of attention becomes meditation",
+    "page": 179,
+    "pdfPage": 201,
+    "theme": "dhyana"
+  },
+  {
+    "id": "III.3",
+    "pada": 3,
+    "n": 3,
+    "sanskrit": "tadeva arthamatranirbhasam svarupasunyam iva samadhih",
+    "topic": "Absorption lets the object predominate",
+    "page": 180,
+    "pdfPage": 202,
+    "theme": "samadhi"
+  },
+  {
+    "id": "III.4",
+    "pada": 3,
+    "n": 4,
+    "sanskrit": "trayam ekatra samyamah",
+    "topic": "Three inward practices working together",
+    "page": 182,
+    "pdfPage": 204,
+    "theme": "limbs"
+  },
+  {
+    "id": "III.5",
+    "pada": 3,
+    "n": 5,
+    "sanskrit": "tajjayat prajnalokah",
+    "topic": "Samyama brings a clearer discernment",
+    "page": 183,
+    "pdfPage": 205,
+    "theme": "samadhi"
+  },
+  {
+    "id": "III.6",
+    "pada": 3,
+    "n": 6,
+    "sanskrit": "tasya bhumisu viniyogah",
+    "topic": "Applying samyama through successive stages",
+    "page": 183,
+    "pdfPage": 205,
+    "theme": "samadhi"
+  },
+  {
+    "id": "III.7",
+    "pada": 3,
+    "n": 7,
+    "sanskrit": "trayam antarangam purvebhyah",
+    "topic": "Three limbs turn further inward",
+    "page": 185,
+    "pdfPage": 207,
+    "theme": "limbs"
+  },
+  {
+    "id": "III.8",
+    "pada": 3,
+    "n": 8,
+    "sanskrit": "tadapi bahirangam nirbijasya",
+    "topic": "Even inward methods precede seedless absorption",
+    "page": 186,
+    "pdfPage": 208,
+    "theme": "samadhi"
+  },
+  {
+    "id": "III.9",
+    "pada": 3,
+    "n": 9,
+    "sanskrit": "vyutthana nirodha samskarayoh abhibhava pradurbhavau nirodhaksana cittanvayah nirodhaparinamah",
+    "topic": "Restraint changes the pattern of impressions",
+    "page": 187,
+    "pdfPage": 209,
+    "theme": "samadhi"
+  },
+  {
+    "id": "III.10",
+    "pada": 3,
+    "n": 10,
+    "sanskrit": "tasya prasantavahita samskarat",
+    "topic": "A calmer tendency develops through repetition",
+    "page": 191,
+    "pdfPage": 213,
+    "theme": "samadhi"
+  },
+  {
+    "id": "III.11",
+    "pada": 3,
+    "n": 11,
+    "sanskrit": "sarvarthata ekagratayoh ksaya udayau cittasya samadhiparinamah",
+    "topic": "Scattered attention yields to unified attention",
+    "page": 192,
+    "pdfPage": 214,
+    "theme": "samadhi"
+  },
+  {
+    "id": "III.12",
+    "pada": 3,
+    "n": 12,
+    "sanskrit": "tatah punahsanta uditau tulya pratyayau cittasya ekagrataparinamah",
+    "topic": "Successive moments share the same focus",
+    "page": 193,
+    "pdfPage": 215,
+    "theme": "samadhi"
+  },
+  {
+    "id": "III.13",
+    "pada": 3,
+    "n": 13,
+    "sanskrit": "etena bhutendriyesu dharma laksana avastha parinamah vyakhyatah",
+    "topic": "Applying transformation to elements and senses",
+    "page": 194,
+    "pdfPage": 216,
+    "theme": "other"
+  },
+  {
+    "id": "III.14",
+    "pada": 3,
+    "n": 14,
+    "sanskrit": "santa udita avyapadesya dharma anupati dharmi",
+    "topic": "Continuity beneath changing forms of manifestation",
+    "page": 196,
+    "pdfPage": 218,
+    "theme": "other"
+  },
+  {
+    "id": "III.15",
+    "pada": 3,
+    "n": 15,
+    "sanskrit": "krama anyatvam parinama anyatve hetuh",
+    "topic": "Different sequences produce different transformations",
+    "page": 200,
+    "pdfPage": 222,
+    "theme": "other"
+  },
+  {
+    "id": "III.16",
+    "pada": 3,
+    "n": 16,
+    "sanskrit": "parinamatraya samyamat atita anagatajnanam",
+    "topic": "Samyama and knowing across time",
+    "page": 201,
+    "pdfPage": 223,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.17",
+    "pada": 3,
+    "n": 17,
+    "sanskrit": "sabda artha pratyayanam itaretaradhyasat sankarah tatpravibhaga samyamat sarvabhuta rutajnanam",
+    "topic": "Separating sound meaning and mental response",
+    "page": 202,
+    "pdfPage": 224,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.18",
+    "pada": 3,
+    "n": 18,
+    "sanskrit": "samskara saksatkaranat purvajatijnanam",
+    "topic": "Reading impressions to discern earlier births",
+    "page": 203,
+    "pdfPage": 225,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.19",
+    "pada": 3,
+    "n": 19,
+    "sanskrit": "pratyayasya paracittajnanam",
+    "topic": "Another mind as an object",
+    "page": 204,
+    "pdfPage": 226,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.20",
+    "pada": 3,
+    "n": 20,
+    "sanskrit": "na ca tat salambanam tasya avisayi bhutatvat",
+    "topic": "Limits of knowing another mind",
+    "page": 204,
+    "pdfPage": 226,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.21",
+    "pada": 3,
+    "n": 21,
+    "sanskrit": "kaya rupa samyamat tadgrahyasakti stambhe caksuh prakasa asamprayoge antardhanam",
+    "topic": "Visibility and the conditions of perception",
+    "page": 205,
+    "pdfPage": 227,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.22",
+    "pada": 3,
+    "n": 22,
+    "sanskrit": "etena sabdadi antardhanam uktam",
+    "topic": "Extending concealment to other sensory qualities",
+    "page": 206,
+    "pdfPage": 228,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.23",
+    "pada": 3,
+    "n": 23,
+    "sanskrit": "sopakramam nirupakramam ca karma tatsamyamat aparantajnanam aristebhyah va",
+    "topic": "Karmic timing and approaching death",
+    "page": 207,
+    "pdfPage": 229,
+    "theme": "karma"
+  },
+  {
+    "id": "III.24",
+    "pada": 3,
+    "n": 24,
+    "sanskrit": "maitryadisu balani",
+    "topic": "Friendliness cultivated as a capacity",
+    "page": 208,
+    "pdfPage": 230,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.25",
+    "pada": 3,
+    "n": 25,
+    "sanskrit": "balesu hasti baladini",
+    "topic": "Strength as a focus of samyama",
+    "page": 208,
+    "pdfPage": 230,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.26",
+    "pada": 3,
+    "n": 26,
+    "sanskrit": "pravrtti aloka nyasat suksma vyavahita viprakrstajnanam",
+    "topic": "Knowing what ordinary perception misses",
+    "page": 209,
+    "pdfPage": 231,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.27",
+    "pada": 3,
+    "n": 27,
+    "sanskrit": "bhuvanajnanam surye samyamat",
+    "topic": "Solar contemplation and knowledge of worlds",
+    "page": 209,
+    "pdfPage": 231,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.28",
+    "pada": 3,
+    "n": 28,
+    "sanskrit": "candre taravyuhajnanam",
+    "topic": "Lunar contemplation and stellar arrangement",
+    "page": 210,
+    "pdfPage": 232,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.29",
+    "pada": 3,
+    "n": 29,
+    "sanskrit": "dhruve tadgatijnanam",
+    "topic": "The pole star and celestial motion",
+    "page": 211,
+    "pdfPage": 233,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.30",
+    "pada": 3,
+    "n": 30,
+    "sanskrit": "nabhicakre kayavyuhajnanam",
+    "topic": "Navel contemplation and bodily arrangement",
+    "page": 212,
+    "pdfPage": 234,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.31",
+    "pada": 3,
+    "n": 31,
+    "sanskrit": "kanthakupe ksutpipasa nivrttih",
+    "topic": "Throat contemplation and hunger or thirst",
+    "page": 213,
+    "pdfPage": 235,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.32",
+    "pada": 3,
+    "n": 32,
+    "sanskrit": "kurmanadyam sthairyam",
+    "topic": "Kurma channel as a steadiness focus",
+    "page": 213,
+    "pdfPage": 235,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.33",
+    "pada": 3,
+    "n": 33,
+    "sanskrit": "murdhajyotisi siddhadarsanam",
+    "topic": "Crown luminosity and encounters with adepts",
+    "page": 215,
+    "pdfPage": 237,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.34",
+    "pada": 3,
+    "n": 34,
+    "sanskrit": "pratibhat va sarvam",
+    "topic": "Intuition as an alternative access",
+    "page": 215,
+    "pdfPage": 237,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.35",
+    "pada": 3,
+    "n": 35,
+    "sanskrit": "hrdaye cittasamvit",
+    "topic": "Heart contemplation and knowledge of mind",
+    "page": 216,
+    "pdfPage": 238,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.36",
+    "pada": 3,
+    "n": 36,
+    "sanskrit": "sattva purusayoh atyantasamkirnayoh pratyaya avisesah bhogah pararthatvat svarthasamyamat purusajnanam",
+    "topic": "Distinguishing awareness from the knowing instrument",
+    "page": 217,
+    "pdfPage": 239,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.37",
+    "pada": 3,
+    "n": 37,
+    "sanskrit": "tatah pratibha sravana vedana adarsa asvada vartah jayante",
+    "topic": "Extraordinary forms of sensory knowing",
+    "page": 218,
+    "pdfPage": 240,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.38",
+    "pada": 3,
+    "n": 38,
+    "sanskrit": "te samadhau upasargah vyutthane siddhayah",
+    "topic": "Exceptional capacities can obstruct absorption",
+    "page": 219,
+    "pdfPage": 241,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.39",
+    "pada": 3,
+    "n": 39,
+    "sanskrit": "bandhakarana saithilyat pracara samvedanat ca cittasya parasariravesah",
+    "topic": "Mind entering another bodily locus",
+    "page": 219,
+    "pdfPage": 241,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.40",
+    "pada": 3,
+    "n": 40,
+    "sanskrit": "udanajayat jala panka kantakadisu asangah utkrantih ca",
+    "topic": "Udana mastery and overcoming material contact",
+    "page": 221,
+    "pdfPage": 243,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.41",
+    "pada": 3,
+    "n": 41,
+    "sanskrit": "samanajayat jvalanam",
+    "topic": "Samana mastery and radiance",
+    "page": 223,
+    "pdfPage": 245,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.42",
+    "pada": 3,
+    "n": 42,
+    "sanskrit": "srotra akasayoh sambandha samyamat divyam srotram",
+    "topic": "Hearing considered through its spatial relation",
+    "page": 224,
+    "pdfPage": 246,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.43",
+    "pada": 3,
+    "n": 43,
+    "sanskrit": "kaya akasayoh sambandha samyamat laghutulasamapatteh ca akasagamanam",
+    "topic": "Bodily lightness and movement through space",
+    "page": 224,
+    "pdfPage": 246,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.44",
+    "pada": 3,
+    "n": 44,
+    "sanskrit": "bahih akalpita vrttih mahavideha prakasa avaranaksayah",
+    "topic": "Awareness beyond bodily identification",
+    "page": 225,
+    "pdfPage": 247,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.45",
+    "pada": 3,
+    "n": 45,
+    "sanskrit": "sthula svarupa suksma anvaya arthavatva samyamat bhutajayah",
+    "topic": "Examining elements through five aspects",
+    "page": 226,
+    "pdfPage": 248,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.46",
+    "pada": 3,
+    "n": 46,
+    "sanskrit": "tatah animadi pradurbhavah kayasampat taddharma anabhighatah ca",
+    "topic": "Elemental mastery and extraordinary bodily capacities",
+    "page": 227,
+    "pdfPage": 249,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.47",
+    "pada": 3,
+    "n": 47,
+    "sanskrit": "rupa lavanya bala vajra samhananatvani kayasampat",
+    "topic": "Qualities attributed to bodily perfection",
+    "page": 228,
+    "pdfPage": 250,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.48",
+    "pada": 3,
+    "n": 48,
+    "sanskrit": "grahana svarupa asmita anvaya arthavattva samyamat indriyajayah",
+    "topic": "Examining senses through five aspects",
+    "page": 229,
+    "pdfPage": 251,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.49",
+    "pada": 3,
+    "n": 49,
+    "sanskrit": "tatah manojavitvam vikaranabhavah pradhanajayah ca",
+    "topic": "Sensory mastery and independence from instruments",
+    "page": 230,
+    "pdfPage": 252,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.50",
+    "pada": 3,
+    "n": 50,
+    "sanskrit": "sattva purusa anyata khyatimatrasya sarvabhava adhisthatrtvam sarvajnatrtvam ca",
+    "topic": "Discernment and the reach of knowing",
+    "page": 231,
+    "pdfPage": 253,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.51",
+    "pada": 3,
+    "n": 51,
+    "sanskrit": "tadvairagyat api dosabijaksaye kaivalyam",
+    "topic": "Releasing extraordinary attainments toward freedom",
+    "page": 232,
+    "pdfPage": 254,
+    "theme": "kaivalya"
+  },
+  {
+    "id": "III.52",
+    "pada": 3,
+    "n": 52,
+    "sanskrit": "sthanyupanimantrane sangasmayakaranam punaranista prasangat",
+    "topic": "Declining pride and celestial enticements",
+    "page": 233,
+    "pdfPage": 255,
+    "theme": "siddhis"
+  },
+  {
+    "id": "III.53",
+    "pada": 3,
+    "n": 53,
+    "sanskrit": "ksana tatkramayoh samyamat vivekajam jnanam",
+    "topic": "Moments and sequence as discernment practice",
+    "page": 234,
+    "pdfPage": 256,
+    "theme": "kaivalya"
+  },
+  {
+    "id": "III.54",
+    "pada": 3,
+    "n": 54,
+    "sanskrit": "jati laksana desaih anyata anavacchedat tulyayoh tatah pratipattih",
+    "topic": "Discerning otherwise indistinguishable objects",
+    "page": 236,
+    "pdfPage": 258,
+    "theme": "kaivalya"
+  },
+  {
+    "id": "III.55",
+    "pada": 3,
+    "n": 55,
+    "sanskrit": "tarakam sarvavisayam sarvathavisayam akramam ca iti vivekajam jnanam",
+    "topic": "Discernment encompassing objects without temporal sequence",
+    "page": 237,
+    "pdfPage": 259,
+    "theme": "kaivalya"
+  },
+  {
+    "id": "III.56",
+    "pada": 3,
+    "n": 56,
+    "sanskrit": "sattva purusayoh suddhisamye kaivalyam iti",
+    "topic": "Equal purity and the culmination of freedom",
+    "page": 237,
+    "pdfPage": 259,
+    "theme": "kaivalya"
+  },
+  {
+    "id": "IV.1",
+    "pada": 4,
+    "n": 1,
+    "sanskrit": "janma ausadhi mantra tapah samadhijah siddhayah",
+    "topic": "Five attributed origins of extraordinary capacities",
+    "page": 246,
+    "pdfPage": 268,
+    "theme": "siddhis"
+  },
+  {
+    "id": "IV.2",
+    "pada": 4,
+    "n": 2,
+    "sanskrit": "jatyantara parinamah prakrtyapurat",
+    "topic": "Nature supplies the potential for transformation",
+    "page": 248,
+    "pdfPage": 270,
+    "theme": "other"
+  },
+  {
+    "id": "IV.3",
+    "pada": 4,
+    "n": 3,
+    "sanskrit": "nimittam aprayojakam prakrtinam varanabhedah tu tatah ksetrikavat",
+    "topic": "Removing barriers allows natural development",
+    "page": 249,
+    "pdfPage": 271,
+    "theme": "other"
+  },
+  {
+    "id": "IV.4",
+    "pada": 4,
+    "n": 4,
+    "sanskrit": "nirmanacittani asmitamatrat",
+    "topic": "Constructed minds arise from individuality",
+    "page": 250,
+    "pdfPage": 272,
+    "theme": "other"
+  },
+  {
+    "id": "IV.5",
+    "pada": 4,
+    "n": 5,
+    "sanskrit": "pravrtti bhede prayojakam cittam ekam anekesam",
+    "topic": "One mind coordinates diverse activities",
+    "page": 251,
+    "pdfPage": 273,
+    "theme": "other"
+  },
+  {
+    "id": "IV.6",
+    "pada": 4,
+    "n": 6,
+    "sanskrit": "tatra dhyanajam anasayam",
+    "topic": "Meditative mind without accumulated residue",
+    "page": 252,
+    "pdfPage": 274,
+    "theme": "dhyana"
+  },
+  {
+    "id": "IV.7",
+    "pada": 4,
+    "n": 7,
+    "sanskrit": "karma asukla akrsnam yoginah trividham itaresam",
+    "topic": "Yogic action beyond ordinary karmic categories",
+    "page": 253,
+    "pdfPage": 275,
+    "theme": "karma"
+  },
+  {
+    "id": "IV.8",
+    "pada": 4,
+    "n": 8,
+    "sanskrit": "tatah tadvipaka anugunanam eva abhivyaktih vasananam",
+    "topic": "Conditions select which tendencies emerge",
+    "page": 254,
+    "pdfPage": 276,
+    "theme": "karma"
+  },
+  {
+    "id": "IV.9",
+    "pada": 4,
+    "n": 9,
+    "sanskrit": "jati desa kala vyavahitanam api anantaryam smrti samskarayoh ekarupatvat",
+    "topic": "Impressions connect experience across apparent gaps",
+    "page": 255,
+    "pdfPage": 277,
+    "theme": "karma"
+  },
+  {
+    "id": "IV.10",
+    "pada": 4,
+    "n": 10,
+    "sanskrit": "tasam anaditvam ca asisah nityatvat",
+    "topic": "Desire and beginningless latent tendencies",
+    "page": 257,
+    "pdfPage": 279,
+    "theme": "karma"
+  },
+  {
+    "id": "IV.11",
+    "pada": 4,
+    "n": 11,
+    "sanskrit": "hetu phala asraya alambanaih samgrhitatvat esam abhave tad abhavah",
+    "topic": "Removing the supports of latent tendencies",
+    "page": 258,
+    "pdfPage": 280,
+    "theme": "karma"
+  },
+  {
+    "id": "IV.12",
+    "pada": 4,
+    "n": 12,
+    "sanskrit": "atita anagatam svarupatah asti adhvabhedat dharmanam",
+    "topic": "Past and future as differing conditions",
+    "page": 259,
+    "pdfPage": 281,
+    "theme": "other"
+  },
+  {
+    "id": "IV.13",
+    "pada": 4,
+    "n": 13,
+    "sanskrit": "te vyakta suksmah gunatmanah",
+    "topic": "Manifest and subtle conditions share qualities",
+    "page": 260,
+    "pdfPage": 282,
+    "theme": "other"
+  },
+  {
+    "id": "IV.14",
+    "pada": 4,
+    "n": 14,
+    "sanskrit": "parinama ekatvat vastutattvam",
+    "topic": "Coherent transformation underlies an object's identity",
+    "page": 261,
+    "pdfPage": 283,
+    "theme": "other"
+  },
+  {
+    "id": "IV.15",
+    "pada": 4,
+    "n": 15,
+    "sanskrit": "vastusamye cittabhedat tayoh vibhaktah panthah",
+    "topic": "One object meets differing minds",
+    "page": 262,
+    "pdfPage": 284,
+    "theme": "other"
+  },
+  {
+    "id": "IV.16",
+    "pada": 4,
+    "n": 16,
+    "sanskrit": "na ca ekacitta tantram ced vastu tat apramanakam tada kim syat",
+    "topic": "Objects do not depend on one mind",
+    "page": 263,
+    "pdfPage": 285,
+    "theme": "other"
+  },
+  {
+    "id": "IV.17",
+    "pada": 4,
+    "n": 17,
+    "sanskrit": "taduparaga apeksitvat cittasya vastu jnata ajnatam",
+    "topic": "Mental contact conditions what becomes known",
+    "page": 265,
+    "pdfPage": 287,
+    "theme": "other"
+  },
+  {
+    "id": "IV.18",
+    "pada": 4,
+    "n": 18,
+    "sanskrit": "sada jnatah cittavrttayah tatprabhoh purusasya aparinamitvat",
+    "topic": "Unchanging awareness witnesses changing mental activity",
+    "page": 266,
+    "pdfPage": 288,
+    "theme": "other"
+  },
+  {
+    "id": "IV.19",
+    "pada": 4,
+    "n": 19,
+    "sanskrit": "na tat svabhasam drsyatvat",
+    "topic": "Mind itself belongs among observed things",
+    "page": 267,
+    "pdfPage": 289,
+    "theme": "other"
+  },
+  {
+    "id": "IV.20",
+    "pada": 4,
+    "n": 20,
+    "sanskrit": "ekasamaye ca ubhaya anavadharanam",
+    "topic": "Limits on simultaneous self observation",
+    "page": 268,
+    "pdfPage": 290,
+    "theme": "other"
+  },
+  {
+    "id": "IV.21",
+    "pada": 4,
+    "n": 21,
+    "sanskrit": "cittantaradrsye buddhibuddheh atiprasangah smrtisankarah ca",
+    "topic": "Regress in positing successive observing minds",
+    "page": 269,
+    "pdfPage": 291,
+    "theme": "other"
+  },
+  {
+    "id": "IV.22",
+    "pada": 4,
+    "n": 22,
+    "sanskrit": "citeh apratisamkramayah tadakarapattau svabuddhisamvedanam",
+    "topic": "Mind reflects awareness without altering it",
+    "page": 271,
+    "pdfPage": 293,
+    "theme": "other"
+  },
+  {
+    "id": "IV.23",
+    "pada": 4,
+    "n": 23,
+    "sanskrit": "drastr drsya uparaktam cittam sarvartham",
+    "topic": "Mind bears observer and observed together",
+    "page": 272,
+    "pdfPage": 294,
+    "theme": "other"
+  },
+  {
+    "id": "IV.24",
+    "pada": 4,
+    "n": 24,
+    "sanskrit": "tat asankhyeya vasanabhih citram api parartham samhatyakaritvat",
+    "topic": "Composite mind serves a further purpose",
+    "page": 273,
+    "pdfPage": 295,
+    "theme": "other"
+  },
+  {
+    "id": "IV.25",
+    "pada": 4,
+    "n": 25,
+    "sanskrit": "visesadarsinah atmabhava bhavananivrttih",
+    "topic": "Discernment ends mistaken self attribution",
+    "page": 274,
+    "pdfPage": 296,
+    "theme": "kaivalya"
+  },
+  {
+    "id": "IV.26",
+    "pada": 4,
+    "n": 26,
+    "sanskrit": "tada vivekanimnam kaivalya pragbharam cittam",
+    "topic": "Attention inclines toward discernment and freedom",
+    "page": 275,
+    "pdfPage": 297,
+    "theme": "kaivalya"
+  },
+  {
+    "id": "IV.27",
+    "pada": 4,
+    "n": 27,
+    "sanskrit": "tat cchidresu pratyayantarani samskarebhyah",
+    "topic": "Older impressions surface in the gaps",
+    "page": 276,
+    "pdfPage": 298,
+    "theme": "karma"
+  },
+  {
+    "id": "IV.28",
+    "pada": 4,
+    "n": 28,
+    "sanskrit": "hanam esam klesavat uktam",
+    "topic": "Treating residual impressions like afflictions",
+    "page": 277,
+    "pdfPage": 299,
+    "theme": "kleshas"
+  },
+  {
+    "id": "IV.29",
+    "pada": 4,
+    "n": 29,
+    "sanskrit": "prasamkhyane api akusidasya sarvatha vivekakhyateh dharmameghah samadhih",
+    "topic": "Nonattachment even to the highest discernment",
+    "page": 278,
+    "pdfPage": 300,
+    "theme": "samadhi"
+  },
+  {
+    "id": "IV.30",
+    "pada": 4,
+    "n": 30,
+    "sanskrit": "tatah klesa karma nivrttih",
+    "topic": "Affliction and karmic activity come to rest",
+    "page": 279,
+    "pdfPage": 301,
+    "theme": "kaivalya"
+  },
+  {
+    "id": "IV.31",
+    "pada": 4,
+    "n": 31,
+    "sanskrit": "tada sarva avarana malapetasya jnanasya anantyat jneyam alpam",
+    "topic": "Unobscured knowing and a diminished unknown",
+    "page": 280,
+    "pdfPage": 302,
+    "theme": "kaivalya"
+  },
+  {
+    "id": "IV.32",
+    "pada": 4,
+    "n": 32,
+    "sanskrit": "tatah krtarthanam parinamakrama samaptih gunanam",
+    "topic": "Natural qualities complete their transformative work",
+    "page": 281,
+    "pdfPage": 303,
+    "theme": "kaivalya"
+  },
+  {
+    "id": "IV.33",
+    "pada": 4,
+    "n": 33,
+    "sanskrit": "ksana pratiyogi parinama aparanta nirgrahyah kramah",
+    "topic": "Sequence apprehended through the completion of change",
+    "page": 281,
+    "pdfPage": 303,
+    "theme": "other"
+  },
+  {
+    "id": "IV.34",
+    "pada": 4,
+    "n": 34,
+    "sanskrit": "purusartha sunyanam gunanam pratiprasavah kaivalyam svarupapratistha va citisaktih iti",
+    "topic": "Freedom and awareness in its own standing",
+    "page": 283,
+    "pdfPage": 305,
+    "theme": "kaivalya"
+  }
+]
