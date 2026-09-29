@@ -124,7 +124,14 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   skin-modifier tube body, no downloaded assets), poses it from WORLD-SPACE
   bone directions authored per posture in `scripts/blender/postures/<id>.py`
   (stages with holds; each stage may pick a camera `view` and the ortho
-  camera orbits between them), renders Freestyle line art on a transparent
+  camera orbits between them), poses EVERY in-between frame itself
+  (`inbetween`: shortest-arc slerp of sign-compatible quaternions per
+  bone, eased, positions lerped; a bone turning more than 150° in world
+  space — arms down to overhead — is steered through a midpoint swept
+  round the body's forward axis out to the limb's own side, ancestors
+  posed at their midpoints first so a whole arm sweeps straight; Blender's
+  own quaternion interpolation is per-component and sent limbs spinning
+  the long way round), renders Freestyle line art on a transparent
   film, and stitches the frames into one PNG sprite sheet per posture in
   `public/motion/<id>.<sha1:8>.png` (content-addressed so the worker's
   cache-first sprite cache refreshes on re-render; re-encoded by ffmpeg as

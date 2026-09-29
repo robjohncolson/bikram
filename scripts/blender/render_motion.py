@@ -420,18 +420,114 @@ def apply_stage(rig: bpy.types.Object, stage: dict, rest_dirs: dict[str, Vector]
             riding.add(name)        # carried by a rolled ancestor
             continue
         target, roll = stage_entry(entry) if entry is not None else (rest_dirs[name], 0.0)
-        target = Vector(target).normalized()
-        pb = pose.bones[name]
-        m = pb.matrix.copy()
-        head = m.to_translation()
-        current = (m.to_3x3() @ Vector((0, 1, 0))).normalized()
-        q = current.rotation_difference(target)
+        aim_bone(rig, name, Vector(target), roll)
         if roll:
-            q = Quaternion(target, math.radians(roll)) @ q
             riding.add(name)
-        rot = q.to_matrix().to_4x4()
-        pb.matrix = Matrix.Translation(head) @ rot @ Matrix.Translation(-head) @ m
-        bpy.context.view_layer.update()
+
+
+def aim_bone(rig: bpy.types.Object, name: str, target: Vector, roll: float = 0.0) -> None:
+    """Turn one bone (in its current pose, parents as they are) to point
+    along world `target`, then roll it about its own axis."""
+    target = target.normalized()
+    pb = rig.pose.bones[name]
+    m = pb.matrix.copy()
+    head = m.to_translation()
+    current = (m.to_3x3() @ Vector((0, 1, 0))).normalized()
+    q = current.rotation_difference(target)
+    if roll:
+        q = Quaternion(target, math.radians(roll)) @ q
+    rot = q.to_matrix().to_4x4()
+    pb.matrix = Matrix.Translation(head) @ rot @ Matrix.Translation(-head) @ m
+    bpy.context.view_layer.update()
+
+
+def bone_dir(rig: bpy.types.Object, name: str) -> Vector:
+    """The bone's current world direction (head → tail)."""
+    return (rig.pose.bones[name].matrix.to_3x3() @ Vector((0, 1, 0))).normalized()
+
+
+def capture_pose(rig: bpy.types.Object) -> dict[str, tuple[Quaternion, Vector]]:
+    return {pb.name: (pb.rotation_quaternion.copy(), pb.location.copy()) for pb in rig.pose.bones}
+
+
+def restore_pose(rig: bpy.types.Object, pose: dict[str, tuple[Quaternion, Vector]]) -> None:
+    for name, (q, loc) in pose.items():
+        pb = rig.pose.bones[name]
+        pb.rotation_quaternion = q
+        pb.location = loc
+    bpy.context.view_layer.update()
+
+
+# A bone turning further than this between two stages (arms down → arms
+# overhead is 180°) has no single shortest arc; it is steered through a
+# midpoint instead of spinning whichever way the quaternion happens to go.
+BIG_TURN_DEG = 150.0
+
+
+def smoothstep(x: float) -> float:
+    x = min(1.0, max(0.0, x))
+    return x * x * (3 - 2 * x)
+
+
+def compatible(q: Quaternion, ref: Quaternion) -> Quaternion:
+    """`q` or `-q`, whichever is nearer `ref` (the same rotation either way)."""
+    return -q if q.dot(ref) < 0 else q
+
+
+def midpoint_dir(name: str, a: Vector, b: Vector) -> Vector:
+    """Halfway direction for a big turn from `a` to `b`: swept around the
+    body's forward axis (a limb goes out to the side, not through the
+    body), on the limb's own side when the two ways are equal."""
+    axis = Vector((0, 1, 0)) if abs(a.dot(Vector((0, 1, 0)))) < 0.9 else Vector((1, 0, 0))
+    half = a.angle(b) / 2 if a.angle(b) > 1e-3 else 0.0
+    best, score = None, -2.0
+    for sign in (1, -1):
+        m = a.copy()
+        m.rotate(Quaternion(axis, sign * half))
+        sc = m.dot(b)
+        side = 1 if name.endswith('.L') else -1 if name.endswith('.R') else 0
+        sc += 0.05 * side * m.x          # tie-break: a left limb sweeps out to +X
+        if sc > score:
+            best, score = m, sc
+    return best
+
+
+def inbetween(rig: bpy.types.Object, pose_a: dict, pose_b: dict, mids: dict, s: float) -> None:
+    """Set the rig to the pose `s` of the way from A to B: shortest-arc slerp
+    per bone (sign-compatible quaternions), through a steered midpoint for
+    big turns, positions lerped."""
+    for name, (qa, la) in pose_a.items():
+        qb, lb = pose_b[name]
+        qb = compatible(qb, qa)
+        pb = rig.pose.bones[name]
+        qm = mids.get(name)
+        if qm is not None:
+            qm = compatible(qm, qa)
+            q = qa.slerp(qm, s * 2) if s < 0.5 else compatible(qm, qb).slerp(qb, s * 2 - 1)
+        else:
+            q = qa.slerp(qb, s)
+        pb.rotation_quaternion = q
+        pb.location = la.lerp(lb, s)
+    bpy.context.view_layer.update()
+
+
+def steered_midpoints(rig: bpy.types.Object, pose_a: dict, pose_b: dict) -> dict:
+    """Per-bone midpoint quaternions for the bones that turn more than
+    BIG_TURN_DEG in world space between the two poses."""
+    restore_pose(rig, pose_a)
+    dirs_a = {n: bone_dir(rig, n) for n in bone_order()}
+    restore_pose(rig, pose_b)
+    dirs_b = {n: bone_dir(rig, n) for n in bone_order()}
+    mids = {}
+    # parents first, and each aimed with its ancestors already at THEIR
+    # midpoints, so a whole arm sweeps out straight instead of folding
+    restore_pose(rig, pose_a)
+    for name in bone_order():
+        if math.degrees(dirs_a[name].angle(dirs_b[name])) <= BIG_TURN_DEG:
+            continue
+        aim_bone(rig, name, midpoint_dir(name, dirs_a[name], dirs_b[name]))
+        mids[name] = rig.pose.bones[name].rotation_quaternion.copy()
+    return mids
 
 
 def keyframe_all(rig: bpy.types.Object, frame: int) -> None:
@@ -509,8 +605,10 @@ def build_timeline(rig: bpy.types.Object, cam: bpy.types.Object, posture: dict) 
     az = None
     pivot = cam.parent
     spans = stage_spans(posture)
+    poses = []
     for st, (first, last) in zip(stages, spans):
         apply_stage(rig, st['pose'], rest)
+        poses.append(capture_pose(rig))
         center_z, scale = stage_frame(posture, st)
         az = orbit_camera(cam, st.get('view', default_view), center_z, az)
         frame_camera(cam, center_z, scale)
@@ -521,11 +619,29 @@ def build_timeline(rig: bpy.types.Object, cam: bpy.types.Object, posture: dict) 
                 pivot.keyframe_insert('location', frame=f)
                 cam.data.keyframe_insert('ortho_scale', frame=f)
         marks.append({'label': st['label'], 'frame': first - 1})
+    # The in-between frames are posed here, not left to Blender: it would
+    # interpolate the four quaternion channels independently, which sends a
+    # limb the long way round on a big turn. Every transition frame gets a
+    # shortest-arc pose, eased, with big turns steered through a midpoint.
+    for i in range(len(stages) - 1):
+        _, last = spans[i]
+        first_next, _ = spans[i + 1]
+        n = first_next - last
+        if n <= 1:
+            continue
+        mids = steered_midpoints(rig, poses[i], poses[i + 1])
+        for k in range(1, n):
+            inbetween(rig, poses[i], poses[i + 1], mids, smoothstep(k / n))
+            keyframe_all(rig, last + k)
     scene = bpy.context.scene
     scene.frame_start = 1
     scene.frame_end = spans[-1][1]
-    # Smooth ease in/out between stages.
-    for fc in action_fcurves(rig) + action_fcurves(cam.parent) + action_fcurves(cam.data):
+    # Rig keys are dense, so straight lines between them; the camera still
+    # eases in and out between views.
+    for fc in action_fcurves(rig):
+        for kp in fc.keyframe_points:
+            kp.interpolation = 'LINEAR'
+    for fc in action_fcurves(cam.parent) + action_fcurves(cam.data):
         for kp in fc.keyframe_points:
             kp.interpolation = 'BEZIER'
             kp.easing = 'EASE_IN_OUT'
