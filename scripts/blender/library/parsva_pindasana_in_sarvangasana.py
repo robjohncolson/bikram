@@ -6,8 +6,9 @@ From the supported shoulderstand the legs cross into the lotus upside
 down, right foot first, and fold down over the face (pindasana); the hips
 turn and the folded legs go down to the right side; back through the
 centre to the lotus, and uncrossed, left foot first, to the shoulderstand
-the sheet began in. Both lateral sides are shown in the first crossing. Reversing the
-crossing needs a separate safe entry and exit beyond the twelve-stage cap.
+the sheet began in. After both lateral sides, the legs uncross one at a
+time into straight shoulderstand. The left foot then enters first and
+both lateral sides are repeated before returning to straight shoulderstand.
 
 The hips turn a little past a quarter turn and the folded legs go down
 to the right (`_lotus.PARSVA`): the LEFT knee comes round beside the head
@@ -42,7 +43,7 @@ L.palms_to_back(LEFT, (0, 1, 0), f=1.0, theta=20.0, fingers=-0.3)
 HALF_FRAME = {'center_z': 0.8, 'scale': 1.9}   # one leg still straight up (urdhva_padmasana_in_sarvangasana.py's)
 FOLD_FRAME = {'center_z': 0.5, 'scale': 1.5}
 
-POSTURE = L.check({
+POSTURE = {
     'id': 'library:parsva-pindasana-in-sarvangasana',
     'position': {'start': 'supine', 'end': 'supine'},
     'view': 'side',
@@ -66,4 +67,21 @@ POSTURE = L.check({
         {'label': 'Left foot out', 'pose': HALF, 'hold': 3, 'palms': 'back', 'view': 'quarter',
          'frame': HALF_FRAME, 'notice': ['hips']},
     ],
-})
+}
+
+# The supporting palms stay on the back: there is no arm bind to release.
+# Return through the same half-lotus before changing the first foot.
+stages = POSTURE['stages']
+stages.append({'label': 'Straight shoulderstand', 'pose': UP, 'hold': 3,
+               'palms': 'back', 'notice': ['breath']})
+for source, label in (
+    (1, 'Left foot in'), (2, 'Other lotus up'), (3, 'Other fold down'),
+    (6, 'Other knees right'), (5, 'Other centre'),
+    (4, 'Other knees left'), (7, 'Other centre'),
+    (8, 'Other lotus up'), (9, 'Right foot out'),
+):
+    stages.append({**stages[source], 'label': label,
+                   'pose': L.mirror(stages[source]['pose'])})
+stages.append({'label': 'Straight shoulderstand', 'pose': UP, 'hold': 3,
+               'palms': 'back', 'notice': ['neck', 'breath']})
+POSTURE = L.check(POSTURE)

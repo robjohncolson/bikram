@@ -13,9 +13,9 @@ export const parsvaPindasanaInSarvangasana: LibraryAsana = {
     { text: 'Breathing out, fold the crossed legs down over the head.', stage: 3 },
     { text: 'Turn the hips to the right and, breathing out, lower both knees toward the floor, the left knee beside the right ear. Press the left shoulder down and the left hand firmly into the back. Stay, breathing normally.', stage: 4 },
     { text: 'Breathing out, come up from the right and take the folded legs across to the left, the left foot near the left ear, for the same time. The figure folds less deeply on this side.', stage: 6 },
-    { text: 'Come back through the centre and up to the lotus in the shoulderstand.', stage: 8 },
-    { text: 'Lift the left foot out of the crossing.', stage: 9 },
-    { text: 'Release the other foot and return to shoulderstand. Cross the legs the other way and repeat both sides. The figure shows both sides of the first crossing.' },
+    { text: 'Return through the centre and raise the lotus. Uncross the left foot, then the right, until both legs are straight in shoulderstand.', stage: 10 },
+    { text: 'Place the left foot first and the right above it. Fold down and repeat to the right, then to the left, spending the same time on each side. With this crossing the figure folds less deeply to the right.', stage: 16 },
+    { text: 'Return through the centre and raise the crossed legs. Free the right foot, then the left, to finish in straight shoulderstand.', stage: 20 },
   ],
   hold: 'Twenty to thirty seconds on each side with normal breathing (p. 104).',
   cautions: [
