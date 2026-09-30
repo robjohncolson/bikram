@@ -17,6 +17,22 @@ import { poses } from '../data';
 const camel = poses.find((p) => p.id === 'camel')!;
 const pranayama = poses[0];
 const balancingStick = poses.find((p) => p.id === 'balancing-stick')!;
+
+it('keeps later-part walk-ins out of the first segment of every track', () => {
+  for (const track of buildClassTrack(60)) {
+    const firstWalkIn = track.events.filter((e) => e.kind === 'guide' && !e.layer && e.atBeat < track.spans[0].endBeat);
+    for (const event of firstWalkIn) {
+      expect(event.text, track.pose.id).not.toMatch(/for the (?:final|backbend) part|after the left side|^(?:on|for) the (?:second|other|left) side|^part (?:two|three)/i);
+    }
+  }
+  for (const id of ['locust', 'wind-removing']) {
+    const pose = poses.find((p) => p.id === id)!;
+    const track = buildPoseTrack(pose, 60);
+    const tail = track.events.find((e) => e.text === pose.setup.at(-1));
+    expect(tail, id).toBeDefined();
+    expect(segmentAtBeat(track, tail!.atBeat)?.index, id).toBe(2);
+  }
+});
 const halfMoon = poses.find((p) => p.id === 'half-moon')!;
 /** camel without authored segments — exercises the fallback set-cue path */
 const plainCamel = { ...camel, segments: undefined };

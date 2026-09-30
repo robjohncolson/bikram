@@ -14,14 +14,27 @@ export { RIG_LIVE, applyFigureFlag, figureRenderer, hasRigData, loadRigData, pre
 export type * from './types';
 
 const poseById = new Map(poses.map((p) => [p.id, p]));
+const poseIndexById = new Map(poses.map((p, i) => [p.id, i]));
+const poseByOrder = new Map(poses.map((p) => [p.order, p]));
+const offsetById = new Map<string, number>();
+let offset = 0;
+for (const pose of poses) {
+  offsetById.set(pose.id, offset);
+  offset += pose.approxTotalSeconds;
+}
 
 export function getPose(id: string): Pose | undefined {
   return poseById.get(id);
 }
 
 export function getNeighbors(pose: Pose): { prev?: Pose; next?: Pose } {
-  const i = poses.indexOf(pose);
+  const i = poseIndexById.get(pose.id);
+  if (i === undefined) return {};
   return { prev: poses[i - 1], next: poses[i + 1] };
+}
+
+export function getPoseByOrder(order: number): Pose | undefined {
+  return poseByOrder.get(order);
 }
 
 /** Postures linked to a chakra, in sequence order */
@@ -39,12 +52,9 @@ export const classTotalSeconds = poses.reduce((s, p) => s + p.approxTotalSeconds
 
 /** Seconds elapsed in class when this pose begins */
 export function classOffsetSeconds(pose: Pose): number {
-  let t = 0;
-  for (const p of poses) {
-    if (p === pose) return t;
-    t += p.approxTotalSeconds;
-  }
-  return t;
+  const seconds = offsetById.get(pose.id);
+  if (seconds === undefined) throw new Error(`Unknown pose: ${pose.id}`);
+  return seconds;
 }
 
 export function formatMinutes(seconds: number): string {

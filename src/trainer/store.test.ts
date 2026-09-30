@@ -18,6 +18,20 @@ beforeEach(() => {
 });
 
 describe('store migration', () => {
+  it('refuses to overwrite a newer store, including during legacy migration', () => {
+    const raw = '{"version":3,"futureEvidence":[1,2,3]}';
+    storage.set(STORAGE_KEY, raw);
+    storage.set('yoga-trainer-v1', '{"version":1,"poses":{}}');
+    const store = loadStore(NOW);
+    expect(storage.get(STORAGE_KEY)).toBe(raw);
+    expect(saveStore(store)).toBe(false);
+    expect(storage.get(STORAGE_KEY)).toBe(raw);
+    storage.delete(STORAGE_KEY);
+    expect(saveStore(store)).toBe(true);
+    storage.set(STORAGE_KEY, raw);
+    expect(saveStore(store)).toBe(false);
+    expect(storage.get(STORAGE_KEY)).toBe(raw);
+  });
   it('returns a fresh store when nothing is saved', () => {
     const store = loadStore(NOW);
     expect(store.version).toBe(2);

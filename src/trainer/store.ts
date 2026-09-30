@@ -5,6 +5,11 @@ import { poses } from '../data';
 export const STORAGE_KEY = 'yoga-trainer-v2';
 const LEGACY_KEY = 'yoga-trainer-v1';
 
+function newerStore(data: unknown): boolean {
+  return !!data && typeof data === 'object' && 'version' in data &&
+    typeof data.version === 'number' && data.version > 2;
+}
+
 export function emptyStore(): TrainerStore {
   return { version: 2, kcs: {}, cards: {}, bestStreak: 0, answers: 0 };
 }
@@ -91,7 +96,12 @@ export function loadStore(now: number): TrainerStore {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
     if (raw) {
-      const store = sanitize(JSON.parse(raw));
+      const data: unknown = JSON.parse(raw);
+      if (newerStore(data)) {
+        console.warn('Trainer data was saved by a newer app. Saving is disabled until the app is updated.');
+        return emptyStore();
+      }
+      const store = sanitize(data);
       if (store) return store;
     }
     const legacy = window.localStorage.getItem(LEGACY_KEY);
@@ -106,11 +116,19 @@ export function loadStore(now: number): TrainerStore {
   return emptyStore();
 }
 
-export function saveStore(store: TrainerStore): void {
+/** False means practice was not saved; a newer schema is never overwritten. */
+export function saveStore(store: TrainerStore): boolean {
   try {
+    const raw = window.localStorage.getItem(STORAGE_KEY);
+    if (raw && newerStore(JSON.parse(raw))) {
+      console.warn('Trainer data was saved by a newer app. Saving is disabled until the app is updated.');
+      return false;
+    }
     window.localStorage.setItem(STORAGE_KEY, JSON.stringify(store));
+    return true;
   } catch {
     /* storage unavailable — train without persistence */
+    return false;
   }
 }
 

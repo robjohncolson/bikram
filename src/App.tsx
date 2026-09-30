@@ -2,6 +2,7 @@ import { Suspense, lazy, useEffect } from 'react';
 import { NavLink, Route, Routes, useLocation } from 'react-router-dom';
 import { Timeline } from './views/Timeline';
 import { PoseDetail } from './views/PoseDetail';
+import { NotFound } from './views/NotFound';
 import { Explorer } from './views/Explorer';
 import { Trainer } from './views/Trainer';
 import { KnowledgeMap } from './views/KnowledgeMap';
@@ -42,6 +43,7 @@ export default function App() {
       </header>
       <main>
         <Routes>
+          <Route path="*" element={<NotFound />} />
           <Route path="/" element={<Timeline />} />
           <Route path="/pose/:id" element={<PoseDetail />} />
           <Route path="/explore" element={<Explorer />} />

@@ -58,6 +58,19 @@ describe('practice journal', () => {
     expect(window.localStorage.getItem(JOURNAL_KEY)).toContain('"version":1');
   });
 
+  it('refuses to overwrite a newer journal, even if it changes after loading', () => {
+    const raw = '{"version":3,"futureClasses":[1,2,3]}';
+    window.localStorage.setItem(JOURNAL_KEY, raw);
+    const j = loadJournal();
+    expect(saveJournal(j)).toBe(false);
+    expect(window.localStorage.getItem(JOURNAL_KEY)).toBe(raw);
+    window.localStorage.removeItem(JOURNAL_KEY);
+    expect(saveJournal(j)).toBe(true);
+    window.localStorage.setItem(JOURNAL_KEY, raw);
+    expect(saveJournal(j)).toBe(false);
+    expect(window.localStorage.getItem(JOURNAL_KEY)).toBe(raw);
+  });
+
   it('amends the last class with the rehearsal debrief', () => {
     const j = emptyJournal();
     expect(amendLastClass(j, { recalled: 3 })).toBe(false);
