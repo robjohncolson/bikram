@@ -287,7 +287,7 @@ function SpeakerOffIcon() {
 export function Pacer() {
   // ?figure=rig|sprite sets or clears the live-figure flag on arrival (class mode reads it)
   const { search } = useLocation();
-  // useBlocker needs a data router; BrowserRouter is still used by main.tsx.
+  // useBlocker needs a data router (main.tsx); tests render under MemoryRouter.
   const dataRouter = useContext(UNSAFE_DataRouterContext);
   useEffect(() => {
     // every posture of a class draws the live rig (RIG_LIVE): warm its code
