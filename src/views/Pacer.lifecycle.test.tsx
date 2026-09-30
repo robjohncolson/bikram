@@ -4,7 +4,7 @@ import { MemoryRouter } from 'react-router-dom';
 import { poses } from '../data';
 import { buildPoseTrack, PACER_DEFAULTS } from '../pacer';
 import { dayKey, emptyJournal, recordClass } from '../trainer';
-import { eligibleHandoff, guardClassUnload, practicedSpan, rehearsalDelay, shouldReorient, practiceSaveMessage, segmentSettings, stopClassPlayback } from './pacerLifecycle';
+import { eligibleHandoff, guardClassUnload, practicedSpan, rehearsalDelay, shouldReorient, practiceSaveMessage, segmentSettings, segmentBeatPhase, stopClassPlayback } from './pacerLifecycle';
 import { RehearsalDebrief } from './Pacer';
 import { PacerClassMode } from './PacerClassMode';
 
@@ -33,7 +33,7 @@ describe('pacer lifecycle', () => {
   it.each([1, 6])('preserves a %i-count override through every settings update', (override) => {
     for (const change of [{ volume: 0.2 }, { muted: true }, { bpm: 80 }, { beatsPerBar: 4 }, {}]) {
       const settings = { ...PACER_DEFAULTS, ...change };
-      expect(segmentSettings(settings, override)).toEqual({ ...settings, beatsPerBar: override });
+      expect(segmentSettings(settings, { beatsPerBar: override })).toEqual({ ...settings, beatsPerBar: override });
       expect(segmentSettings(settings)).toEqual(settings);
     }
   });
@@ -117,4 +117,25 @@ it.each([0, 4])('leaves the announce beat %i to fireCues after a stall', (announ
 it('reports persistence failure without claiming the practice was saved', () => {
   expect(practiceSaveMessage(false)).toBe('Your practice could not be saved on this device.');
   expect(practiceSaveMessage(true)).toBe('Practice saved.');
+});
+
+it('keeps both pulse overrides through settings changes and restores ordinary ticks', () => {
+  const override = { beatsPerBar: 1, pulsesPerBeat: 2, pulses: 60 };
+  for (const change of [{ volume: 0.2 }, { muted: true }, { bpm: 80 }, { beatsPerBar: 4 }, {}]) {
+    const settings = { ...PACER_DEFAULTS, ...change };
+    expect(segmentSettings(settings, override)).toEqual({ ...settings, ...override });
+    expect(segmentSettings(settings)).toEqual({ ...settings, pulsesPerBeat: undefined, pulses: undefined });
+  }
+});
+
+it('addresses pulse counts from the hold and silences entry and recovery', () => {
+  const track = buildPoseTrack(poses.find((p) => p.id === 'kapalbhati')!, 60);
+  track.spans.forEach((span, i) => {
+    const start = span.startBeat + span.entryBeats;
+    expect(segmentBeatPhase(track, start - 1)).toMatchObject({ quiet: true, pulseBeat: -1 });
+    expect(segmentBeatPhase(track, start)).toMatchObject({ quiet: false, pulseBeat: 0 });
+    const end = start + 60 / (i + 1);
+    expect(segmentBeatPhase(track, end - 1).quiet).toBe(false);
+    expect(segmentBeatPhase(track, end)).toMatchObject({ quiet: true, pulseBeat: 60 / (i + 1) });
+  });
 });

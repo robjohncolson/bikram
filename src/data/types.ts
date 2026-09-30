@@ -101,7 +101,13 @@ export interface PoseSegment {
    * The tempo (BPM) is never overridden, so the class clock is unchanged;
    * the user's setting returns when the segment ends.
    */
-  pacer?: { beatsPerBar: number };
+  pacer?: {
+    beatsPerBar: number;
+    /** Exhalations per metronome beat; subdivision never changes the tempo. */
+    pulsesPerBeat?: number;
+    /** Stop pulsing after this many exhalations; recover quietly. */
+    pulses?: number;
+  };
 }
 
 /** How a posture engages one muscle group */
