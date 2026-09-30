@@ -13,11 +13,10 @@ export const matsyasana: LibraryAsana = {
     { text: 'Breathing out, arch the back: lift the neck and chest, take the head back and set the crown on the floor. Hold the crossed legs and use the grip to draw the head further back, so the arch deepens.', stage: 4 },
     // the figure keeps its hands on the legs here (its forearms cannot fold beyond the head), so this step points at no stage
     { text: 'Then let go of the legs, fold the arms, take each elbow in the other hand and rest the forearms on the floor beyond the head. Stay, breathing deeply.' },
-    { text: 'Lower the back of the head to the floor and lie flat.', stage: 5 },
-    { text: 'Breathe in and come up onto the elbows.', stage: 7 },
-    { text: 'Return to sitting and release the legs.' },
-    // the other crossing: the figure only shows the right foot placed first
-    { text: 'Cross the legs the other way and do the pose again for the same time.' },
+    { text: 'Lower the back of the head and lie flat; then breathe in and come up onto the elbows.', stage: 7 },
+    { text: 'Return to sitting and release the legs, the upper foot first and then the other foot.', stage: 12 },
+    { text: 'Place the left foot first and the right foot over it. Lie back and repeat the arch for the same time.', stage: 20 },
+    { text: 'Lower the head and come back to sitting; release one foot at a time and rest with both legs straight.', stage: 28 },
   ],
   hold: 'Thirty seconds to a minute in the arch, breathing deeply (p. 68), and the same with the legs crossed the other way.',
   cautions: [

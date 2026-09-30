@@ -31,7 +31,7 @@ FOLDED = LT.bind(LT.bind(LT.folded_lotus(), 'L'), 'R')
 WIDE = {'center_z': 0.45, 'scale': 1.75}   # an arm swung out wide
 SIDE = {'center_z': 0.3, 'scale': 1.2}    # the fold from the side
 
-POSTURE = L.check({
+POSTURE = {
     'id': 'library:yoga-mudrasana',
     'position': {'start': 'seated', 'end': 'seated'},
     'view': 'front',
@@ -50,4 +50,13 @@ POSTURE = L.check({
         {'label': 'Arms out', 'pose': OUT, 'hold': 3, 'view': 'back', 'frame': WIDE, 'notice': ['shoulders']},
         {'label': 'Hands forward', 'pose': LIFT, 'hold': 3, 'frame': WIDE, 'notice': ['shoulders']},
     ],
-})
+}
+
+# The hands stay clear of the thighs while each foot changes places.
+# The lifted arms serve as both the preparation and the released position.
+POSTURE['stages'] = POSTURE['stages'][1:]
+POSTURE['stages'] = LT.both_crossings(POSTURE['stages'], LT.recross_stages(arms=LIFT))
+for stage in POSTURE['stages']:
+    if stage['hold'] < 6:
+        stage['hold'] = 1
+POSTURE = L.check(POSTURE)
