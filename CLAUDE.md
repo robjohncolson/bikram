@@ -423,7 +423,14 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   LIBRARY posture of the day (the 56 in book order, once per 56 days; the
   library chunk is imported lazily by `Today.tsx`, never by `src/sky`). Nothing here
   changes the class, the trainer, or a posture's cautions. Views import
-  only from `src/sky/index.ts`.
+  only from `src/sky/index.ts`. `vedic.ts` adds a beside-the-notes Vedic
+  card: approximate mean Lahiri sidereal Moon/Sun, nakshatra/pada and tithi;
+  Brihat Jataka 1.4 (Aiyar, 1905, pp. 2–3) supplies the Kalapurusha regions.
+  Our separately labelled muscle/stage-notice mapping selects links only,
+  primary muscle matches first, displayed in class order. The view lazily
+  supplies library entries and rig notices to the pure mapping; sky never
+  imports the library. `vedic.test.ts` pins sourced ayanamsa references,
+  boundaries, all twelve mappings and the shared no-effect-claims guard.
 - `src/rig/` — the LIVE FIGURE's rig, pure TS, no three (views import only
   from `src/rig/index.ts`). `variants.ts` selects the library rest joints
   and palm offset from `data/rig/skeletons/library.json`; the original

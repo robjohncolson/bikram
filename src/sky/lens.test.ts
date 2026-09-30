@@ -2,6 +2,7 @@ import { describe, expect, it } from 'vitest';
 import { poses } from '../data';
 import { DAY_NOTES, PHASE_NOTES, localDayIndex, ofTheDay, todayLens } from './index';
 import { libraryAsanas } from '../data/library';
+import { EFFECT_CLAIMS } from './claims';
 
 const NOW = new Date(2026, 7, 27, 12).getTime();
 const DAY = 86_400_000;
@@ -23,7 +24,7 @@ describe('moon-days lens', () => {
   });
 
   it('never promises an effect', () => {
-    const claims = /\b(cures?|heals?|detox\w*|boosts? (?:the )?immun\w*|prevents? (?:disease|illness|injury)|treats? (?:disease|illness|pain|anxiety|depression))\b/i;
+    const claims = EFFECT_CLAIMS;
     for (const note of [...PHASE_NOTES, ...DAY_NOTES]) {
       expect(claims.test(`${note.text} ${note.tradition} ${note.notice}`), note.title).toBe(false);
     }

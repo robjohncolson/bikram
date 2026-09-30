@@ -17,6 +17,7 @@ import {
 import type { MoonPhase, ZodiacPosition } from './ephemeris';
 import { DAY_NOTES, PHASE_NOTES } from './notes';
 import type { SkyNote } from './notes';
+export * from './vedic';
 
 export {
   SYNODIC_DAYS,

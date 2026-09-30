@@ -4,6 +4,9 @@ import { Link } from 'react-router-dom';
 import { ofTheDay, setSkyEnabled, skyEnabled, todayLens } from '../sky';
 import type { SkyNote, TodayLens } from '../sky';
 import type { Pose } from '../data';
+import { loadRigData, poses } from '../data';
+import { KALAPURUSHA, VEDIC_SOURCES, vedicSky, vedicPostures, vedicLibrary } from '../sky';
+import type { VedicLibraryEntry } from '../sky';
 import { PoseFigure } from '../components/PoseFigure';
 import type { LibraryEntry } from '../data/library';
 import './Today.css';
@@ -94,7 +97,56 @@ function NoteCard({ note, postures, eyebrow }: { note: SkyNote; postures: Pose[]
   );
 }
 
-function Lens({ lens, onDisable }: { lens: TodayLens; onDisable: () => void }) {
+function VedicCard({ now }: { now: number }) {
+  const sky = vedicSky(now);
+  const region = KALAPURUSHA[sky.moon.index];
+  const [library, setLibrary] = useState<VedicLibraryEntry[]>([]);
+  const [libraryFailed, setLibraryFailed] = useState(false);
+  useEffect(() => {
+    let live = true;
+    import('../data/library').then(async ({ libraryAsanas, libraryRigId }) => {
+      // Rank the whole library (only the view loads it; sky stays pure).
+      const entries: VedicLibraryEntry[] = await Promise.all(libraryAsanas.map(async (asana) => {
+        const rig = await loadRigData(libraryRigId(asana.id));
+        return { id: asana.id, english: asana.english, stages: rig.stages };
+      }));
+      if (live) setLibrary(vedicLibrary(region, entries));
+    }).catch(() => { if (live) setLibraryFailed(true); });
+    return () => { live = false; };
+  }, [region]);
+  return (
+    <section className="card td-card td-vedic" aria-labelledby="vedic-title">
+      <p className="eyebrow">Vedic sky</p>
+      <h2 className="td-card-title" id="vedic-title">Moon in {sky.moon.sanskrit} · {sky.moon.name}</h2>
+      <p className="text-soft">Sidereal Sun: {sky.sun.sanskrit} · {sky.sun.name}</p>
+      <p>Nakshatra: {sky.nakshatra.name} · pada {sky.nakshatra.pada}<br />
+        Tithi {sky.tithi.number}: {sky.tithi.name} · {sky.tithi.paksha} paksha</p>
+      {sky.tithi.moonDay && <p className="td-vedic-flag">{sky.tithi.name} · Moon day</p>}
+      <p className="td-tradition text-soft">In <a href={VEDIC_SOURCES.moonDays}>Ashtanga tradition</a>, Purnima and Amavasya are rest days, a custom you can read alongside your practice.</p>
+      <p className="td-sky-note text-faint">Astronomy: Meeus Sun and Moon, with Lahiri (Chitrapaksha) ayanamsa.
+        This is the sky at the time you opened the page. The approximate Moon can be 1–2° off,
+        so a sign, nakshatra, pada or tithi near its boundary may differ from a precise almanac.</p>
+      <div className="td-vedic-chain">
+        <h3>Kalapurusha: the {region.region} <a href={`${VEDIC_SOURCES.text}#page=46`}>({region.citation})</a></h3>
+        <p className="td-tradition text-soft">{region.tradition}</p>
+        <p>{region.anatomy}</p>
+        <p>Tonight, notice the {region.region} in:</p>
+        <p className="eyebrow">26 &amp; 2 · our muscle data</p>
+        <PostureChips postures={vedicPostures(region, poses)} />
+        <p className="eyebrow">Library · our stage notice regions</p>
+        <ul className="td-chips">{library.map(p => <li key={p.id}><Link className="pill td-chip" to={`/library/${p.id}`}>{p.english}</Link></li>)}</ul>
+        {library.length === 0 && <p className="text-soft">{libraryFailed ? 'Library notes are unavailable right now.' : 'Loading library notes…'}</p>}
+      </div>
+      <p className="td-sky-note text-faint">Sources: <a href={VEDIC_SOURCES.astronomy}>astronomy · Meeus + Lahiri precession</a>;
+        {' '}<a href={`${VEDIC_SOURCES.text}#page=46`}>text · Brihat Jataka 1.4, Aiyar translation</a>;
+        {' '}our anatomy · muscle groups and library stage notices.</p>
+      <p className="td-sky-note text-faint">The lens elsewhere uses tropical signs, measured from the equinox.
+        This card uses sidereal signs; precession separates the two starting points by about {sky.ayanamsa.toFixed(1)}° today.</p>
+    </section>
+  );
+}
+
+function Lens({ lens, now, onDisable }: { lens: TodayLens; now: number; onDisable: () => void }) {
   const pct = Math.round(lens.phase.illumination * 100);
   const potd = lens.postureOfTheDay;
   const leanPhase = lens.leaning.filter((p) => lens.phaseNote.postures.includes(p.id));
@@ -137,6 +189,7 @@ function Lens({ lens, onDisable }: { lens: TodayLens; onDisable: () => void }) {
         <PoseFigure pose={potd} size={110} />
       </section>
 
+      <VedicCard key={vedicSky(now).moon.index} now={now} />
       <LibraryOfTheDay day={lens.day} />
 
       <div className="td-grid">
@@ -159,7 +212,8 @@ function Lens({ lens, onDisable }: { lens: TodayLens; onDisable: () => void }) {
 
 export function Today() {
   const [enabled, setEnabled] = useState<boolean>(skyEnabled);
-  const lens = todayLens(Date.now());
+  const now = Date.now();
+  const lens = todayLens(now);
 
   const toggle = (on: boolean) => {
     setSkyEnabled(on);
@@ -180,7 +234,7 @@ export function Today() {
         </header>
 
         {enabled ? (
-          <Lens lens={lens} onDisable={() => toggle(false)} />
+          <Lens lens={lens} now={now} onDisable={() => toggle(false)} />
         ) : (
           <section className="card td-card td-optin">
             <h2 className="td-card-title">Off by default.</h2>

@@ -56,6 +56,41 @@
   margin-bottom: 16px;
 }
 
+.td-vedic {
+  padding: 20px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+}
+
+.td-vedic-chain {
+  border-block: 1px solid var(--border);
+  margin-block: 16px;
+  padding-block: 12px;
+}
+
+.td-vedic-chain h3 {
+  font-size: 17px;
+  margin: 0 0 8px;
+}
+
+.td-vedic a {
+  color: var(--ember-text);
+}
+
+.td-vedic-flag {
+  color: var(--ember-text);
+  font-weight: 600;
+}
+
+.td-vedic .td-chip {
+  white-space: normal;
+}
+
+.td-vedic .td-chip-num {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 .td-card-title {
   margin: 4px 0 8px;
   font-size: 21px;

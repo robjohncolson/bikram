@@ -50,6 +50,7 @@ posture's technique, benefits, chakra connections, and muscle-group work.
   lunar month), and two short notes naming what the day traditionally
   leans toward plus one thing to notice. Computed offline; described as
   tradition, never as prescription; changes nothing about the class.
+  A Vedic sky card adds Lahiri sidereal signs, nakshatra and tithi, with sourced Kalapurusha tradition and our own anatomy links.
 - **Journal** — every paced class is remembered: when, how long, what was
   rehearsed and recalled; the pacer tells you when you last practiced and
   which hand-offs to listen for, and posture pages link straight into a
