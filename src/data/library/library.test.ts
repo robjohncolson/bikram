@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CLEARANCE_TOL, J, SKIN_EXTRA, SKIN_FIT, anchorToContacts, bodyRecipe, clashes, hullPoints, jointRadii, pairRule, pieceNames, placeBone, placeJoint, applyStage, groundedSheetPose, liftToFloor, restDirections, sheetPose, smoothstep, solve, stageCamera } from '../../rig';
+import { CLEARANCE_TOL, solvedSkeleton, J, SKIN_EXTRA, SKIN_FIT, anchorToContacts, bodyRecipe, clashes, hullPoints, jointRadii, pairRule, pieceNames, placeBone, placeJoint, applyStage, groundedSheetPose, liftToFloor, restDirections, sheetPose, smoothstep, solve, stageCamera } from '../../rig';
 import type { Solved, Vec3 } from '../../rig';
 import { axisAngle, rotate, rotationDifference } from '../../rig/math';
 import illustrated from '../classical/illustrated-index.json';
@@ -34,7 +34,6 @@ const unit = (a: Vec3): Vec3 => {
 const cross = (a: Vec3, b: Vec3): Vec3 => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]];
 
 /** The palm swelling's centre: 0.035 m down the hand bone (the rig's palm vertex), and its half-thickness. */
-const PALM_AT = 0.035;
 const PALM_R = 0.035;
 
 /**
@@ -78,7 +77,7 @@ function trunkGap(s: Solved, p: Vec3): number {
  * of the live figure's body recipe (what FigureRig draws), not the bones.
  */
 function hullLow(s: Solved): number {
-  const { tubes, joints } = bodyRecipe();
+  const { tubes, joints } = bodyRecipe(solvedSkeleton(s));
   const axes: Vec3[] = [[1, 0, 0], [0, 1, 0], [0, 0, 1]];
   let low = Infinity;
   for (const j of joints) {
@@ -179,8 +178,8 @@ function levelWidth(p: ReturnType<typeof applyStage>, b: string, parent: string 
   return unit(rotate(rotationDifference(start, dir), w0));
 }
 
-function trunkWidthDeviation(stage: RigStagePose): Record<string, number> {
-  const p = applyStage(stage);
+function trunkWidthDeviation(stage: RigStagePose, skeleton?: RigData['skeleton']): Record<string, number> {
+  const p = applyStage(stage, skeleton);
   const out: Record<string, number> = {};
   for (const [b, parent] of [['pelvis', null], ['spine.lower', 'pelvis'], ['spine.upper', 'spine.lower']] as const) {
     const q = p.bones[b].q;
@@ -241,11 +240,12 @@ describe('the posture library', () => {
     for (const [id, d] of Object.entries(sheets)) {
       for (const st of d.stages) {
         if (st.palms !== 'back') continue;
-        const s = solve(applyStage(st.pose));
+        const s = solve(applyStage(st.pose, d.skeleton));
         for (const side of ['L', 'R']) {
           const h = s[`hand.${side}`];
           const dir = unit(sub(h.tail, h.head));
-          const palm: Vec3 = [h.head[0] + dir[0] * PALM_AT, h.head[1] + dir[1] * PALM_AT, h.head[2] + dir[2] * PALM_AT];
+          const palmAt = Math.hypot(...sub(h.tail, h.head)) * 0.35;
+          const palm: Vec3 = [h.head[0] + dir[0] * palmAt, h.head[1] + dir[1] * palmAt, h.head[2] + dir[2] * palmAt];
           const gap = trunkGap(s, palm) - PALM_R;
           expect(Math.abs(gap), `${id} ${st.label} palm.${side}: ${(gap * 100).toFixed(1)} cm`).toBeLessThanOrEqual(0.02);
           // and the elbow is grounded: its joint on the mat
@@ -266,7 +266,7 @@ describe('the posture library', () => {
       d.stages.forEach((st, i) => {
         for (const [what, pose] of [['pose', st.pose], ['ghost', st.ghost && { ...st.pose, ...st.ghost }]] as const) {
           if (!pose) continue;
-          for (const [b, dev] of Object.entries(trunkWidthDeviation(pose))) {
+          for (const [b, dev] of Object.entries(trunkWidthDeviation(pose, d.skeleton))) {
             expect(dev, `${id} #${i} ${st.label} ${what} ${b}: width ${dev.toFixed(0)}° off the authored aim and roll`).toBeLessThanOrEqual(TRUNK_WIDTH_DEG);
           }
         }
@@ -310,10 +310,10 @@ describe('the posture library', () => {
           const drawn = groundedSheetPose(d, i, j, smoothstep(s));
           const lift = drawn.pelvisLocation[2] - anchored.pelvisLocation[2];
           worst = Math.max(worst, lift);
-          expect(lift, `${id} ${d.stages[i].label} → ${d.stages[j].label} @${s}: lifted ${(lift * 100).toFixed(1)} cm`).toBeLessThanOrEqual(MAX_LIFT);
+          expect(lift, `${id} ${d.stages[i].label} â†’ ${d.stages[j].label} @${s}: lifted ${(lift * 100).toFixed(1)} cm`).toBeLessThanOrEqual(MAX_LIFT);
           const solved = solve(drawn);
           for (const [bone, b] of Object.entries(solved)) {
-            expect(Math.min(b.head[2], b.tail[2]), `${id} ${d.stages[i].label} → ${d.stages[j].label} @${s} ${bone}`).toBeGreaterThanOrEqual(-0.005);
+            expect(Math.min(b.head[2], b.tail[2]), `${id} ${d.stages[i].label} â†’ ${d.stages[j].label} @${s} ${bone}`).toBeGreaterThanOrEqual(-0.005);
           }
         }
       }
@@ -330,7 +330,7 @@ describe('the posture library', () => {
   it('never grounds a held stage: every authored stage already clears the floor', () => {
     for (const [id, d] of Object.entries(sheets)) {
       for (const st of d.stages) {
-        const pose = applyStage(st.pose);
+        const pose = applyStage(st.pose, d.skeleton);
         expect(liftToFloor(pose), `${id} ${st.label}`).toBe(pose);
       }
     }
@@ -339,21 +339,21 @@ describe('the posture library', () => {
   it('rests the drawn body ON the floor: the rendered hull never more than 1 cm through it', () => {
     for (const [id, d] of Object.entries(sheets)) {
       for (const st of d.stages) {
-        expect(hullLow(solve(applyStage(st.pose))), `${id} ${st.label}`).toBeGreaterThanOrEqual(-0.01);
+        expect(hullLow(solve(applyStage(st.pose, d.skeleton))), `${id} ${st.label}`).toBeGreaterThanOrEqual(-0.01);
       }
     }
     // the headstand's crown and forearms and the shoulderstand's upper back touch it (within 1 cm), not hover
     for (const [id, label] of [['salamba-sirsasana-i', 'Headstand'], ['urdhva-dandasana', 'Legs level'], ['salamba-sarvangasana-i', 'Shoulderstand'], ['halasana', 'Arms long']]) {
       const st = sheets[id].stages.find((x) => x.label === label)!;
-      expect(Math.abs(hullLow(solve(applyStage(st.pose)))), `${id} ${label}`).toBeLessThanOrEqual(0.01);
+      expect(Math.abs(hullLow(solve(applyStage(st.pose, sheets[id].skeleton)))), `${id} ${label}`).toBeLessThanOrEqual(0.01);
     }
   });
 
-  it('gives 4–8 stages per sheet and names only vocabulary regions in `notice`', () => {
+  it('gives 4–12 stages per sheet and names only vocabulary regions in `notice`', () => {
     const vocab = new Set<string>(NOTICE_REGIONS);
     for (const [id, d] of Object.entries(sheets)) {
       expect(d.stages.length, id).toBeGreaterThanOrEqual(4);
-      expect(d.stages.length, id).toBeLessThanOrEqual(8);
+      expect(d.stages.length, id).toBeLessThanOrEqual(12);
       for (const st of d.stages) for (const r of st.notice ?? []) expect(vocab.has(r), `${id} ${st.label}: ${r}`).toBe(true);
     }
   });
@@ -387,7 +387,7 @@ describe('the posture library', () => {
   it('resolves every prepares / counter / related id (library or 26 & 2)', () => {
     for (const a of libraryAsanas) {
       for (const id of [...(a.prepares ?? []), ...(a.counter ?? []), ...(a.related ?? [])]) {
-        expect(resolveLink(id), `${a.id} → ${id}`).toBeDefined();
+        expect(resolveLink(id), `${a.id} â†’ ${id}`).toBeDefined();
       }
       for (const id of a.related ?? []) expect(getPose(id), `${a.id} related ${id} must be a 26 & 2 posture`).toBeDefined();
     }
@@ -465,7 +465,7 @@ describe('the posture library', () => {
       d.stages.forEach((st, i) => {
         for (const [what, pose] of [['pose', st.pose], ['ghost', st.ghost && { ...st.pose, ...st.ghost }]] as const) {
           if (!pose) continue;
-          const s = solve(applyStage(pose));
+          const s = solve(applyStage(pose, d.skeleton));
           for (const [bone, b] of Object.entries(s)) {
             expect(Math.min(b.head[2], b.tail[2]), `${id} #${i} ${st.label} ${what} ${bone}`).toBeGreaterThanOrEqual(-0.005);
           }
@@ -480,7 +480,7 @@ describe('the posture library', () => {
       d.stages.forEach((st, i) => {
         for (const [what, pose] of [['pose', st.pose], ['ghost', st.ghost && { ...st.pose, ...st.ghost }]] as const) {
           if (!pose) continue;
-          const c = clashes(solve(applyStage(pose)), CLEARANCE_TOL, { laced: st.hands === 'laced' });
+          const c = clashes(solve(applyStage(pose, d.skeleton)), CLEARANCE_TOL, { laced: st.hands === 'laced' });
           expect(c.map((x) => `${x.a} / ${x.b} ${(x.depth * 100).toFixed(1)} cm`), `${id} #${i} ${st.label} ${what}`).toEqual([]);
           checked++;
         }
@@ -501,7 +501,7 @@ describe('the posture library', () => {
           const c = clashes(solve(groundedSheetPose(d, i, j, smoothstep(k / 9))), 0, { laced });
           worst = Math.max(worst, c[0]?.depth ?? 0);
           const deep = c.filter((x) => x.depth > CLEARANCE_TOL);
-          expect(deep.map((x) => `${x.a} / ${x.b} ${(x.depth * 100).toFixed(1)} cm`), `${id} ${d.stages[i].label} → ${d.stages[j].label} @${k}/9`).toEqual([]);
+          expect(deep.map((x) => `${x.a} / ${x.b} ${(x.depth * 100).toFixed(1)} cm`), `${id} ${d.stages[i].label} â†’ ${d.stages[j].label} @${k}/9`).toEqual([]);
         }
       }
     }
@@ -622,7 +622,7 @@ describe('the posture library', () => {
         const cam = stageCamera(d, i);
         const half = cam.scale / 2;
         let worst = -Infinity;
-        for (const p of hullPoints(solve(applyStage(st.pose)))) {
+        for (const p of hullPoints(solve(applyStage(st.pose, d.skeleton)))) {
           const a = Math.abs(p[0] * Math.cos(cam.azimuth) + p[1] * Math.sin(cam.azimuth)) / half;
           const b = Math.abs(p[2] - cam.centerZ) / half;
           const e = a <= lim - C || b <= lim - C ? Math.max(a, b) - lim : Math.hypot(a - (lim - C), b - (lim - C)) - C;

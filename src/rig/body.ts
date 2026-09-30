@@ -12,7 +12,10 @@ import type { RigGuide } from '../data/types';
 import type { Quat, Vec3 } from './math';
 import { add, cross, dot, normalize, rotate, scale, slerp, sub } from './math';
 import type { Solved } from './pose';
-import { BONE, BONES, J, RADIUS, SKIN_EXTRA, VERTEX_BONE } from './skeleton';
+import { solvedSkeleton } from './pose';
+import type { SkeletonName } from './variants';
+import { skeletonOf } from './variants';
+import { BONE, BONES, RADIUS, SKIN_EXTRA, VERTEX_BONE } from './skeleton';
 
 export interface BodySegment {
   /** stable id of the tube edge (`a>b`), the same in every pose */
@@ -53,7 +56,8 @@ const EDGES: Edge[] = (() => {
 
 /** Where a skin vertex (joint or extra) sits in a solved pose. */
 function vertexAt(solved: Solved, v: string): Vec3 {
-  const extra = SKIN_EXTRA[v];
+  const { J, SKIN_EXTRA: extras } = skeletonOf(solvedSkeleton(solved));
+  const extra = extras[v];
   const bone = extra ? extra[3] : VERTEX_BONE[v];
   const rest = extra ? extra[0] : J[v];
   const b = solved[bone];
@@ -197,7 +201,10 @@ export interface JointRecipe {
   rims: RimRecipe[];
 }
 
-const restOf = (v: string): Vec3 => (SKIN_EXTRA[v] ? SKIN_EXTRA[v][0] : J[v]);
+const restOf = (v: string, skeleton?: SkeletonName): Vec3 => {
+  const { J, SKIN_EXTRA: extras } = skeletonOf(skeleton);
+  return extras[v] ? extras[v][0] : J[v];
+};
 const boneOf = (v: string): string => (SKIN_EXTRA[v] ? SKIN_EXTRA[v][3] : VERTEX_BONE[v]);
 const BONE_TAIL: Record<string, string> = Object.fromEntries(BONES.map(([n, , t]) => [n, t]));
 
@@ -256,14 +263,14 @@ function crossRadii(vertex: string): Radii3 {
  * pelvis tube's top ring at the waist, the forearm's at the wrist), so a
  * hinge that bends never shows the tube's rim past the joint.
  */
-export function vertexRadii(vertex: string): Radii3 {
+export function vertexRadii(vertex: string, skeleton?: SkeletonName): Radii3 {
   const r = crossRadii(vertex);
   const along = isFoot(vertex) ? 1 : 2;
   const [a, b] = SKIN_FIT[stem(vertex)];
   let need = r[along];
   for (const e of EDGES_AT.get(vertex) ?? []) {
     if (e.bone === boneOf(vertex)) continue;
-    const { u, v } = crossAxes(restOf(e.a), restOf(e.b));
+    const { u, v } = crossAxes(restOf(e.a, skeleton), restOf(e.b, skeleton));
     need = Math.max(need, ...ringAt(e, vertex, u, v));
   }
   r[along] = Math.min(Math.max(a, b), Math.max(r[along], need));
@@ -276,20 +283,20 @@ export function vertexRadii(vertex: string): Radii3 {
  * end reaches the vertex and stops — as the subdivided skin does (the
  * crown's top is at 1.713 for a vertex at 1.72, not a radius above it).
  */
-export function jointCenter(vertex: string): Vec3 {
-  const at = restOf(vertex);
+export function jointCenter(vertex: string, skeleton?: SkeletonName): Vec3 {
+  const at = restOf(vertex, skeleton);
   if (!isLeaf(vertex)) return at;
   const e = EDGES_AT.get(vertex)![0];
   const other = e.a === vertex ? e.b : e.a;
-  const w = normalize(sub(at, restOf(other)));
-  return sub(at, scale(w, radiusAlong(vertexRadii(vertex), w)));
+  const w = normalize(sub(at, restOf(other, skeleton)));
+  return sub(at, scale(w, radiusAlong(vertexRadii(vertex, skeleton), w)));
 }
 
 /** Every tube and joint of the body, in the rest pose, with the bone it rides. */
-export function bodyRecipe(): { tubes: TubeRecipe[]; joints: JointRecipe[] } {
+export function bodyRecipe(skeleton?: SkeletonName): { tubes: TubeRecipe[]; joints: JointRecipe[] } {
   const tubes = EDGES.map((e): TubeRecipe => {
-    const from = jointCenter(e.a);
-    const to = jointCenter(e.b);
+    const from = jointCenter(e.a, skeleton);
+    const to = jointCenter(e.b, skeleton);
     const { u, v } = crossAxes(from, to);
     const ra = ringAt(e, e.a, u, v);
     const rb = ringAt(e, e.b, u, v);
@@ -308,7 +315,7 @@ export function bodyRecipe(): { tubes: TubeRecipe[]; joints: JointRecipe[] } {
     for (const v of [e.a, e.b]) {
       if (seen.has(v)) continue;
       seen.add(v);
-      joints.push({ vertex: v, bone: boneOf(v), at: jointCenter(v), radii: vertexRadii(v), rims: rimsAt(v) });
+      joints.push({ vertex: v, bone: boneOf(v), at: jointCenter(v, skeleton), radii: vertexRadii(v, skeleton), rims: rimsAt(v) });
     }
   }
   return { tubes, joints };
@@ -320,6 +327,7 @@ export function bodyRecipe(): { tubes: TubeRecipe[]; joints: JointRecipe[] } {
  * (world = position + rotate(q, rest)).
  */
 export function placeBone(solved: Solved, bone: string): { position: Vec3; q: Solved[string]['q'] } {
+  const { J } = skeletonOf(solvedSkeleton(solved));
   const b = solved[bone];
   return { position: sub(b.head, rotate(b.q, J[BONE[bone][1]])), q: b.q };
 }

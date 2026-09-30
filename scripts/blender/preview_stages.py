@@ -46,6 +46,15 @@ def main() -> None:
     out = Path(argv[1]) if len(argv) > 1 else rm.ROOT / '.motion-tmp' / f'preview-{stem}.png'
     posture = rm.load_posture(rm.module_path(pose_id))
 
+    if posture.get('skeleton'):
+        if posture['skeleton'] != 'library' or not pose_id.startswith('library:'):
+            raise ValueError('skeleton variants are library-only')
+        import importlib.util
+        spec = importlib.util.spec_from_file_location('_library_skeleton', Path(__file__).parent / 'library' / '_skeleton.py')
+        variant = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(variant)
+        # Only this preview process uses the variant; render_motion.py's tables stay untouched.
+        rm.J, rm.SKIN_EXTRA = variant.library_tables(rm.J, rm.SKIN_EXTRA)
     built = rm.build_scene(posture)
     scene, layers, rig, cam = built['scene'], built['layers'], built['rig'], built['cam']
     guides, ghost = built['guides'], built['ghost']

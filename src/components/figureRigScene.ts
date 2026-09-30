@@ -36,6 +36,7 @@ import { LineMaterial } from 'three/examples/jsm/lines/LineMaterial.js';
 import { LineSegments2 } from 'three/examples/jsm/lines/LineSegments2.js';
 import { LineSegmentsGeometry } from 'three/examples/jsm/lines/LineSegmentsGeometry.js';
 import type { CameraState, JointRecipe, RigPose, Solved, TubeRecipe, Vec3 } from '../rig';
+import type { SkeletonName } from '../rig';
 import { bodyRecipe, hingeBone, jointRadii, placeBone, placeJoint, solve } from '../rig';
 
 /**
@@ -206,8 +207,8 @@ class Mannequin {
   private hinges: { joint: JointRecipe; group: Group; mesh: Mesh }[] = [];
   private geometries: BufferGeometry[] = [];
 
-  constructor(material: MeshNormalMaterial) {
-    const { tubes, joints } = bodyRecipe();
+  constructor(material: MeshNormalMaterial, skeleton?: SkeletonName) {
+    const { tubes, joints } = bodyRecipe(skeleton);
     const groupOf = (bone: string) => {
       let g = this.bones.get(bone);
       if (!g) {
@@ -269,6 +270,7 @@ export class RigScene {
   private renderer: WebGLRenderer;
   private camera = new OrthographicCamera(-1, 1, 1, -1, NEAR, FAR);
   private normalMaterial = new MeshNormalMaterial();
+  private skeleton?: SkeletonName;
   private figure: Mannequin;
   private ghost: Mannequin;
   private bodyScene = new Scene();
@@ -411,6 +413,14 @@ export class RigScene {
    * preserved drawing buffer is needed).
    */
   render(layers: RigLayers, cam: CameraState, colors: RigColors, out: RigTargets) {
+    if (this.skeleton !== layers.figure.skeleton) {
+      this.figure.dispose();
+      this.ghost.dispose();
+      this.skeleton = layers.figure.skeleton;
+      this.figure = new Mannequin(this.normalMaterial, this.skeleton);
+      this.ghost = new Mannequin(this.normalMaterial, this.skeleton);
+      this.drawn = {};
+    }
     const t0 = performance.now();
     const r = this.renderer;
     this.aim(cam);

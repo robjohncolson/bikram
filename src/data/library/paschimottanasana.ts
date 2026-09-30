@@ -11,10 +11,10 @@ export const paschimottanasana: LibraryAsana = {
     { text: 'Breathing out, reach forward and take the big toes, each between the thumb and the first two fingers.', stage: 1 },
     { text: 'Lengthen the spine and draw the back in so it hollows rather than humps; the bend starts low, from the pelvis, and the arms reach from the shoulders.', stage: 1 },
     { text: 'Breathing out, bend the elbows out to the sides and use them to draw the trunk forward until the forehead meets the knees.', stage: 2 },
-    { text: 'As it eases, take hold of the soles and let the trunk lengthen along the legs, the head travelling past the knees until the chin rests on the shins. Keep the backs of the knees down on the mat.', stage: 3 },
+    { text: 'As it eases, take one wrist with the other hand beyond the soles and let the trunk lengthen along the legs, the head travelling past the knees until the chin rests on the shins. Keep the backs of the knees down on the mat.', stage: 3 },
     { text: 'Stay, breathing evenly, in whichever stage you have reached.', stage: 3 },
-    { text: 'Breathing in, lift the head from the legs.', stage: 4 },
-    { text: 'Let go of the feet and sit up with the legs long.', stage: 5 },
+    { text: 'Release the wrist, then breathe in and lift the head from the legs.', stage: 5 },
+    { text: 'Let go of the feet and sit up with the legs long.', stage: 6 },
   ],
   hold: 'From one to five minutes in whichever stage you can reach, the breath even (p. 81).',
   cautions: [

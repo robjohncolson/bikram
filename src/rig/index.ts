@@ -24,3 +24,7 @@ export type { ClearanceOptions } from './clearance';
 export { CLEARANCE_TOL, SOCKET_R, TRUNK_HOPS, clashes, hullPoints, pairRule, pieceNames } from './clearance';
 export { LOOP_REST, anchorToContacts, groundedSheetPose, liftToFloor, playAt, sheetPose, stageGhost, stagePose, stageStartAt } from './sheet';
 export type { SheetBlend } from './sheet';
+
+export type { SkeletonName } from './variants';
+export { skeletonOf } from './variants';
+export { solvedSkeleton } from './pose';

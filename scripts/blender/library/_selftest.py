@@ -188,6 +188,25 @@ def across_cases():
     expect(L.trunk_width_deviation({'spine.lower': (0, 0, -1)})['spine.lower'] > L.ACROSS_DEG, 'across: a reversed spine passed')
 
 
+def library_fixture():
+    """Variant FK, rolls, geometry and clearance, independent of the frozen fixtures."""
+    lib = _load('_selftest_variant', HERE / '_lib.py')
+    lib.begin('variant parity', skeleton='library')
+    proof = _load('_selftest_proof', HERE / 'paschimottanasana.py')
+    cases = [('rest', {}), ('rolled parent', {'pelvis': {'dir': (0, -0.3, 1), 'roll': 60}}),
+             ('crossed wrists', {'upperarm.L': (0, -1, 0), 'forearm.L': (-0.8, -0.6, 0),
+                                 'upperarm.R': (0, -1, 0), 'forearm.R': (0.8, -0.6, 0)})]
+    cases += [(st['label'], st['pose']) for st in proof.POSTURE['stages']]
+    out = []
+    for name, pose in cases:
+        out.append({'case': name, 'pose': L_clean(pose),
+                    'joints': L_clean(lib.fk(pose)),
+                    'clashes': [[a, b, round(d, 6)] for a, b, d in lib.H.clashes(pose, tol=0)]})
+    expect(not lib.H.clashes({}), 'library rest clashes')
+    expect(lib.H.J != L.H.J, 'variant leaked into the base helper')
+    return json.dumps(out, indent=1) + '\n'
+
+
 def main():
     knee_cases()
     across_cases()
@@ -207,7 +226,9 @@ def main():
     expect(any('wrist' in c[0] and 'wrist' in c[1] for c in names['crossed wrists, laced']['clashes']),
            'crossed wrists, laced: the wrists were exempt')
     text = json.dumps(data, indent=1) + '\n'
-    for path, body in ((FIXTURE, text), (ROLLED_FIXTURE, rolled)):
+    variant = library_fixture()
+    variant_path = ROOT / 'src' / 'rig' / 'clearance-fixtures' / 'library-from-python.json'
+    for path, body in ((FIXTURE, text), (ROLLED_FIXTURE, rolled), (variant_path, variant)):
         if '--write' in sys.argv:
             path.parent.mkdir(parents=True, exist_ok=True)
             path.write_text(body, encoding='utf-8', newline='\n')

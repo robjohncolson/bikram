@@ -12,11 +12,15 @@
 import type { RigBoneEntry, RigStagePose, RigStage } from '../data/types';
 import type { Quat, Vec3 } from './math';
 import { IDENTITY, add, axisAngle, conj, cross, length, mul, normalize, rotate, rotationDifference, sub } from './math';
-import { BONE, BONES, J, PARENT, restDirections } from './skeleton';
+import { BONE, BONES, PARENT } from './skeleton';
+
+import type { SkeletonName } from './variants';
+import { directionsOf, skeletonOf } from './variants';
 
 export type BoneName = string;
 
 export interface RigPose {
+  skeleton?: SkeletonName;
   bones: Record<BoneName, { q: Quat }>;
   /** world offset of the pelvis head from rest (`pelvis.location`) */
   pelvisLocation: Vec3;
@@ -30,7 +34,8 @@ export interface SolvedBone {
 
 export type Solved = Record<BoneName, SolvedBone>;
 
-const REST = restDirections();
+const solvedVariants = new WeakMap<Solved, SkeletonName>();
+export const solvedSkeleton = (s: Solved) => solvedVariants.get(s);
 
 function entryOf(value: RigBoneEntry): { dir: Vec3; roll: number } {
   if (Array.isArray(value)) return { dir: value as Vec3, roll: 0 };
@@ -38,7 +43,7 @@ function entryOf(value: RigBoneEntry): { dir: Vec3; roll: number } {
 }
 
 /** Turn a bone from world rotation `q` so it points along `target`, then roll it about that axis. */
-function aim(q: Quat, name: BoneName, target: Vec3, roll: number): Quat {
+function aim(q: Quat, name: BoneName, target: Vec3, roll: number, REST: Record<string, Vec3>): Quat {
   const t = normalize(target);
   const current = normalize(rotate(q, REST[name]));
   let d = rotationDifference(current, t);
@@ -54,7 +59,8 @@ function aim(q: Quat, name: BoneName, target: Vec3, roll: number): Quat {
  * back at its REST direction. Without rolls every bone just points where
  * it is told.
  */
-export function applyStage(stage: RigStagePose): RigPose {
+export function applyStage(stage: RigStagePose, skeleton?: SkeletonName): RigPose {
+  const REST = directionsOf(skeleton);
   const bones: Record<BoneName, { q: Quat }> = {};
   const riding = new Set<BoneName>();
   for (const [name, , , parent] of BONES) {
@@ -66,16 +72,16 @@ export function applyStage(stage: RigStagePose): RigPose {
       continue;
     }
     const { dir, roll } = entry !== undefined ? entryOf(entry) : { dir: REST[name], roll: 0 };
-    bones[name] = { q: aim(q0, name, dir, roll) };
+    bones[name] = { q: aim(q0, name, dir, roll, REST) };
     if (roll) riding.add(name);
   }
   const loc = stage['pelvis.location'];
-  return { bones, pelvisLocation: Array.isArray(loc) ? [loc[0], loc[1], loc[2]] : [0, 0, 0] };
+  return { ...(skeleton ? { skeleton } : {}), bones, pelvisLocation: Array.isArray(loc) ? [loc[0], loc[1], loc[2]] : [0, 0, 0] };
 }
 
 /** The ghost's pose: the stage pose with the mistake's bones laid over it. */
-export function ghostPose(stage: RigStage): RigPose {
-  return applyStage({ ...stage.pose, ...(stage.ghost ?? {}) });
+export function ghostPose(stage: RigStage, skeleton?: SkeletonName): RigPose {
+  return applyStage({ ...stage.pose, ...(stage.ghost ?? {}) }, skeleton);
 }
 
 /**
@@ -84,7 +90,9 @@ export function ghostPose(stage: RigStage): RigPose {
  * parent's rotation (Blender's un-connected child bones).
  */
 export function solve(pose: RigPose): Solved {
+  const { J } = skeletonOf(pose.skeleton);
   const out: Solved = {};
+  if (pose.skeleton) solvedVariants.set(out, pose.skeleton);
   for (const [name, h, t, parent] of BONES) {
     const q = pose.bones[name].q;
     let head: Vec3;
@@ -111,17 +119,17 @@ export function relative(pose: RigPose): Record<BoneName, Quat> {
 }
 
 /** Rebuild world rotations from a parent-relative chain. */
-export function fromRelative(rel: Record<BoneName, Quat>, pelvisLocation: Vec3): RigPose {
+export function fromRelative(rel: Record<BoneName, Quat>, pelvisLocation: Vec3, skeleton?: SkeletonName): RigPose {
   const bones: Record<BoneName, { q: Quat }> = {};
   for (const [name, , , parent] of BONES) {
     bones[name] = { q: parent ? mul(bones[parent].q, rel[name]) : rel[name] };
   }
-  return { bones, pelvisLocation };
+  return { ...(skeleton ? { skeleton } : {}), bones, pelvisLocation };
 }
 
 /** A bone's current world direction (head → tail). */
 export function boneDir(pose: RigPose, name: BoneName): Vec3 {
-  return normalize(rotate(pose.bones[name].q, REST[name]));
+  return normalize(rotate(pose.bones[name].q, directionsOf(pose.skeleton)[name]));
 }
 
 /**
@@ -134,7 +142,7 @@ export function turnBone(pose: RigPose, name: BoneName, r: Quat): RigPose {
   const parent = PARENT[name];
   const pq = parent ? pose.bones[parent].q : IDENTITY;
   rel[name] = mul(conj(pq), mul(r, pose.bones[name].q));
-  return fromRelative(rel, pose.pelvisLocation);
+  return fromRelative(rel, pose.pelvisLocation, pose.skeleton);
 }
 
 /** Degrees the breath opens the chest at a full inhale (spine.upper and neck, toward +Y). */

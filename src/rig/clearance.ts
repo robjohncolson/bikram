@@ -41,6 +41,7 @@ import { SKIN_EXTRA } from './skeleton';
 import type { Quat, Vec3 } from './math';
 import { add, dot, length, rotate, scale, sub } from './math';
 import type { Solved } from './pose';
+import { solvedSkeleton } from './pose';
 
 /** Interpenetration allowed between two pieces (m): one number, never per posture. */
 export const CLEARANCE_TOL = 0.01;
@@ -62,10 +63,14 @@ interface Piece {
 
 const RECIPE = bodyRecipe();
 
-const PIECES: Piece[] = [
-  ...RECIPE.tubes.map((t): Piece => ({ name: t.key, verts: t.key.split('>'), bone: t.bone, tube: t })),
-  ...RECIPE.joints.map((j): Piece => ({ name: j.vertex, verts: [j.vertex], bone: j.bone, joint: j })),
+const piecesFor = (recipe: ReturnType<typeof bodyRecipe>): Piece[] => [
+  ...recipe.tubes.map((t): Piece => ({ name: t.key, verts: t.key.split('>'), bone: t.bone, tube: t })),
+  ...recipe.joints.map((j): Piece => ({ name: j.vertex, verts: [j.vertex], bone: j.bone, joint: j })),
 ];
+
+const PIECES = piecesFor(RECIPE);
+const LIBRARY_PIECES = piecesFor(bodyRecipe('library'));
+const piecesOf = (s: Solved) => solvedSkeleton(s) === 'library' ? LIBRARY_PIECES : PIECES;
 
 /** A swelling (palm, ball, heel) counts as its bone's own joint: it is a bulge on the bone, not a joint. */
 const canon = (v: string): string => (SKIN_EXTRA[v] ? SKIN_EXTRA[v][1] : v);
@@ -251,9 +256,10 @@ const hipAt = (s: Solved, hip: string): Vec3 => s[`thigh.${hip.slice(-1)}`].head
 
 /** Every compared pair that interpenetrates by more than `tol`, deepest first. */
 export function clashes(s: Solved, tol = CLEARANCE_TOL, opts: ClearanceOptions = {}): Clash[] {
-  const placed = PIECES.map((p) => place(s, p));
+  const pieces = piecesOf(s);
+  const placed = pieces.map((p) => place(s, p));
   const pts: (Vec3[] | undefined)[] = [];
-  const pointsOf = (i: number) => (pts[i] ??= samples(PIECES[i], placed[i]));
+  const pointsOf = (i: number) => (pts[i] ??= samples(pieces[i], placed[i]));
   const out: Clash[] = [];
   for (const { i, k, mode, hip } of PAIRS) {
     if (mode === 'laced hands' && opts.laced) continue;
@@ -264,16 +270,16 @@ export function clashes(s: Solved, tol = CLEARANCE_TOL, opts: ClearanceOptions =
     const h = hip ? hipAt(s, hip) : undefined;
     const counts = (w: Vec3) => !h || length(sub(w, h)) > SOCKET_R;
     let depth = 0;
-    for (const w of pointsOf(i)) if (counts(w)) depth = Math.max(depth, depthInside(PIECES[k], B, w));
-    for (const w of pointsOf(k)) if (counts(w)) depth = Math.max(depth, depthInside(PIECES[i], A, w));
-    if (depth > tol) out.push({ a: PIECES[i].name, b: PIECES[k].name, depth });
+    for (const w of pointsOf(i)) if (counts(w)) depth = Math.max(depth, depthInside(pieces[k], B, w));
+    for (const w of pointsOf(k)) if (counts(w)) depth = Math.max(depth, depthInside(pieces[i], A, w));
+    if (depth > tol) out.push({ a: pieces[i].name, b: pieces[k].name, depth });
   }
   return out.sort((x, y) => y.depth - x.depth);
 }
 
 /** Every hull surface sample point in a pose (for framing checks). */
 export function hullPoints(s: Solved): Vec3[] {
-  return PIECES.flatMap((p) => samples(p, place(s, p)));
+  return piecesOf(s).flatMap((p) => samples(p, place(s, p)));
 }
 
 /** The deepest interpenetration over compared pairs (0 when clear). */

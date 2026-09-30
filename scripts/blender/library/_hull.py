@@ -617,3 +617,26 @@ def clashes(stage, tol=CLEARANCE_TOL, only=None, laced=False):
         if depth > tol:
             out.append((PIECES[i]['name'], PIECES[k]['name'], depth))
     return sorted(out, key=lambda c: -c[2])
+
+
+_BASE_J, _BASE_EXTRA = J, SKIN_EXTRA
+
+
+def select_skeleton(name=None):
+    """Configure this private hull instance; each sheet loads its own helper."""
+    global J, SKIN_EXTRA, REST, TUBES, JOINTS, PIECES
+    if name not in (None, 'library'):
+        raise ValueError(f'unknown skeleton: {name}')
+    J, SKIN_EXTRA = _BASE_J, _BASE_EXTRA
+    if name:
+        import importlib.util
+        from pathlib import Path
+        spec = importlib.util.spec_from_file_location('_library_skeleton', Path(__file__).with_name('_skeleton.py'))
+        mod = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(mod)
+        J, SKIN_EXTRA = mod.library_tables(J, SKIN_EXTRA)
+    REST = {b: v_norm(v_sub(J[t], J[h])) for b, h, t, _ in BONES}
+    # Cross-sections retain the measured fit; only tube length and palm position change.
+    TUBES, JOINTS = body_recipe()
+    PIECES = ([{'name': t['key'], 'verts': t['verts'], 'bone': t['bone'], 'tube': t} for t in TUBES]
+              + [{'name': j['vertex'], 'verts': [j['vertex']], 'bone': j['bone'], 'joint': j} for j in JOINTS])

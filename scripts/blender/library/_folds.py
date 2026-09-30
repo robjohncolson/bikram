@@ -31,7 +31,6 @@ n, add, sub, dot, dist, scale, cross = L.n, L.add, L.sub, L.dot, L.dist, L.scale
 
 SEAT = (0, 0.35, 0.10)                          # the pelvis joint sitting, the hips' hull on the mat
 FOLD_FRAME = {'center_z': 0.42, 'scale': 1.45}  # the whole fold from the side
-SPAN = L.UPPER + L.FORE                         # shoulder to wrist, straight
 R_BALL = max(L.H.SKIN_FIT['ball'])
 SIDES = (('L', 1), ('R', -1))
 SX = {'L': 1, 'R': -1}
@@ -141,9 +140,9 @@ def reach(pose, side, wrist, hint, hand, label=None):
     shortfall kept under `label` in `SHORT`. Returns the shortfall (m)."""
     sh = L.fk(pose)[f'shoulder.{side}']
     d = dist(sh, wrist)
-    short = max(0.0, d - (SPAN - 0.002))
+    short = max(0.0, d - (L.UPPER + L.FORE - 0.002))
     if short > 0:
-        wrist = add(sh, n(sub(wrist, sh)), SPAN - 0.002)
+        wrist = add(sh, n(sub(wrist, sh)), L.UPPER + L.FORE - 0.002)
     L.arm(pose, side, wrist, hint, n(hand))
     if label is not None:
         SHORT[label] = short
@@ -153,7 +152,7 @@ def reach(pose, side, wrist, hint, hand, label=None):
 def shortfall(pose, side, wrist, label):
     """Record (not pose) how far a wrist target lies beyond the arm: the
     book's grip the figure does not take."""
-    SHORT[label] = max(0.0, dist(L.fk(pose)[f'shoulder.{side}'], wrist) - SPAN)
+    SHORT[label] = max(0.0, dist(L.fk(pose)[f'shoulder.{side}'], wrist) - (L.UPPER + L.FORE))
     return SHORT[label]
 
 

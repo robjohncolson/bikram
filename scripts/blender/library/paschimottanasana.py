@@ -6,14 +6,11 @@ From the staff (legs straight and together, palms beside the hips): the
 hands take the feet with the back extended and hollowed, head up; the
 elbows widen and the trunk comes down, forehead to the knees; then the
 full stretch, the trunk long over the legs and the head beyond the knees,
-the hands round the soles; up again with the back long, and back to the
+one hand around the opposite wrist beyond the soles; up again with the back long, and back to the
 staff. Side view, the face to screen-right. Shape from the book's
 photographs; the stages are ours.
 
-Reach: the book's last grip clasps one wrist beyond the soles. This rig's
-arms stop at the soles (`_folds.SHORT`: the clasp beyond them would need
-more than the arm has), so the full stage holds the soles, the book's
-previous stage.
+The library skeleton reaches the final wrist clasp beyond the soles.
 """
 import importlib.util
 from pathlib import Path
@@ -22,7 +19,7 @@ _spec = importlib.util.spec_from_file_location('_library_folds', Path(__file__).
 F = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(F)
 L = F.L
-L.begin('paschimottanasana')
+L.begin('paschimottanasana', skeleton='library')
 
 
 def legs(pose):
@@ -32,6 +29,8 @@ def legs(pose):
 
 
 SIT = F.staff()
+for s, sx in F.SIDES:
+    L.arm(SIT, s, (sx * 0.27, F.SEAT[1], L.WRIST_Z), (sx, 0.5, 0), L.flat_hand((0, -1, 0)))
 
 # the back hollowed, the head up, the big toes held (thumb and two fingers)
 TOES = legs(F.sit())
@@ -47,25 +46,30 @@ F.clavicles(DOWN, fwd=0.7, down=0.2)
 for s, sx in F.SIDES:
     F.hold_foot(DOWN, s, s, where=0.07, around=35, hint=(sx, 0, -0.5), fingers=0.6, label=f'forehead {s}')
 
-# the full stretch: the head beyond the knees, the palms round the soles
+# the full stretch: one hand beside the other wrist, beyond the soles
 FULL = legs(F.sit())
 F.trunk(FULL, 35, 60, 105, 105, 110)
-F.clavicles(FULL, fwd=0.55, down=0.2)
-for s, sx in F.SIDES:
-    F.shortfall(FULL, s, F.beyond_soles(FULL), f'the book: wrist clasped beyond the soles, {s}')
-    F.hold_foot(FULL, s, s, where=0.10, around=10, hint=(sx, 0, -0.4), fingers=0.5, label=f'soles {s}')
+F.clavicles(FULL, fwd=0.7, down=0.2)
+target = F.beyond_soles(FULL, ahead=0.025)
+L.arm(FULL, 'L', L.add(target, (0.055, 0, 0.11)), (1, 0, 1), (0, -1, 0))
+L.arm(FULL, 'R', L.add(target, (-0.095, 0, 0.16)), (-1, 0, 1), (1, 0, 0))
+
+UNCLASP = {**FULL}
+L.arm(UNCLASP, 'L', L.add(target, (0.20, 0.02, 0.11)), (1, 0, 1), (0, -1, 0))
+L.arm(UNCLASP, 'R', L.add(target, (-0.22, 0.02, 0.16)), (-1, 0, 1), (0, -1, 0))
 
 POSTURE = L.check({
     'id': 'library:paschimottanasana',
     'position': {'start': 'seated', 'end': 'seated'},
     'view': 'side',
-    'frame': F.FOLD_FRAME,
+    'frame': {**F.FOLD_FRAME, 'scale': 1.65},
     'transition': 10,
     'stages': [
         {'label': 'Staff', 'pose': SIT, 'hold': 4, 'notice': ['lower-back', 'breath']},
         {'label': 'Take the toes', 'pose': TOES, 'hold': 5, 'notice': ['lower-back', 'hamstrings']},
         {'label': 'Forehead to knees', 'pose': DOWN, 'hold': 5, 'notice': ['hamstrings', 'shoulders']},
         {'label': 'Full stretch', 'pose': FULL, 'hold': 14, 'notice': ['hamstrings', 'lower-back', 'calves', 'breath']},
+        {'label': 'Release clasp', 'pose': UNCLASP, 'hold': 3, 'notice': ['wrists']},
         {'label': 'Head up', 'pose': TOES, 'hold': 3, 'notice': ['lower-back']},
         {'label': 'Release', 'pose': SIT, 'hold': 3, 'notice': ['breath']},
     ],

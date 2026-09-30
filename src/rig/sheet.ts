@@ -34,14 +34,14 @@ const clampStage = (data: RigData, i: number) => Math.min(data.stages.length - 1
 export function stagePose(data: RigData, i: number): RigPose {
   const c = cacheOf(data);
   const k = clampStage(data, i);
-  return (c.stages[k] ??= applyStage(data.stages[k].pose));
+  return (c.stages[k] ??= applyStage(data.stages[k].pose, data.skeleton));
 }
 
 /** The ghost (common-mistake) pose of a stage, or undefined when it has none. */
 export function stageGhost(data: RigData, i: number): RigPose | undefined {
   const c = cacheOf(data);
   const k = clampStage(data, i);
-  if (c.ghosts[k] === undefined) c.ghosts[k] = data.stages[k].ghost ? ghostPose(data.stages[k]) : null;
+  if (c.ghosts[k] === undefined) c.ghosts[k] = data.stages[k].ghost ? ghostPose(data.stages[k], data.skeleton) : null;
   return c.ghosts[k] ?? undefined;
 }
 
