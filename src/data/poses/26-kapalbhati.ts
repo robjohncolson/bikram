@@ -31,7 +31,7 @@ export const kapalbhati: Pose = {
     'Strengthens the abdominal wall and trains the diaphragm through rapid contract-and-release cycles.',
     'Forcefully empties the residual stale air that quiet breathing never reaches, exchanging it for fresh oxygen.',
     'The belly-pumping action massages the digestive organs and is traditionally said to improve digestion and elimination.',
-    'Traditionally said to "shine the skull" — clearing the head and leaving the mind bright, which is exactly how it lands after ninety minutes of practice.',
+    'Traditionally said to "shine the skull" — clearing the head and leaving the mind bright, which is exactly how it lands after the full sequence of practice.',
     'Closes the class energized rather than depleted, converting the heat and effort into alertness.',
   ],
   contraindications: [

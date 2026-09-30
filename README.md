@@ -6,8 +6,9 @@ posture's technique, benefits, chakra connections, and muscle-group work.
 
 ## Features
 
-- **Sequence** — the full 90-minute class as a visual timeline: opening breath,
-  standing series, floor series, closing breath, with a class clock.
+- **Sequence** — the full class (about 87 minutes at 60 BPM, plus a
+  two-minute closing rest) as a visual timeline: opening breath, standing
+  series, floor series, closing breath, with a class clock.
 - **Pose pages** — setup steps, alignment cues, breath, benefits, cautions,
   chakra links with the *why*, and a body map of what each posture
   strengthens and stretches.

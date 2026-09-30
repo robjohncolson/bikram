@@ -8,10 +8,10 @@ export const situp: Pose = {
   pronunciation: 'PAH-dah hahs-TAHS-ah-nah',
   category: 'floor',
   sets: 1,
-  timing: "Once here, then between every floor posture",
+  timing: "Once here, then after supine rests in the floor series",
   approxTotalSeconds: 50,
   summary:
-    'The recurring engine of the floor series: legs straight, arms overhead, snap up to sitting with a double exhale and dive for the toes. Numbered once at 15, but you will repeat it after every floor posture for the rest of class. (The toe-grab finish shares the name Pada-Hastasana — hands to feet — with the forward-fold half of posture 2; the sit-up itself has no Sanskrit name of its own.)',
+    'The recurring engine of the floor series: legs straight, arms overhead, snap up to sitting with a double exhale and dive for the toes. Numbered once at 15, but you will repeat it after supine rests later in class; between spine-strengthening sets you rest on your belly. (The toe-grab finish shares the name Pada-Hastasana — hands to feet — with the forward-fold half of posture 2; the sit-up itself has no Sanskrit name of its own.)',
   setup: [
     'Lying on your back, straighten both legs and flex the feet back toward your face.',
     'Sweep the arms overhead onto the floor behind you and cross the thumbs.',
@@ -52,7 +52,7 @@ export const situp: Pose = {
     },
   ],
   muscles: [
-    { id: 'abdominals', action: 'strengthens', emphasis: 'primary', note: 'the snap up off the floor, repeated after every floor posture' },
+    { id: 'abdominals', action: 'strengthens', emphasis: 'primary', note: 'the snap up off the floor, repeated after supine rests' },
     { id: 'hip-flexors', action: 'strengthens', emphasis: 'primary', note: 'straight-leg sit-ups are as much psoas as abs' },
     { id: 'hamstrings', action: 'stretches', emphasis: 'secondary', note: 'the quick dive to the toes' },
     { id: 'calves', action: 'stretches', emphasis: 'secondary', note: 'feet stay flexed back toward the face' },
@@ -61,5 +61,5 @@ export const situp: Pose = {
   mnemonic:
     'At 15 you get your learner’s permit — and the sit-up is how you drive yourself around the floor series for the rest of class. Learn it once at #15, use it forever after.',
   sequenceNote:
-    'Numbered once, repeated always: from here on, every floor posture is followed by a short Savasana and then a sit-up into the next posture. It sits at 15 because this is where the floor series’ rhythm begins — total stillness, then a decisive double-exhale return to work.',
+    'Numbered once, repeated after supine rests: the spine-strengthening sets rest on the belly, with Savasana and a sit-up returning after the final Bow set. It sits at 15 because this is where the floor series’ rhythm begins — total stillness, then a decisive double-exhale return to work.',
 };
