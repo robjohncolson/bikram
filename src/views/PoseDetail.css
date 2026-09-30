@@ -80,7 +80,7 @@
 /* ——— header */
 .pd-header {
   display: grid;
-  grid-template-columns: 1fr auto;
+  grid-template-columns: minmax(0, 1fr);
   gap: 32px;
   align-items: center;
 }
@@ -135,38 +135,14 @@
   border-radius: 50%;
 }
 
-.pd-header .pose-motion {
-  max-width: 260px;
+.pd-main .pose-motion {
+  max-width: 320px;
 }
 
-.pd-header .pose-motion-frame.pd-figurewrap {
+.pd-main .pose-motion-frame.pd-figurewrap {
   overflow: hidden;
-}
-
-/* sprite and live rig side by side (the rig rollout); wraps on a phone */
-.pd-figures {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  align-items: flex-start;
-  gap: 18px;
-  max-width: 100%;
-}
-
-.pd-figurecol {
-  margin: 0;
-  max-width: 100%;
-  display: grid;
-  justify-items: center;
-  gap: 6px;
-  min-width: 0;
-}
-
-.pd-figurelabel {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+  width: 268px;
+  height: 268px;
 }
 
 /* ——— summary */
@@ -195,17 +171,6 @@
 }
 
 /* ——— main grid */
-.pd-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(min(100%, 340px), 1fr));
-  gap: 44px 40px;
-  margin-top: 48px;
-}
-
-.pd-grid--single {
-  grid-template-columns: minmax(0, 640px);
-}
-
 .pd-col {
   min-width: 0;
   display: grid;
@@ -591,7 +556,6 @@
 /* ————————————————————————————————————————————— responsive */
 @media (max-width: 640px) {
   .pd-header {
-    /* minmax: the side-by-side figures must wrap, not widen the column */
     grid-template-columns: minmax(0, 1fr);
     justify-items: center;
     text-align: center;
@@ -610,11 +574,6 @@
 
   .pd-summary {
     font-size: 17.5px;
-  }
-
-  .pd-grid {
-    margin-top: 40px;
-    gap: 36px;
   }
 
   .pd-navcards {
@@ -756,4 +715,61 @@
 
 .pd-practice-link:hover {
   text-decoration: underline;
+}
+
+/* The demonstration and setup share one row only when there is room. */
+.pd-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 32px;
+  margin-top: 36px;
+  align-items: start;
+}
+
+.pd-main-figure {
+  display: grid;
+  justify-items: center;
+  min-width: 0;
+}
+
+.pd-inclass,
+.pd-sections {
+  margin-top: 40px;
+  display: grid;
+  gap: 24px;
+}
+
+.pd-inclass > .pd-h,
+.pd-inclass .pd-pair {
+  margin: 0;
+}
+
+.pd-segments {
+  margin: 0;
+  padding-left: 24px;
+  display: grid;
+  gap: 8px;
+  line-height: 1.6;
+}
+
+.pd-body-benefits {
+  margin-top: 24px;
+}
+
+.pd-classical > summary {
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 21px;
+  padding-block: 8px;
+}
+
+.pd-classical[open] > summary {
+  margin-bottom: 18px;
+}
+
+@media (min-width: 1024px) {
+  .pd-main {
+    grid-template-columns: minmax(0, 340px) minmax(0, 1fr);
+    gap: 40px;
+  }
 }
