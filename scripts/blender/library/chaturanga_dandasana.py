@@ -14,7 +14,7 @@ _spec = importlib.util.spec_from_file_location('_library_backbend', Path(__file_
 B = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(B)
 L = B.L
-L.begin('chaturanga_dandasana')
+L.begin('chaturanga-dandasana', skeleton='library')
 
 APART = 0.06        # the thighs turned out a little: the feet about a foot apart
 HAND_Y = B.PRONE_Y - 0.25     # the palms beside the lower chest

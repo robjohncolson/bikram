@@ -15,7 +15,7 @@ _spec = importlib.util.spec_from_file_location('_library_backbend', Path(__file_
 B = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(B)
 L = B.L
-L.begin('bhujangasana_i')
+L.begin('bhujangasana-i', skeleton='library')
 
 OUT = 0.25
 # the fingers forward and a little out: lying, the rig's arms reach the hips only
@@ -24,7 +24,7 @@ FINGERS = (0.6, -1, 0)
 
 # the trunk up on straight arms, the pubis still on the mat, the head back
 COBRA = B.prone()
-B.trunk(COBRA, B.up(35), B.up(45), B.up(60), (0, 0.25, 0.97), (0, 0.55, 0.83))
+B.trunk(COBRA, B.up(30), B.up(38), B.up(54), (0, 0.25, 0.97), (0, 0.55, 0.83))
 SPOTS = B.straight_arms_down(COBRA, OUT, toward=(0, 1, 0), fingers=FINGERS)
 
 # lying, the palms beside the pelvis where the arms will press (the rig's

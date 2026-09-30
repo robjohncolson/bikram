@@ -14,7 +14,7 @@ _spec = importlib.util.spec_from_file_location('_library_backbend', Path(__file_
 B = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(B)
 L = B.L
-L.begin('salabhasana')
+L.begin('salabhasana', skeleton='library')
 
 LIE = B.prone()
 

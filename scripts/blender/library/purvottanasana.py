@@ -16,12 +16,12 @@ _spec = importlib.util.spec_from_file_location('_library_backbend', Path(__file_
 B = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(B)
 L = B.L
-L.begin('purvottanasana')
+L.begin('purvottanasana', skeleton='library')
 
 SEAT = (0, 0.36, 0.10)        # set back along the mat: the plank then lands over the pivot
 OUT = 0.24
 FINGERS = (0, -1, 0)          # the fingers toward the feet
-FRAME = {'center_z': 0.46, 'scale': 1.75}
+FRAME = {'center_z': 0.46, 'scale': 1.85}
 SOLE_FOOT = L.REST['foot.L']  # the sole flat on the mat
 
 
@@ -51,7 +51,7 @@ def plank(level=6.0, feet=(0, -0.75, -0.66)):
     pose = B.trunk({}, t, t, t, (0, 0.7, -0.72), (0, 0.45, -0.9))
     sh = L.fk(pose)['shoulder.L']
     w = SPOTS['L']
-    lift = math.sqrt(B.STRAIGHT ** 2 - (w[0] - sh[0]) ** 2)
+    lift = math.sqrt(B.straight() ** 2 - (w[0] - sh[0]) ** 2)
     pose['pelvis.location'] = L.sub((sh[0], w[1], w[2] + lift), sh)
     B.palms_at(pose, SPOTS, hint=(1, 0, 0), fingers=FINGERS)
     at = L.fk(pose)

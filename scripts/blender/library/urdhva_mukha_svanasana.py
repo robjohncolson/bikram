@@ -14,7 +14,7 @@ _spec = importlib.util.spec_from_file_location('_library_backbend', Path(__file_
 B = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(B)
 L = B.L
-L.begin('urdhva_mukha_svanasana')
+L.begin('urdhva-mukha-svanasana', skeleton='library')
 
 APART = 0.06        # the feet about a foot apart
 OUT = 0.25
@@ -40,7 +40,7 @@ def dog(deg):
 
 def shoulder_over(deg):
     """How far the shoulders sit above a straight arm's height (0 = the arm hangs plumb)."""
-    return L.fk(dog(deg))['shoulder.L'][2] - (B.WRIST_Z + B.STRAIGHT - 0.01)
+    return L.fk(dog(deg))['shoulder.L'][2] - (B.WRIST_Z + B.straight() - 0.01)
 
 
 # the leg angle at which straight arms stand just under the shoulders

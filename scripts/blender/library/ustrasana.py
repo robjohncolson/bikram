@@ -15,7 +15,7 @@ _spec = importlib.util.spec_from_file_location('_library_backbend', Path(__file_
 B = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(B)
 L = B.L
-L.begin('ustrasana')
+L.begin('ustrasana', skeleton='library')
 
 
 def back(deg):
@@ -55,13 +55,14 @@ def palm_on_heel(pose, side):
     sx = 1 if side == 'L' else -1
     # a little to the outside of the heel: the two hands arriving together
     # behind the back stay clear of each other
-    palm = L.add(heel, (sx * 0.02, 0, L.H.SKIN_FIT['heel'][0] + L.PALM_R + 0.004))
+    # The heel vertex is already the end of its cap, not its centre.
+    palm = L.add(heel, (sx * 0.02, 0, L.PALM_R + 0.004))
     return L.add(palm, GRIP, -L.PALM_AT)
 
 
 def reach(a):
     pose = camel(a)
-    return L.dist(L.fk(pose)['shoulder.L'], palm_on_heel(pose, 'L')) - B.STRAIGHT
+    return L.dist(L.fk(pose)['shoulder.L'], palm_on_heel(pose, 'L')) - B.straight()
 
 
 CAMEL = camel(B.bisect(reach, 0.5, 1.2))
@@ -83,7 +84,7 @@ def sunk(a):
     return B.trunk(pose, back(25 * a), back(45 * a), back(75 * a), back(125), back(150))
 
 
-_SINK = sunk(B.bisect(lambda a: L.dist(L.fk(sunk(a))['shoulder.L'], palm_on_heel(sunk(a), 'L')) - B.STRAIGHT, 0.3, 1.6))
+_SINK = sunk(B.bisect(lambda a: L.dist(L.fk(sunk(a))['shoulder.L'], palm_on_heel(sunk(a), 'L')) - B.straight(), 0.3, 1.6))
 for _s, _sx in (('L', 1), ('R', -1)):
     L.arm(_SINK, _s, palm_on_heel(_SINK, _s), (_sx, 0, -0.3), GRIP)
 GHOST = L.diff(_SINK, CAMEL)

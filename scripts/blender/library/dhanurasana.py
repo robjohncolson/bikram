@@ -13,7 +13,7 @@ _spec = importlib.util.spec_from_file_location('_library_backbend', Path(__file_
 B = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(B)
 L = B.L
-L.begin('dhanurasana')
+L.begin('dhanurasana', skeleton='library')
 
 LIE = B.prone()
 
@@ -31,20 +31,39 @@ def legs(pose, thigh, shin, foot, apart=0.0):
 HOLD = B.prone()
 B.trunk(HOLD, (0, -1, 0.02), (0, -0.97, 0.22), (0, -0.92, 0.38), (0, -0.85, 0.5), (0, -0.95, 0.3))
 legs(HOLD, (0, 1, 0.0), (0, -0.86, 0.5), (0, 0.2, 1), apart=0.06)
-B.grip_ankles(HOLD)
+B.grip_ankles(HOLD, gap=0.004)
 
 # the bow: legs drawn up and back, the chest lifted, the belly on the mat
 BOW = B.prone()
 B.trunk(BOW, (0, -1, 0.1), (0, -0.83, 0.56), (0, -0.6, 0.8), (0, -0.4, 0.92), (0, -0.2, 0.98))
-legs(BOW, (0, 0.76, 0.65), (0, -0.6, 0.8), (0, 0.45, 0.9), apart=0.05)
-B.grip_ankles(BOW)
+def bow_reach(shin_y):
+    legs(BOW, (0, 0.76, 0.65), (0, shin_y, 0.8), (0, 0.45, 0.9), apart=0.05)
+    at = L.fk(BOW)
+    palm = L.add(at['ankle.L'], (B.ankle_palm_offset(0.004), 0, 0))
+    wrist = L.add(palm, L.n((0, 0.45, 0.9)), -L.PALM_AT)
+    return L.dist(at['shoulder.L'], wrist) - B.straight()
+
+# Draw the feet farther back until the longer arms form the bowstring.
+bow_reach(B.bisect(bow_reach, -0.6, -0.4))
+B.grip_ankles(BOW, gap=0.004)
+
+# Keep the hands on the ankles through the lift, solving the halfway bend.
+LIFT = {k: (v if k == 'pelvis.location' else L.n(L.add(v, BOW[k]))) for k, v in HOLD.items()}
+B.grip_ankles(LIFT, gap=0.004)
 
 # the common mistake: the chest stays down on the ribs, so the legs cannot rise far
 _FLAT = {**BOW}
 B.trunk(_FLAT, (0, -1, 0.06), (0, -0.97, 0.22), (0, -0.9, 0.42), (0, -0.7, 0.72), (0, -0.5, 0.87))
 legs(_FLAT, (0, 0.94, 0.35), (0, -0.8, 0.6), (0, 0.45, 0.9), apart=0.05)
-B.grip_ankles(_FLAT)
+B.grip_ankles(_FLAT, gap=0.004)
 GHOST = L.diff(_FLAT, BOW)
+
+# Separate the palms from the ankles before the legs lengthen.
+RELEASE = {**HOLD}
+for _s, _sx in (('L', 1), ('R', -1)):
+    _at = L.fk(HOLD)
+    L.arm(RELEASE, _s, L.add(_at[f'wrist.{_s}'], (_sx * 0.09, -0.03, 0)),
+          (_sx, 0.5, -0.3), L.direction(HOLD, f'hand.{_s}'))
 
 GUIDES = [
     {'from': (0, -1.0, 0.0), 'to': (0, 1.0, 0.0)},   # the mat: only the belly on it
@@ -59,9 +78,11 @@ POSTURE = L.check({
     'stages': [
         {'label': 'Lie face down', 'pose': LIE, 'hold': 4, 'notice': ['breath']},
         {'label': 'Hold the ankles', 'pose': HOLD, 'hold': 5, 'notice': ['shoulders', 'breath']},
+        {'label': 'Lift together', 'pose': LIFT, 'hold': 3, 'notice': ['shoulders', 'quads']},
         {'label': 'Bow', 'pose': BOW, 'hold': 10, 'guides': GUIDES, 'ghost': GHOST,
          'notice': ['quads', 'lower-back', 'shoulders', 'breath']},
-        {'label': 'Release', 'pose': HOLD, 'hold': 3, 'notice': ['breath']},
+        {'label': 'Lower together', 'pose': LIFT, 'hold': 3, 'notice': ['breath']},
+        {'label': 'Release', 'pose': RELEASE, 'hold': 3, 'notice': ['breath']},
         {'label': 'Rest', 'pose': LIE, 'hold': 4, 'notice': ['breath']},
     ],
 })

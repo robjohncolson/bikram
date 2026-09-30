@@ -19,7 +19,7 @@ _spec = importlib.util.spec_from_file_location('_library_backbend', Path(__file_
 B = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(B)
 L = B.L
-L.begin('urdhva_dhanurasana')
+L.begin('urdhva-dhanurasana', skeleton='library')
 
 SHIFT = -0.22                  # the lying body moved along the mat: the wheel lands over the pivot
 FEET_X = 0.12
@@ -57,6 +57,12 @@ def hands_down(pose, hint=(0.15, -0.35, 1)):
     return pose
 
 
+# Lift the arms clear of the mat before turning the palms over the shoulders.
+ARMS_UP = feet_down(lying())
+for _s, _sx in (('L', 1), ('R', -1)):
+    L.arm(ARMS_UP, _s, L.add(WRISTS[_s], (_sx * 0.16, -0.04, 0.25)),
+          (_sx * 0.15, -0.35, 1), HAND)
+
 SET = hands_down(feet_down(lying()))
 
 
@@ -76,7 +82,7 @@ HIPS_UP = hips_up(B.bisect(lambda k: L.dist(L.fk(hips_up(k))['hip.L'], ANKLES['L
 
 def arch(a, rise):
     """The trunk arched over the hands: `a` scales the arch, `rise` how high
-    the shoulders stand over the wrists (straight arms = B.STRAIGHT)."""
+    the shoulders stand over the wrists (straight arms = B.straight())."""
     def d(deg):
         r = math.radians(deg)
         return (0, -math.cos(r), math.sin(r))
@@ -112,9 +118,17 @@ CROWN = on_crown(B.bisect(crown_leg_room, 0.3, 2.0))
 hands_down(CROWN, hint=(0.15, -1, 0.7))
 feet_down(CROWN, knee=(0, 1, 0.4))
 
-WHEEL = arch(B.bisect(lambda a: leg_room(a, B.STRAIGHT - 0.01), 0.3, 2.0), B.STRAIGHT - 0.01)
+WHEEL = arch(B.bisect(lambda a: leg_room(a, B.straight() - 0.01), 0.3, 2.0), B.straight() - 0.01)
 hands_down(WHEEL, hint=(1, 0, 0))
 feet_down(WHEEL, knee=(0, 1, 0.3))
+
+# Solve the hands and feet again halfway through the press, so the longer
+# arms do not swing their planted fingers below the mat.
+PRESS = {k: (L.scale(L.add(v, WHEEL[k]), 0.5) if k == 'pelvis.location'
+             else L.n(L.add(v, WHEEL[k]))) for k, v in CROWN.items()
+         if k in ('pelvis.location', 'pelvis', 'spine.lower', 'spine.upper', 'neck', 'head', 'clavicle.L', 'clavicle.R')}
+hands_down(PRESS, hint=(0.6, -0.5, 0.5))
+feet_down(PRESS, knee=(0, 1, 0.35))
 
 # the common mistake: the elbows never straighten, so the arch stays low,
 # hardly above the crown's height
@@ -135,13 +149,17 @@ POSTURE = L.check({
     'transition': 10,
     'stages': [
         {'label': 'Lie on the back', 'pose': LIE, 'hold': 3, 'notice': ['breath']},
+        {'label': 'Arms up', 'pose': ARMS_UP, 'hold': 3, 'notice': ['shoulders', 'wrists']},
         {'label': 'Hands and feet set', 'pose': SET, 'hold': 4, 'notice': ['wrists', 'feet']},
         {'label': 'Hips up', 'pose': HIPS_UP, 'hold': 3, 'notice': ['quads']},
         {'label': 'Crown down', 'pose': CROWN, 'hold': 4, 'notice': ['neck', 'breath']},
+        {'label': 'Press up', 'pose': PRESS, 'hold': 3, 'notice': ['shoulders', 'wrists']},
         {'label': 'Wheel', 'pose': WHEEL, 'hold': 10, 'guides': GUIDES, 'ghost': GHOST,
          'notice': ['shoulders', 'upper-back', 'quads', 'wrists', 'breath']},
+        {'label': 'Bend the arms', 'pose': PRESS, 'hold': 3, 'notice': ['wrists']},
         {'label': 'Lower', 'pose': CROWN, 'hold': 3, 'notice': ['neck']},
         {'label': 'Come down', 'pose': HIPS_UP, 'hold': 3, 'notice': ['breath']},
-        {'label': 'Rest', 'pose': SET, 'hold': 3, 'notice': ['breath']},
+        {'label': 'Hips down', 'pose': SET, 'hold': 3, 'notice': ['breath']},
+        {'label': 'Lift the hands', 'pose': ARMS_UP, 'hold': 3, 'notice': ['wrists']},
     ],
 })

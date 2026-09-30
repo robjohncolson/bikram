@@ -50,7 +50,6 @@ def prone(**over):
     return pose
 
 
-ARM_LEN = L.UPPER + L.FORE + L.HAND
 TIP_REST = 0.035         # a fingertip resting on the mat: its joint this high
 
 
@@ -62,7 +61,7 @@ def arms_back(pose, tip=TIP_REST, out=0.12):
     at = L.fk(pose)
     for s, sx in (('L', 1), ('R', -1)):
         sh = at[f'shoulder.{s}']
-        drop = max(-0.95, min(0.95, (tip - sh[2]) / ARM_LEN))
+        drop = max(-0.95, min(0.95, (tip - sh[2]) / (L.UPPER + L.FORE + L.HAND)))
         flat = math.sqrt(1 - drop * drop)
         h = n((sx * out, 1, 0))
         d = (h[0] * flat, h[1] * flat, drop)
@@ -94,10 +93,20 @@ def lift_off(pose, z=None):
     return pose
 
 
-def grip_ankles(pose, gap=0.012):
-    """Each hand round its own ankle from outside (`_lib.hand_to_ankle`)."""
-    for s in 'LR':
-        L.hand_to_ankle(pose, s, gap=gap)
+def ankle_palm_offset(gap=0.004):
+    """Lateral ankle and palm half-widths from the rendered skin fit."""
+    return L.H.SKIN_FIT['ankle'][0] + L.H.SKIN_FIT['palm'][0] + gap
+
+
+def grip_ankles(pose, gap=0.004):
+    """Cup each ankle from outside, fingers along the foot, on its hull."""
+    at = L.fk(pose)
+    for s, sx in (('L', 1), ('R', -1)):
+        foot = n(sub(at[f'toes.{s}'], at[f'ankle.{s}']))
+        out = n(add((sx, 0, 0), foot, -dot((sx, 0, 0), foot)))
+        palm = add(at[f'ankle.{s}'], out, ankle_palm_offset(gap))
+        wrist = add(palm, foot, -L.PALM_AT)
+        L.arm(pose, s, wrist, (sx, 0.5, -0.3), foot)
     return pose
 
 
@@ -130,7 +139,9 @@ def rest_on_toes(pose, toe_y, feet=None):
     return pose
 
 
-STRAIGHT = L.UPPER + L.FORE - 0.004    # a straight arm, shoulder to wrist (a hair short of locked)
+def straight():
+    """Current skeleton's shoulder-to-wrist reach, just shy of locked."""
+    return L.UPPER + L.FORE - 0.004
 
 
 def straight_arms_down(pose, out=0.25, toward=(0, 1, 0), fingers=(0, -1, 0)):
@@ -145,9 +156,9 @@ def straight_arms_down(pose, out=0.25, toward=(0, 1, 0), fingers=(0, -1, 0)):
         sh = at[f'shoulder.{s}']
         dx = sx * out - sh[0]
         dz = WRIST_Z - sh[2]
-        run = math.sqrt(max(STRAIGHT * STRAIGHT - dx * dx - dz * dz, 0.0))
-        if STRAIGHT * STRAIGHT - dx * dx - dz * dz < 0:
-            L._warn_reach(math.hypot(dx, dz), STRAIGHT, (sx * out, sh[1], WRIST_Z))
+        run = math.sqrt(max(straight() ** 2 - dx * dx - dz * dz, 0.0))
+        if straight() ** 2 - dx * dx - dz * dz < 0:
+            L._warn_reach(math.hypot(dx, dz), straight(), (sx * out, sh[1], WRIST_Z))
         wrist = (sx * out, sh[1] + h[1] * run, WRIST_Z)
         f = n((sx * fingers[0], fingers[1], fingers[2]))
         L.arm(pose, s, wrist, (sx, 0, 0), flat_hand(f))
