@@ -28,13 +28,22 @@ shoulderstands are `inversion`, as the book groups them).
 ```python
 _spec = importlib.util.spec_from_file_location('_library_lib', Path(__file__).resolve().parent / '_lib.py')
 L = importlib.util.module_from_spec(_spec); _spec.loader.exec_module(L)
-L.begin('padmasana')                     # names the sheet in the warnings
+L.begin('padmasana', skeleton='library') # select BEFORE constructing any pose
 ...
 POSTURE = L.check({'id': 'library:padmasana', 'position': {...}, 'view': ..., 'frame': ...,
                    'transition': 10, 'stages': [...]})
 ```
 
-4–8 stages: the way in, the held form (the longest hold), the way out.
+Only migrated sheets opt in. Omission keeps the original 26 & 2 dimensions.
+`L.check` carries the selection into the exported JSON. Each helper instance
+owns its skeleton; never cache `L.UPPER`, `L.FORE`, `L.HAND` or `L.PALM_AT`
+before `begin`. `_folds.reach` reads the current lengths on every call.
+The definition lives in `_skeleton.py`, exported to
+`src/data/rig/skeletons/library.json` (outside the class sheet glob).
+The arm tubes stretch along their bones; measured radial widths stay the
+same, and the palm stays 35 % down the hand. See `docs/library.md`.
+
+4–12 stages: the way in, the held form (the longest hold), the way out.
 Per stage, optionally: `notice` (from `L.NOTICE`: neck, shoulders,
 upper-back, lower-back, core, hips, hamstrings, quads, calves, feet, wrists,
 breath — the work the bones cannot show) and `palms: 'back'` (the hands carry

@@ -58,11 +58,20 @@ NOTICE = ('neck', 'shoulders', 'upper-back', 'lower-back', 'core', 'hips',
 
 FLOOR = -0.005
 _who = ['library']
+_skeleton = None
 
 
-def begin(name):
+def begin(name, skeleton=None):
     """Name the sheet the warnings below speak for."""
+    global J, LENGTH, REST, UPPER, FORE, HAND, PALM_AT, _skeleton
     _who[0] = name
+    _skeleton = skeleton
+    H.select_skeleton(skeleton)
+    J = H.J
+    LENGTH = {b: dist(J[h], J[t]) for b, h, t in BONES}
+    REST = H.REST
+    UPPER, FORE, HAND = LENGTH['upperarm.L'], LENGTH['forearm.L'], LENGTH['hand.L']
+    PALM_AT = HAND * 0.35
 
 
 def _posture_module(name):
@@ -351,6 +360,8 @@ def check(posture):
     floor, the hull's pieces clear of each other, the trunk across the
     body; palms on the back where a stage says so; refuse an unknown
     `notice` term. Rolled trunks included (the roll-aware `fk`)."""
+    if _skeleton:
+        posture['skeleton'] = _skeleton
     for i, st in enumerate(posture['stages']):
         where = f"#{i} {st['label']!r}"
         laced = st.get('hands') == 'laced'

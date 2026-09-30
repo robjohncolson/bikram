@@ -318,6 +318,8 @@ export interface RigStage {
  * (GENERATED — `src/data/rig/<id>.json`).
  */
 export interface RigData {
+  /** Absent: the original 26 & 2 skeleton. */
+  skeleton?: 'library';
   id: string;
   view: string;
   frame: RigFrame;

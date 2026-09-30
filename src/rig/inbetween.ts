@@ -13,9 +13,9 @@ import type { Quat, Vec3 } from './math';
 import { angle, compatible, conj, lerp3, mul, rotate, rotationDifference, slerp } from './math';
 import type { BoneName, RigPose } from './pose';
 import { boneDir, fromRelative, relative } from './pose';
-import { BIG_TURN_DEG, BONES, restDirections } from './skeleton';
+import { BIG_TURN_DEG, BONES } from './skeleton';
 
-const REST = restDirections();
+import { directionsOf } from './variants';
 /** two ways round a big turn scoring within this of each other are a tie (render_motion.py MIDPOINT_TIE) */
 const MIDPOINT_TIE = 1e-6;
 
@@ -64,6 +64,7 @@ export type Midpoints = Record<BoneName, Quat>;
  * of folding. Memoise per stage pair: it only depends on the two poses.
  */
 export function midpoints(a: RigPose, b: RigPose): Midpoints {
+  const REST = directionsOf(a.skeleton);
   const mids: Midpoints = {};
   const rel = relative(a);
   let world = a;
@@ -77,7 +78,7 @@ export function midpoints(a: RigPose, b: RigPose): Midpoints {
     const aimed = mul(rotationDifference(current, midpointDir(name, da, db)), q);
     rel[name] = parent ? mul(conj(world.bones[parent].q), aimed) : aimed;
     mids[name] = rel[name];
-    world = fromRelative(rel, a.pelvisLocation);
+    world = fromRelative(rel, a.pelvisLocation, a.skeleton);
   }
   return mids;
 }
@@ -89,6 +90,7 @@ export function midpoints(a: RigPose, b: RigPose): Midpoints {
  * the steered midpoint for a big turn; the pelvis offset lerped.
  */
 export function blend(a: RigPose, b: RigPose, s: number, mids: Midpoints = midpoints(a, b)): RigPose {
+  if (a.skeleton !== b.skeleton) throw new Error('Cannot blend different skeletons');
   if (s <= 0) return a;
   if (s >= 1) return b;
   const ra = relative(a);
@@ -105,5 +107,5 @@ export function blend(a: RigPose, b: RigPose, s: number, mids: Midpoints = midpo
       out[name] = slerp(qa, qb, s);
     }
   }
-  return fromRelative(out, lerp3(a.pelvisLocation, b.pelvisLocation, s));
+  return fromRelative(out, lerp3(a.pelvisLocation, b.pelvisLocation, s), a.skeleton);
 }

@@ -193,6 +193,10 @@ def export_module(path: Path) -> dict:
         'transition': posture.get('transition', 6),
         'stages': [],
     }
+    if posture.get('skeleton'):
+        if posture['skeleton'] != 'library' or path.parent != LIBRARY_DIR:
+            raise ValueError('skeleton variants are library-only')
+        out['skeleton'] = posture['skeleton']
     for st in posture['stages']:
         s = {'label': st['label'], 'hold': st.get('hold', 4)}
         for k in ('view', 'frame'):
@@ -255,6 +259,12 @@ def main() -> None:
         written.add(name)
     write(OUT_DIR / 'skeleton.json', skeleton())
     written.add('skeleton.json')
+    spec = importlib.util.spec_from_file_location('_library_skeleton', LIBRARY_DIR / '_skeleton.py')
+    variant = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(variant)
+    lib_j, lib_extra = variant.library_tables(J, SKIN_EXTRA)
+    (OUT_DIR / 'skeletons').mkdir(exist_ok=True)
+    write(OUT_DIR / 'skeletons' / 'library.json', clean({**skeleton(), 'J': lib_j, 'SKIN_EXTRA': lib_extra}))
     # a deleted module must not leave a stale JSON behind
     for old in OUT_DIR.glob('*.json'):
         if old.name not in written:
