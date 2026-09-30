@@ -17,7 +17,7 @@ _spec = importlib.util.spec_from_file_location('_library_seated', Path(__file__)
 S = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(S)
 L = S.L
-L.begin('virasana')
+L.begin('virasana', skeleton='library')
 
 KNEES = -0.18       # the knees on the mat, a little in front of the centre
 FRAME = {'center_z': 0.52, 'scale': 1.25}
@@ -66,7 +66,7 @@ S.arms_up_laced(UP)
 # upright, the palms down on the upturned soles (from the arms up the hands
 # come down beside the body here before the fold, and come back up here)
 SOLES = hero()
-S.palms_on_soles(SOLES, gap=0.03)
+S.palms_on_soles(SOLES, along=0.11, gap=0.03)
 
 # the back rounds forward from the seat, the head down past the knees
 # (searched on the hull: the crown in front of the knees, nothing through
@@ -74,7 +74,7 @@ S.palms_on_soles(SOLES, gap=0.03)
 FOLD = hero()
 FOLD.update({'pelvis': fwd(30), 'spine.lower': fwd(70), 'spine.upper': fwd(100), 'neck': fwd(100), 'head': fwd(130),
              'clavicle.L': L.n((1, 0, -0.1)), 'clavicle.R': L.n((-1, 0, -0.1))})
-S.palms_on_soles(FOLD, gap=0.03)
+S.palms_on_soles(FOLD, along=0.11, gap=0.03)
 
 POSTURE = S.frame_check(L.check({
     'id': 'library:virasana',

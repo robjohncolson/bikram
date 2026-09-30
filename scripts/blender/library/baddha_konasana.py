@@ -25,7 +25,7 @@ _spec = importlib.util.spec_from_file_location('_library_seated', Path(__file__)
 S = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(S)
 L = S.L
-L.begin('baddha_konasana')
+L.begin('baddha-konasana', skeleton='library')
 
 Y = 0.25            # the seat along the mat
 FRONT = {'center_z': 0.40, 'scale': 1.2}     # the knees wide, from the front
@@ -47,12 +47,12 @@ SOLES = S.seat(Y, lean=0.3)
 S.angle_legs(SOLES, ahead=0.27, ankle_x=0.075, knee_z=0.30)
 S.ground(SOLES)
 S.angle_legs(SOLES, ahead=0.27, ankle_x=0.075, knee_z=0.30)
-S.hands_round_feet(SOLES, lace=0.09, up=0.09)
+S.hands_round_feet(SOLES, lace=0.105, up=0.09)
 
 # the same legs, the hands held high over the feet, fingers forward: they
 # come here from the thighs while the knees bend, clear of the rising heels
 BENT = {**SOLES}
-S.hands_over_feet(BENT, along=0.08, up=0.2, lace=0.1, point=(0.1, 1.0, 0.2))
+S.hands_over_feet(BENT, along=0.08, up=0.27, lace=0.14, point=(0.1, 1.0, 0.2))
 
 # the bound angle: soles together at the perineum, knees down, the hands round the feet
 BOUND = S.seat(Y, lean=0.2)
@@ -87,6 +87,12 @@ GUIDES = [
     {'from': (0, Y, 0.0), 'to': (0, Y, 0.95)},      # the spine erect over the seat
 ]
 
+# Move the hands clear while the legs are still long.
+READY = {**STAFF}
+S.arms_forward(READY, wide=0.35)
+CLEAR_BENT = {**SOLES}
+S.arms_forward(CLEAR_BENT, wide=0.35)
+
 POSTURE = S.frame_check(L.check({
     'id': 'library:baddha-konasana',
     'position': {'start': 'seated', 'end': 'seated'},
@@ -95,6 +101,8 @@ POSTURE = S.frame_check(L.check({
     'transition': 10,
     'stages': [
         {'label': 'Staff', 'pose': STAFF, 'hold': 3, 'view': 'side', 'frame': SIDE, 'notice': ['lower-back']},
+        {'label': 'Hands forward', 'pose': READY, 'hold': 2, 'view': 'side', 'frame': SIDE, 'notice': ['shoulders']},
+        {'label': 'Bend legs', 'pose': CLEAR_BENT, 'hold': 2, 'notice': ['hips']},
         {'label': 'Knees bent', 'pose': BENT, 'hold': 3, 'notice': ['hips']},
         {'label': 'Soles together', 'pose': SOLES, 'hold': 3, 'notice': ['hips', 'feet']},
         {'label': 'Bound angle', 'pose': BOUND, 'hold': 14, 'hands': 'laced', 'guides': GUIDES, 'ghost': GHOST,
@@ -104,5 +112,7 @@ POSTURE = S.frame_check(L.check({
         {'label': 'Rise', 'pose': BOUND, 'hold': 3, 'hands': 'laced', 'notice': ['lower-back']},
         {'label': 'Knees up', 'pose': SOLES, 'hold': 2, 'notice': ['hips']},
         {'label': 'Let go', 'pose': BENT, 'hold': 2, 'notice': ['hips']},
+        {'label': 'Hands clear', 'pose': CLEAR_BENT, 'hold': 2, 'notice': ['shoulders']},
+        {'label': 'Legs long', 'pose': READY, 'hold': 2, 'view': 'side', 'frame': SIDE, 'notice': ['hips']},
     ],
 }))

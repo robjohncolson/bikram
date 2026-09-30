@@ -21,7 +21,7 @@ _spec = importlib.util.spec_from_file_location('_library_folds', Path(__file__).
 F = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(F)
 L = F.L
-L.begin('maha-mudra')
+L.begin('maha-mudra', skeleton='library')
 
 HEEL = (0.12, -0.17, 0.075)   # ankle target; the rolled heel lies 6 cm further inward
 

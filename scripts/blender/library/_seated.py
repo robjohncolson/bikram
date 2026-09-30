@@ -123,7 +123,7 @@ def palms_down(pose, back=None, out=0.19, z=0.045, bend=0.0):
         sh, hip = at[f'shoulder.{s}'], at[f'hip.{s}']
         x = hip[0] + sx * out
         if back is not None:
-            L.arm(pose, s, (x, hip[1] + back, z), (sx * 0.4, 1, 0.1), (sx * 0.08, -1, -0.12))
+            L.arm(pose, s, (x, hip[1] + back, z), (sx * 0.4, 1, 0.1), L.flat_hand((sx * 0.08, -1, 0)))
             continue
         reach = L.UPPER + L.FORE - 0.003 - bend
         # the wrist on the mat at height z, `out` across, at the arm's length
@@ -131,7 +131,7 @@ def palms_down(pose, back=None, out=0.19, z=0.045, bend=0.0):
         run = reach * reach - dz * dz - dx * dx
         y = sh[1] + (math.sqrt(run) if run > 0 else 0.0)
         wrist = (x, y, z)
-        L.arm(pose, s, wrist, (sx * 0.3, 1, 0), (sx * 0.08, -1, -0.12))
+        L.arm(pose, s, wrist, (sx * 0.3, 1, 0), L.flat_hand((sx * 0.08, -1, 0)))
     return pose
 
 
@@ -196,7 +196,7 @@ def hands_behind_head(pose, back=0.035, low=0.03, elbow_out=1.0):
     c = add(head, up, 0.06 - low)
     rb = H.SKIN_FIT['head'][1] + L.PALM_R + back
     for s, sx in (('L', 1), ('R', -1)):
-        palm = add(add(c, bk, rb * 0.9), side, sx * 0.055)
+        palm = add(add(c, bk, rb * 0.9), side, sx * 0.085)
         hand = n(add(add(scale(side, -sx), bk, 0.25), up, 0.1))   # fingers toward the middle
         wrist = add(palm, hand, -L.PALM_AT)
         sh = at[f'shoulder.{s}']
@@ -310,7 +310,7 @@ def arms_along(pose, way, out=0.1, drop=0.08):
     return pose
 
 
-def arms_up_laced(pose, meet=0.088, fwd=0.0):
+def arms_up_laced(pose, meet=0.13, fwd=0.0):
     """Both arms straight up over the head, the fingers laced and the palms
     turned to the ceiling: each wrist `meet` from the midline (the fingers
     cross), the hands pointing in toward each other."""
@@ -374,7 +374,7 @@ def hands_over_feet(pose, along=0.03, up=0.12, lace=0.07, point=(0.3, 0.6, 1.0))
     return pose
 
 
-def hands_round_feet(pose, lace=0.058, up=0.05, ahead=0.02, elbow=(1, 0.1, 0.1)):
+def hands_round_feet(pose, lace=0.083, up=0.055, ahead=0.02, elbow=(1, 0.1, 0.1)):
     """The fingers laced round the front of the feet: each wrist just in
     front of the toes and a little above them, `lace` from the midline, the
     hands turned down and in round the toes."""
