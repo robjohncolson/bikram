@@ -63,7 +63,7 @@
   border: 1px solid var(--border-strong);
   background: var(--bg-raised);
   color: var(--text-soft);
-  font-size: 10px;
+  font-size: 12px;
   line-height: 1;
   cursor: pointer;
 }

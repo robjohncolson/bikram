@@ -5,11 +5,9 @@ import {
   poses,
   chakraById,
   muscleById,
-  classTotalSeconds,
-  classOffsetSeconds,
   formatMinutes,
 } from '../data';
-import { FULL_CLASS, SHORT_CLASS, classMinutes as programMinutes } from '../pacer';
+import { FULL_CLASS, SHORT_CLASS, buildPoseTrack, classMinutes as programMinutes } from '../pacer';
 import {
   dayKey,
   daysSince,
@@ -217,8 +215,19 @@ function TonightCard() {
   );
 }
 
+/** Each posture's compiled length at 60 BPM (a beat is a second): the class
+ *  the pacer actually runs, entries and breath quantisation included. */
+const compiledSeconds = new Map(poses.map((p) => [p.id, buildPoseTrack(p, 60).totalBeats]));
+const offsets = new Map<string, number>();
+let clock = 0;
+for (const p of poses) {
+  offsets.set(p.id, clock);
+  clock += compiledSeconds.get(p.id)!;
+}
+const compiledTotalSeconds = clock;
+
 export function Timeline() {
-  const totalMin = Math.round(classTotalSeconds / 60);
+  const totalMin = Math.round(compiledTotalSeconds / 60);
   const breathingCount = poses.filter((p) => p.category === 'breathing').length;
   const postureCount = poses.length - breathingCount;
 
@@ -255,12 +264,10 @@ export function Timeline() {
             );
             if (group.length === 0) return null;
             const arcSeconds = group.reduce(
-              (s, p) => s + p.approxTotalSeconds,
+              (s, p) => s + compiledSeconds.get(p.id)!,
               0,
             );
-            const startMin = Math.round(
-              classOffsetSeconds(group[0]) / 60,
-            );
+            const startMin = Math.round(offsets.get(group[0].id)! / 60);
             return (
               <section
                 key={arc.key}

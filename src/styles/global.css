@@ -34,6 +34,7 @@
   --cm-faint: rgb(242 233 220 / 0.55);
   --cm-line: rgb(242 233 220 / 0.4);
   --cm-hover: rgb(242 233 220 / 0.08);
+  --cm-track: rgb(242 233 220 / 0.14);
   --cm-ember: #e8763d;
   --cm-primary-text: #1b120b;
   --cm-primary-hover: #eb8654;
@@ -94,6 +95,10 @@
   box-sizing: border-box;
 }
 
+html {
+  scroll-padding-top: calc(var(--nav-height) + 16px);
+}
+
 body {
   margin: 0;
   background: var(--bg);
@@ -140,7 +145,21 @@ button {
 .container {
   max-width: var(--container);
   margin: 0 auto;
-  padding: 0 20px;
+  padding: 0 max(20px, env(safe-area-inset-right)) 0 max(20px, env(safe-area-inset-left));
+}
+
+/* Touch controls need room for a fingertip, including their visible labels. */
+@media (pointer: coarse) {
+  button, select, input:not([type='checkbox']):not([type='radio']), summary,
+  a, label:has(input) {
+    min-height: 48px;
+    min-width: 48px;
+  }
+
+  a {
+    display: inline-flex;
+    align-items: center;
+  }
 }
 
 .card {
