@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { useLocation } from 'react-router-dom';
+import { UNSAFE_DataRouterContext, useBlocker, useLocation } from 'react-router-dom';
 import type { CSSProperties, ReactNode } from 'react';
 import {
   BPM_MAX,
@@ -87,7 +87,73 @@ type ClassRun =
       revealed: boolean;
     }
   | { phase: 'closing'; left: number; budget: number }
-  | { phase: 'done'; pacedSeconds: number; rehearsedFrom?: number };
+  | { phase: 'done'; pacedSeconds: number; handoffs: Pose[] };
+
+export function stopClassPlayback(
+  metronome: Pick<Metronome, 'cue' | 'stop' | 'setQuiet'> | null,
+  lock: Pick<WakeLock, 'release'> | null,
+  clearPending: () => void,
+  bell: boolean,
+): void {
+  silenceVoice();
+  if (bell) metronome?.cue('end');
+  metronome?.stop();
+  lock?.release();
+  metronome?.setQuiet(false);
+  clearPending();
+}
+
+export function segmentSettings(settings: PacerSettings, override?: number): PacerSettings {
+  return { ...settings, beatsPerBar: override ?? settings.beatsPerBar };
+}
+
+export function rehearsalDelay(rehearse: boolean, idx: number, from: number): number {
+  return rehearse && idx !== from ? REHEARSAL_DELAY_BEATS : 0;
+}
+
+export function eligibleHandoff(track: PoseTrack, beat: number, previousOrder?: number): boolean {
+  const announce = track.events.find((event) => event.kind === 'announce')?.atBeat ?? 0;
+  return announce > 0 && beat > announce && previousOrder === track.pose.order - 1;
+}
+
+export function practicedSpan(orders: Set<number>): { fromOrder: number; toOrder: number } | null {
+  return orders.size ? { fromOrder: Math.min(...orders), toOrder: Math.max(...orders) } : null;
+}
+
+export function guardClassUnload(target: EventTarget, onLeave: () => void): () => void {
+  const beforeUnload = (event: Event) => {
+    event.preventDefault();
+    (event as BeforeUnloadEvent).returnValue = '';
+  };
+  // pagehide runs only after a confirmed departure, never on cancel.
+  target.addEventListener('beforeunload', beforeUnload);
+  target.addEventListener('pagehide', onLeave);
+  return () => {
+    target.removeEventListener('beforeunload', beforeUnload);
+    target.removeEventListener('pagehide', onLeave);
+  };
+}
+
+function ClassNavigationGuard({ active, onLeave }: { active: boolean; onLeave: () => void }) {
+  const blocker = useBlocker(active);
+  const dialog = useRef<HTMLDialogElement>(null);
+  useEffect(() => {
+    if (blocker.state === 'blocked') dialog.current?.showModal();
+    else dialog.current?.close();
+  }, [blocker.state]);
+  return createPortal(
+    <dialog ref={dialog} className="card pc-leave" aria-labelledby="pc-leave-title"
+      onKeyDown={(event) => event.stopPropagation()}
+      onCancel={(event) => { event.preventDefault(); blocker.reset?.(); }}>
+      <h2 id="pc-leave-title">End the class?</h2>
+      <p>Your practice will be saved. You can stay to continue or finish and leave.</p>
+      <div className="pc-class-controls">
+        <button type="button" className="pc-btn" autoFocus onClick={() => blocker.reset?.()}>Stay in class</button>
+        <button type="button" className="pc-btn" onClick={() => { onLeave(); blocker.proceed?.(); }}>End class and leave</button>
+      </div>
+    </dialog>, document.body,
+  );
+}
 
 /**
  * `/pace?program=short|coach` picks a program; `/pace?from=<order>` implies
@@ -221,6 +287,8 @@ function SpeakerOffIcon() {
 export function Pacer() {
   // ?figure=rig|sprite sets or clears the live-figure flag on arrival (class mode reads it)
   const { search } = useLocation();
+  // useBlocker needs a data router; BrowserRouter is still used by main.tsx.
+  const dataRouter = useContext(UNSAFE_DataRouterContext);
   useEffect(() => {
     // every posture of a class draws the live rig (RIG_LIVE): warm its code
     // AND every posture's and bridge's sheet as the page opens, so class
@@ -275,9 +343,14 @@ export function Pacer() {
   /** The running class's postures and program, fixed at Begin. */
   const posesRef = useRef<Pose[]>(classPoses);
   const programRef = useRef<ClassProgram>(program);
-  /** Where this class started — the rehearsal debrief lists hand-offs from here. */
+  /** The chosen opening posture has no rehearsal delay. */
   const classFromRef = useRef(0);
   const classStartedAtRef = useRef(0);
+  const segmentOverrideRef = useRef<number | undefined>(undefined);
+  const practicedRef = useRef(new Set<number>());
+  const recallAttemptRef = useRef<number | undefined>(undefined);
+  const handoffsRef = useRef(new Set<number>());
+  const previousOrderRef = useRef<number | undefined>(undefined);
   /** Segment whose metronome override is currently applied ("idx:segIndex"). */
   const segAppliedRef = useRef<string | null>(null);
   /** The breath grid the running class was compiled on (the user's count at Begin). */
@@ -323,7 +396,7 @@ export function Pacer() {
       sanskrit: p.sanskrit,
       guides: p.guides,
       rotation: dayIndex(),
-      announceDelayBeats: p.rehearse ? REHEARSAL_DELAY_BEATS : 0,
+      announceDelayBeats: rehearsalDelay(p.rehearse, idx, classFromRef.current),
       beatsPerBar: classBarRef.current,
     });
   }, []);
@@ -387,40 +460,40 @@ export function Pacer() {
   const applySegmentPacer = useCallback((key: string | null, beatsPerBar?: number) => {
     if (segAppliedRef.current === key) return;
     segAppliedRef.current = key;
-    metRef.current?.update({ beatsPerBar: beatsPerBar ?? settingsRef.current.beatsPerBar });
+    segmentOverrideRef.current = beatsPerBar;
+    metRef.current?.update(segmentSettings(settingsRef.current, beatsPerBar));
   }, []);
 
   /** The class is over: bell, silence, journal, done screen. */
-  const finishClass = useCallback(() => {
-    const m = metRef.current;
-    silenceVoice();
-    m?.cue('end');
-    m?.stop();
-    m?.setQuiet(false);
+  const finishClass = useCallback((bell = true) => {
+    if (classRef.current.phase === 'idle' || classRef.current.phase === 'done') return;
+    stopClassPlayback(metRef.current, lockRef.current, clearPending, bell);
     applySegmentPacer(null);
-    clearPending();
     setRunning(false);
     setBeatView(null);
     trackRef.current = null;
     anchorRef.current = null;
     const journal = loadJournal();
     const endedAt = Date.now();
-    const list = posesRef.current;
-    recordClass(journal, {
+    const span = practicedSpan(practicedRef.current);
+    if (span) recordClass(journal, {
       startedAt: classStartedAtRef.current || endedAt,
       endedAt,
-      fromOrder: list[classFromRef.current]?.order ?? 1,
-      toOrder: list[list.length - 1]?.order ?? poses.length,
+      ...span,
       pacedSeconds: Math.round(pacedRef.current),
       bpm: settingsRef.current.bpm,
       rehearsed: cuesRef.current.rehearse,
       program: programRef.current.id,
     });
-    saveJournal(journal);
+    if (span) saveJournal(journal);
+    else {
+      commitClass({ phase: 'idle' });
+      return;
+    }
     commitClass({
       phase: 'done',
       pacedSeconds: pacedRef.current,
-      rehearsedFrom: cuesRef.current.rehearse ? classFromRef.current : undefined,
+      handoffs: posesRef.current.filter((pose) => handoffsRef.current.has(pose.order)),
     });
   }, [applySegmentPacer, clearPending, commitClass]);
 
@@ -446,6 +519,13 @@ export function Pacer() {
       if (serial !== undefined) anchorRef.current = { serial, beatIdx, track: trackRef.current };
       // a segment may ask the metronome for its own count (never its own tempo)
       const track = trackRef.current;
+      const pose = posesRef.current[c.idx];
+      const announceAt = track?.events.find((event) => event.kind === 'announce')?.atBeat ?? 0;
+      if (beatIdx > announceAt) practicedRef.current.add(pose.order);
+      if (!c.revealed && beatIdx >= announceAt) recallAttemptRef.current = pose.order;
+      if (track && recallAttemptRef.current === pose.order && cuesRef.current.rehearse && eligibleHandoff(track, beatIdx, previousOrderRef.current)) {
+        handoffsRef.current.add(pose.order);
+      }
       const segNow = track ? segmentAtBeat(track, beatIdx) : null;
       const segData = segNow ? track?.pose.segments?.[segNow.index] : undefined;
       applySegmentPacer(segNow ? `${c.idx}:${segNow.index}` : `${c.idx}:-`, segData?.pacer?.beatsPerBar);
@@ -455,7 +535,7 @@ export function Pacer() {
         if (stalledRef.current) {
           stalledRef.current = false;
           // a live beat 0 speaks its own announce; otherwise re-orient once
-          if (stallHandoffRef.current && beatIdx > 0) {
+          if (stallHandoffRef.current && beatIdx >= announceAt) {
             metRef.current?.chime();
             sayCue(announceText(posesRef.current[c.idx], cuesRef.current.sanskrit), true);
           }
@@ -465,7 +545,6 @@ export function Pacer() {
       }
       pacedRef.current += beatSeconds(settingsRef.current.bpm);
       // a rehearsal reveals the posture the moment its announce beat arrives
-      const announceAt = trackRef.current?.events.find((e) => e.kind === 'announce')?.atBeat ?? 0;
       const revealed = c.revealed || beatIdx >= announceAt;
       const left = c.left - 1;
       if (left > 0) {
@@ -486,14 +565,16 @@ export function Pacer() {
         if (late) stallHandoffRef.current = true;
         else metRef.current?.chime();
         const idx = c.idx + 1;
-        const track = buildTrack(idx);
-        trackRef.current = track;
+        previousOrderRef.current = practicedRef.current.has(pose.order) ? pose.order : undefined;
+        recallAttemptRef.current = undefined;
+        const nextTrack = buildTrack(idx);
+        trackRef.current = nextTrack;
         commitClass({
           phase: 'running',
           idx,
-          left: track.totalBeats,
-          budget: track.totalBeats,
-          revealed: !cuesRef.current.rehearse,
+          left: nextTrack.totalBeats,
+          budget: nextTrack.totalBeats,
+          revealed: !cuesRef.current.rehearse || idx === classFromRef.current,
         });
       }
     },
@@ -558,7 +639,10 @@ export function Pacer() {
   // One save path: engine settings and cue prefs share the one stored JSON.
   useEffect(() => {
     settingsRef.current = settings;
-    metRef.current?.update(settings);
+    metRef.current?.update(segmentSettings(settings, segmentOverrideRef.current));
+  }, [settings]);
+
+  useEffect(() => {
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...settings, cues }));
     } catch {
@@ -579,7 +663,7 @@ export function Pacer() {
         sanskrit: cues.sanskrit,
         guides: cues.guides,
         rotation: dayIndex(),
-        announceDelayBeats: cues.rehearse ? REHEARSAL_DELAY_BEATS : 0,
+        announceDelayBeats: rehearsalDelay(cues.rehearse, c.idx, classFromRef.current),
         beatsPerBar: classBarRef.current,
       });
       // switching rehearsal off mid-class shows the posture at once
@@ -655,6 +739,9 @@ export function Pacer() {
       if (c.phase !== 'running' && c.phase !== 'paused') return;
       const idx = c.idx + dir;
       if (idx < 0 || idx >= posesRef.current.length) return;
+      previousOrderRef.current = c.budget - c.left > (trackRef.current?.events.find((event) => event.kind === 'announce')?.atBeat ?? 0) + 1
+        ? posesRef.current[c.idx].order : undefined;
+      recallAttemptRef.current = undefined;
       silenceVoice();
       metRef.current?.chime();
       anchorRef.current = null;
@@ -665,7 +752,7 @@ export function Pacer() {
         idx,
         left: track.totalBeats,
         budget: track.totalBeats,
-        revealed: !cuesRef.current.rehearse,
+        revealed: !cuesRef.current.rehearse || idx === classFromRef.current,
       });
     },
     [buildTrack, commitClass],
@@ -683,6 +770,10 @@ export function Pacer() {
       setRunning(true);
     }
     pacedRef.current = 0;
+    practicedRef.current.clear();
+    recallAttemptRef.current = undefined;
+    handoffsRef.current.clear();
+    previousOrderRef.current = undefined;
     stalledRef.current = false;
     stallHandoffRef.current = false;
     anchorRef.current = null;
@@ -712,20 +803,19 @@ export function Pacer() {
     }
   }, [commitClass]);
 
-  const endClass = useCallback(() => {
-    silenceVoice();
-    metRef.current?.setQuiet(false);
-    applySegmentPacer(null);
-    trackRef.current = null;
-    anchorRef.current = null;
-    commitClass({ phase: 'idle' });
-  }, [applySegmentPacer, commitClass]);
+  const endClass = useCallback(() => finishClass(false), [finishClass]);
+  // Preserve practice on unmount even before the app adopts a data router.
+  useEffect(() => () => endClass(), [endClass]);
+  const classActive = classRun.phase === 'running' || classRun.phase === 'paused' || classRun.phase === 'closing';
+  useEffect(() => {
+    if (!classActive) return;
+    return guardClassUnload(window, endClass);
+  }, [classActive, endClass]);
 
-  /** Test-drive the chosen voice on the posture currently in view. */
   const previewVoice = useCallback(() => {
     const c = classRef.current;
-    const running = c.phase === 'running' || c.phase === 'paused';
-    const pose = (running ? posesRef.current[c.idx] : classPoses[startIdx]) ?? poses[0];
+    if (c.phase !== 'idle' && c.phase !== 'done') return;
+    const pose = classPoses[startIdx] ?? poses[0];
     sayCue(announceText(pose, cuesRef.current.sanskrit), true);
   }, [classPoses, sayCue, startIdx]);
 
@@ -905,13 +995,11 @@ export function Pacer() {
   } else if (classRun.phase === 'done') {
     classBody = (
       <div className="pc-class-done">
-        <h3 className="pc-class-done-title">Class complete — rest in savasana.</h3>
+        <h3 className="pc-class-done-title">Practice saved. Rest in savasana.</h3>
         <p className="text-soft">
           ≈ {Math.max(1, Math.round(classRun.pacedSeconds / 60))} minutes of paced breathing.
         </p>
-        {classRun.rehearsedFrom !== undefined && (
-          <RehearsalDebrief list={classPoses} from={classRun.rehearsedFrom} />
-        )}
+        <RehearsalDebrief handoffs={classRun.handoffs} />
         <CoachDebrief
           program={programRef.current}
           beatsPerBar={settings.beatsPerBar}
@@ -921,7 +1009,7 @@ export function Pacer() {
             setStartIdx(0);
           }}
         />
-        <button type="button" className="pc-btn" onClick={endClass}>
+        <button type="button" className="pc-btn" onClick={() => commitClass({ phase: 'idle' })}>
           Back to the pacer
         </button>
       </div>
@@ -949,7 +1037,7 @@ export function Pacer() {
           <button type="button" className="pc-btn" ref={immerseBtnRef} onClick={() => setImmersed(true)}>
             Immerse
           </button>
-          <button type="button" className="pc-btn pc-btn-quiet" onClick={finishClass}>
+          <button type="button" className="pc-btn pc-btn-quiet" onClick={() => finishClass()}>
             Skip the rest
           </button>
         </div>
@@ -1025,7 +1113,7 @@ export function Pacer() {
               {hidden ? 'Say it before the voice does.' : pose.sanskritName}
             </p>
             {!hidden && <p className="pc-class-timing text-faint">{pose.timing}</p>}
-            {seg && (
+            {seg && !hidden && (
               <p className="pc-class-seg" data-kind={seg.kind}>
                 <span className="pc-seg-label">{seg.label}</span>
                 <span className="pc-seg-time">{mss(seg.beatsLeft)}</span>
@@ -1101,7 +1189,7 @@ export function Pacer() {
           next={next}
           previousPose={classPoses[classRun.idx - 1]}
           layer={hidden ? undefined : lit}
-          segmentLabel={seg?.label}
+          segmentLabel={hidden ? undefined : seg?.label}
           segmentKind={seg?.kind}
           position={seg ?? undefined}
           nextCue={nextCue}
@@ -1330,7 +1418,7 @@ export function Pacer() {
                           </option>
                         ))}
                       </select>
-                      <button type="button" className="pc-btn pc-btn-sm" onClick={previewVoice}>
+                      <button type="button" className="pc-btn pc-btn-sm" disabled={classActive} onClick={previewVoice}>
                         Preview voice
                       </button>
                     </div>
@@ -1380,6 +1468,7 @@ export function Pacer() {
       {/* portal: the animated .page ancestor would otherwise become the
           fixed-position containing block and trap the overlay under the nav */}
       {overlay && createPortal(overlay, document.body)}
+      {dataRouter && <ClassNavigationGuard active={classActive} onLeave={endClass} />}
     </div>
   );
 }
@@ -1390,32 +1479,25 @@ export function Pacer() {
  * transition KCs — the knowledge map moves from classes, not just
  * quizzes. Never touches the review schedule.
  */
-function RehearsalDebrief({ list, from }: { list: Pose[]; from: number }) {
-  // every posture after the first was announced late — a recall each. Only
-  // hand-offs between neighbours in the sequence are transition KCs; a
-  // short class's jumps (Eagle into Cobra) are recalled but not recorded.
-  const handoffs = list.slice(from + 1).filter((p, i) => list[from + i].order === p.order - 1);
-  const [missed, setMissed] = useState<Set<string>>(() => new Set());
+export function RehearsalDebrief({ handoffs }: { handoffs: Pose[] }) {
+  const [answers, setAnswers] = useState<Record<string, boolean | undefined>>({});
   const [saved, setSaved] = useState<number | null>(null);
 
-  const toggle = (id: string) =>
-    setMissed((m) => {
-      const next = new Set(m);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      return next;
-    });
+  const toggle = (id: string) => setAnswers((current) => ({
+    ...current, [id]: current[id] === undefined ? true : current[id] ? false : undefined,
+  }));
+  const answered = handoffs.filter((pose) => answers[pose.id] !== undefined);
+  const recalled = answered.filter((pose) => answers[pose.id]).length;
 
   const save = () => {
     const now = Date.now();
     const store = loadStore(now);
-    for (const p of handoffs) {
-      applyEvidence(store, `tr:${p.order - 1}`, 'recall', !missed.has(p.id), now);
+    for (const p of answered) {
+      applyEvidence(store, `tr:${p.order - 1}`, 'recall', answers[p.id] === true, now);
     }
     saveStore(store);
-    const recalled = handoffs.length - missed.size;
     const journal = loadJournal();
-    if (amendLastClass(journal, { handoffs: handoffs.length, recalled })) saveJournal(journal);
+    if (amendLastClass(journal, { handoffs: answered.length, recalled })) saveJournal(journal);
     setSaved(recalled);
   };
 
@@ -1426,35 +1508,36 @@ function RehearsalDebrief({ list, from }: { list: Pose[]; from: number }) {
       {saved === null ? (
         <>
           <p className="text-soft">
-            Tap any hand-off you did <em>not</em> recall before the voice said it, then save. This
-            feeds the knowledge map as class evidence — it never changes your review schedule.
+            Tap each hand-off to choose recalled, missed, or leave it unanswered. Only your
+            answers feed the knowledge map; unanswered hand-offs record no evidence.
           </p>
           <ul className="pc-debrief-list">
             {handoffs.map((p) => {
-              const miss = missed.has(p.id);
+              const answer = answers[p.id];
               return (
                 <li key={p.id}>
                   <button
                     type="button"
                     className="pc-debrief-item"
-                    aria-pressed={miss}
+                    data-answer={answer === undefined ? 'unanswered' : answer ? 'recalled' : 'missed'}
+                    aria-label={`${p.englishName}: ${answer === undefined ? 'unanswered' : answer ? 'recalled' : 'missed'}`}
                     onClick={() => toggle(p.id)}
                   >
                     <span className="pc-debrief-num">{p.order}</span>
                     <span className="pc-debrief-name">{p.englishName}</span>
-                    <span className="pc-debrief-mark">{miss ? 'missed' : 'recalled'}</span>
+                    <span className="pc-debrief-mark">{answer === undefined ? 'unanswered' : answer ? 'recalled' : 'missed'}</span>
                   </button>
                 </li>
               );
             })}
           </ul>
-          <button type="button" className="pc-btn pc-btn-primary" onClick={save}>
-            Save {handoffs.length - missed.size} of {handoffs.length} recalled
+          <button type="button" className="pc-btn pc-btn-primary" disabled={answered.length === 0} onClick={save}>
+            Confirm {recalled} recalled, {answered.length - recalled} missed
           </button>
         </>
       ) : (
         <p className="text-soft">
-          Saved — <strong>{saved}</strong> of {handoffs.length} hand-offs recalled in class.
+          Saved — <strong>{saved}</strong> of {answered.length} answered hand-offs recalled in class.
         </p>
       )}
     </div>
