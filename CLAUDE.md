@@ -292,9 +292,11 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   Sheets opt into the longer-arm variant with `L.begin(id, skeleton='library')`
   before posing; `L.check` exports `skeleton: 'library'`. Omission keeps the
   original rig. All 56 sheets now use the library skeleton; the fan-out is
-  complete. The stage cap is 12. Five sheets show one leg-crossing because
-  a recross exceeds that cap: parvatasana, baddha-padmasana, yoga-mudrasana,
-  matsyasana and parsva-pindasana-in-sarvangasana.
+  complete. The stage cap is 12, except the five RECROSS sheets
+  (`RECROSS_SHEETS`/`libraryStageCap` in `src/data/library/index.ts`:
+  parvatasana, baddha-padmasana, yoga-mudrasana, matsyasana,
+  parsva-pindasana-in-sarvangasana), which may hold 32 to show the second
+  leg-crossing one leg at a time.
   Live figure only — `render_motion.py` renders no sprites for them; the
   preview does: `npm run motion:preview library:halasana` →
   `.motion-tmp/preview-library.halasana.png`. The page draws it with

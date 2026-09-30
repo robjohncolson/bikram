@@ -22,6 +22,16 @@ import { getPose } from '../index';
 import type { LibraryAsana, LibraryFamily, NoticeRegion } from '../types';
 
 /** The fixed `notice` vocabulary (the Blender helper's NOTICE, in the same order). */
+/** A sheet holds 4–12 stages; the five whose recross (one leg at a time,
+ *  then the other crossing) cannot fit in 12 may hold up to 32 (Robert,
+ *  2026-09-30). */
+export const RECROSS_SHEETS: readonly string[] = [
+  'parvatasana', 'baddha-padmasana', 'yoga-mudrasana', 'matsyasana', 'parsva-pindasana-in-sarvangasana',
+];
+export function libraryStageCap(id: string): number {
+  return RECROSS_SHEETS.includes(id.replace(/^library:/, '')) ? 32 : 12;
+}
+
 export const NOTICE_REGIONS: readonly NoticeRegion[] = [
   'neck',
   'shoulders',

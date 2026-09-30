@@ -6,7 +6,7 @@ import illustrated from '../classical/illustrated-index.json';
 import sutras from '../classical/sutras-index.json';
 import { getPose } from '../index';
 import type { RigData, RigStagePose } from '../types';
-import { NOTICE_REGIONS, getLibraryAsana, libraryAsanas, libraryFamilies, libraryRigId, resolveLink, sourceLine, sutraInfo } from './index';
+import { NOTICE_REGIONS, getLibraryAsana, libraryStageCap, libraryAsanas, libraryFamilies, libraryRigId, resolveLink, sourceLine, sutraInfo } from './index';
 
 /**
  * The library's contract: every exported sheet has its content and vice
@@ -349,11 +349,11 @@ describe('the posture library', () => {
     }
   });
 
-  it('gives 4–12 stages per sheet and names only vocabulary regions in `notice`', () => {
+  it('gives 4–12 stages per sheet (32 for the recross sheets) and names only vocabulary regions in `notice`', () => {
     const vocab = new Set<string>(NOTICE_REGIONS);
     for (const [id, d] of Object.entries(sheets)) {
       expect(d.stages.length, id).toBeGreaterThanOrEqual(4);
-      expect(d.stages.length, id).toBeLessThanOrEqual(12);
+      expect(d.stages.length, id).toBeLessThanOrEqual(libraryStageCap(id));
       for (const st of d.stages) for (const r of st.notice ?? []) expect(vocab.has(r), `${id} ${st.label}: ${r}`).toBe(true);
     }
   });

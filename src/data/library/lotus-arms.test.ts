@@ -1,13 +1,14 @@
-﻿import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import { applyStage, anchorToContacts, hullPoints, stageCamera, clashes, CLEARANCE_TOL, groundedSheetPose, smoothstep, solve } from '../../rig';
 import type { RigData } from '../types';
+import { libraryStageCap } from './index';
 const ids = ['padmasana', 'siddhasana', 'parvatasana', 'baddha-padmasana', 'yoga-mudrasana', 'ardha-baddha-padma-paschimottanasana', 'matsyasana'];
 const all = import.meta.glob<RigData>('../rig/library/*.json', { eager: true, import: 'default' });
 describe('lotus library arm migration', () => {
   for (const id of ids) it(id + ' uses the library skeleton with clear held poses and transitions', () => {
     const d = all[`../rig/library/${id}.json`];
     expect(d.skeleton).toBe('library');
-    expect(d.stages.length).toBeLessThanOrEqual(12);
+    expect(d.stages.length).toBeLessThanOrEqual(libraryStageCap(id));
     const errors: string[] = [];
     for (let i = 0; i < d.stages.length; i++) {
       const st = d.stages[i];

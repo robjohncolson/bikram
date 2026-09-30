@@ -44,6 +44,9 @@ The arm tubes stretch along their bones; measured radial widths stay the
 same, and the palm stays 35 % down the hand. See `docs/library.md`.
 
 4–12 stages: the way in, the held form (the longest hold), the way out.
+The five recross sheets (`RECROSS_SHEETS` in `src/data/library/index.ts`:
+parvatasana, baddha-padmasana, yoga-mudrasana, matsyasana,
+parsva-pindasana-in-sarvangasana) may hold up to 32, to show both crossings.
 Per stage, optionally: `notice` (from `L.NOTICE`: neck, shoulders,
 upper-back, lower-back, core, hips, hamstrings, quads, calves, feet, wrists,
 breath — the work the bones cannot show) and `palms: 'back'` (the hands carry
