@@ -13,7 +13,7 @@ export function NotFound() {
         Nothing in the sequence lives at this address. The class runs from
         item {first.order}, {first.englishName}, to item {last.order}, {last.englishName}.
       </p>
-      <Link to="/" className="pd-missing-link">
+      <Link to="/sequence" className="pd-missing-link">
         ← Back to the sequence
       </Link>
     </div>

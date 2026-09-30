@@ -7,17 +7,7 @@ import {
   muscleById,
   formatMinutes,
 } from '../data';
-import { FULL_CLASS, SHORT_CLASS, buildPoseTrack, classMinutes as programMinutes } from '../pacer';
-import {
-  dayKey,
-  daysSince,
-  dueCount,
-  lastClass,
-  loadJournal,
-  loadStore,
-  practiceStreak,
-} from '../trainer';
-import type { ClassRecord } from '../trainer';
+import { buildPoseTrack } from '../pacer';
 import { PoseFigure } from '../components/PoseFigure';
 import './Timeline.css';
 
@@ -117,104 +107,6 @@ function PoseRow({ pose }: { pose: Pose }) {
   );
 }
 
-/** "Short class · 15 min", "Full class · 66 min", "Postures 14–26 · 40 min". */
-function classSummary(c: ClassRecord): string {
-  const name =
-    c.program === 'short'
-      ? SHORT_CLASS.name
-      : c.fromOrder === 1 && c.toOrder === poses.length
-        ? FULL_CLASS.name
-        : `Postures ${c.fromOrder}–${c.toOrder}`;
-  return `${name} · ${Math.max(1, Math.round(c.pacedSeconds / 60))} min`;
-}
-
-function agoWords(days: number): string {
-  return days === 0 ? 'today' : days === 1 ? 'yesterday' : `${days} days ago`;
-}
-
-/**
- * Tonight: one card that says what to do right now, from the practice
- * journal. Not practised today → the short class, with the full class
- * beside it. Practised today → acknowledge it and offer the trainer's
- * due reviews instead.
- */
-function TonightCard() {
-  const now = Date.now();
-  const journal = loadJournal();
-  const last = lastClass(journal);
-  const streak = practiceStreak(journal, now);
-  const ago = last ? daysSince(last.endedAt, now) : null;
-  const practisedToday = journal.days.includes(dayKey(now));
-  const shortMin = programMinutes(SHORT_CLASS);
-  const fullMin = programMinutes(FULL_CLASS);
-
-  let title: string;
-  let body: string;
-  if (practisedToday) {
-    title = 'You have practised today.';
-    body =
-      last && ago === 0
-        ? `${classSummary(last)}, today.`
-        : 'The trainer has seen you today.';
-  } else if (!last) {
-    title = 'Start where the class starts.';
-    body = `${shortMin} minutes: the opening breath, three standing postures, a floor backbend pair, the twist and the closing breath.`;
-  } else if (streak > 0) {
-    title = 'Keep the line going.';
-    body = `Last class ${agoWords(ago ?? 0)} — ${classSummary(last)}.`;
-  } else {
-    title = 'Come back to the breath.';
-    body = `Your last class was ${agoWords(ago ?? 0)} — ${classSummary(last)}. A short one tonight is plenty.`;
-  }
-  const streakLine = streak > 1 ? `${streak} days of practice running.` : null;
-  const due = practisedToday ? dueCount(loadStore(now), now) : 0;
-
-  return (
-    <section className="card tl-tonight" aria-labelledby="tl-tonight-title">
-      <p className="eyebrow">Tonight</p>
-      <h2 id="tl-tonight-title" className="tl-tonight-title">
-        {title}
-      </h2>
-      <p className="tl-tonight-body text-soft">
-        {body}
-        {streakLine && <> {streakLine}</>}
-      </p>
-      <div className="tl-tonight-actions">
-        {practisedToday ? (
-          due > 0 ? (
-            <>
-              <Link to="/train" className="tl-btn tl-btn-primary">
-                Review {due} due card{due === 1 ? '' : 's'}
-              </Link>
-              <Link to="/pace?program=short" className="tl-btn">
-                Short class · {shortMin} min
-              </Link>
-            </>
-          ) : (
-            <>
-              <span className="tl-tonight-note text-faint">
-                Nothing is due in the trainer. Rest, and come back tomorrow.
-              </span>
-              <Link to="/train" className="tl-btn">
-                Open the trainer
-              </Link>
-            </>
-          )
-        ) : (
-          <>
-            <Link to="/pace?program=short" className="tl-btn tl-btn-primary">
-              Start the short class · {shortMin} min
-            </Link>
-            <Link to="/pace" className="tl-btn">
-              Full class · {fullMin} min
-            </Link>
-          </>
-        )}
-      </div>
-    </section>
-  );
-}
-
 /** Each posture's compiled length at 60 BPM (a beat is a second): the class
  *  the pacer actually runs, entries and breath quantisation included. */
 const compiledSeconds = new Map(poses.map((p) => [p.id, buildPoseTrack(p, 60).totalBeats]));
@@ -256,7 +148,6 @@ export function Timeline() {
       </header>
 
       <div className="container">
-        <TonightCard />
         <div className="tl-flow">
           {ARCS.map((arc) => {
             const group = poses.filter(
