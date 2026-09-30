@@ -23,11 +23,20 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
     separately from content on purpose.
   - `chakras.ts` / `muscles.ts` — reference data; their `id` unions in `types.ts`
     are the contract used by pose data and the BodyMap regions.
-- `src/views/` — one file pair per route: Timeline (`/`), PoseDetail
-  (`/pose/:id`), Explorer (`/explore?lens=chakra|muscle&id=…`), Trainer
-  (`/train`), KnowledgeMap (`/train/map`), Pacer (`/pace`), Today
-  (`/today`, the opt-in Moon-days lens), Library (`/library`) and
-  LibraryPose (`/library/:id`) — both lazy routes (see `src/data/library/`).
+- `src/views/` — one file pair per route. PRACTICE-FIRST (Robert,
+  2026-09-30; nav `src/navigation.ts`): Pacer is Practice (`/`; `/pace`
+  redirects keeping its query; one stable instance, selection queries
+  apply only while idle), Timeline is Sequence (`/sequence`), Library
+  (`/library`) and LibraryPose (`/library/:id`) — both lazy routes (see
+  `src/data/library/`), and More▾ holds Explore
+  (`/explore?lens=chakra|muscle&id=…`) and Today (`/today`, the opt-in
+  Moon-days lens). PoseDetail (`/pose/:id`) shows ONE live figure beside
+  its steps, then In class / Your body / Chakras / Cautions, the classical
+  form in a closed `<details>`. STUDY (`src/features.ts`, false): the
+  memory trainer — Trainer (`/train`), KnowledgeMap (`/train/map`),
+  drills, rehearsal and its recall debrief — is hidden, not deleted; with
+  it off nothing links there and nothing reads or migrates the trainer
+  store (the coach prompt drops its memory section). Flip it to restore.
 - `src/pacer/` — the breath-pacer engine (views import only from its
   `index.ts`). `timing.ts` is pure math (settings clamp, phase/beat
   conversions, presets; unit-tested); `metronome.ts` wraps Web Audio with

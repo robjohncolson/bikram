@@ -4,7 +4,7 @@ Read `CLAUDE.md` first (architecture + conventions; it is current). This file is
 newest-first log of where the work stands and what is still open.
 
 **Live**: https://bikram-chi.vercel.app · **Repo**: https://github.com/robjohncolson/bikram (PUBLIC
-since 2026-08-27) · `npm test` = 901 tests / 55 files, all green at `b3f6e9c` (2026-09-30); `npx oxlint` clean.
+since 2026-08-27) · `npm test` = 917 tests / 62 files, all green at `e4c5569` (2026-09-30); `npx oxlint` clean.
 **Deploys happen from GitHub on push to `main` via Vercel's Git integration**; the CLI token on
 this machine is expired.
 
@@ -30,6 +30,20 @@ Workflow that built this (Robert's): spec → Opus 5.5 agent implements → Code
 cross-agent runner, `--task-type review --read-only`) reviews → fix → commit, push, Ops status
 (`send.py … --ref bikram`). Parallel work: one agent per family in its own git worktree, never
 editing shared files (`scripts/blender/library/README.md` says who owns what), merged by hand.
+
+---
+
+## ✔ 2026-09-30 (late night) — THE APP REORGANISED, PRACTICE FIRST (`e4c5569`, pushed)
+
+Robert: "there's a lot going on in this app, can we organise it all better? I doubt I'll ever use
+the flashcards." He uses (mostly on a laptop) the pacer, posture pages, library, Explore and Moon
+days. Decided: flashcards HIDDEN not deleted (`STUDY = false`, `src/features.ts`), nav
+Practice (`/`) · Sequence (`/sequence`) · Library · More▾ (Explore, Moon days). Practice = class
+choice cards + start-from + Begin, one remembered "Class settings" disclosure (tempo, count,
+volume, presets, voice, Sanskrit, the breath-only metronome), the Tonight suggestion. Posture
+pages: one live figure beside the steps, sections reordered, classical form folded. Codex review
+(4 × P2) fixed: a class survives query changes, `?figure=` on posture pages, no trainer-store
+reads with STUDY off (coach prompt too), no Review shortcut.
 
 ---
 
