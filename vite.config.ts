@@ -12,6 +12,6 @@ export default defineConfig({
   },
   test: {
     // agent worktrees (.claude/worktrees/*) carry whole copies of the repo
-    exclude: [...configDefaults.exclude, '.claude/**'],
+    exclude: [...configDefaults.exclude, '.claude/**', 'dist/**'],
   },
 })

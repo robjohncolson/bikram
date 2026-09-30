@@ -1,7 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
-import './sw-lib.js';
+import '../public/sw-lib.js';
 
 const { shellAssets, bundledAssets, staleUrls, canPrune, oldCaches, rangeResponse } = globalThis.swLib;
 const origin = 'https://yoga.test';
@@ -41,7 +41,7 @@ function worker() {
     },
   };
   const self = { addEventListener: (type, handler) => { handlers[type] = handler; }, skipWaiting: vi.fn(), clients: { claim: vi.fn(), matchAll: vi.fn(async () => [{ id: 'page' }]) } };
-  runInNewContext(readFileSync(new URL('./sw.js', import.meta.url), 'utf8'), {
+  runInNewContext(readFileSync(new URL('../public/sw.js', import.meta.url), 'utf8'), {
     self, caches, fetch, location: { origin }, URL, Response, AbortController,
     setTimeout, clearTimeout, importScripts: () => {}, swLib: globalThis.swLib,
   });
