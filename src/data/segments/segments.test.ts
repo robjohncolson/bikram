@@ -55,7 +55,7 @@ describe('class-time segments', () => {
     expect(JSON.stringify(situp)).not.toMatch(/every floor posture/);
     expect(situp.sequenceNote).toContain('after the final Bow set');
     for (const id of ['pranayama', 'kapalbhati']) {
-      const p = poses.find((p) => p.id === id)!;
+      const p = poses.find((q) => q.id === id)!;
       expect([p.summary, ...p.benefits].join(' ')).not.toMatch(/ninety minutes|90 minutes/);
     }
   });
