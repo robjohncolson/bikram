@@ -14,17 +14,29 @@
   /* text */
   --text: #2b2015;
   --text-soft: #6b5d4a;
-  --text-faint: #9a8a72;
+  --text-faint: #70614f;
 
   /* brand: ember — the heat of the room */
-  --ember: #c05621;
+  --ember: #a34715;
   --ember-soft: #f5e0d1;
   --ember-text: #a34715;
 
   /* semantics */
-  --strengthens: #b7541f;
-  --stretches: #2e7fc2;
+  --strengthens: #a34715;
+  --stretches: #2468a4;
   --focus-ring: #c05621;
+
+  /* Class mode stays warm-dark in both themes. */
+  --cm-bg: #16110d;
+  --cm-bg-top: #201811;
+  --cm-text: #f2e9dc;
+  --cm-soft: rgb(242 233 220 / 0.62);
+  --cm-faint: rgb(242 233 220 / 0.55);
+  --cm-line: rgb(242 233 220 / 0.4);
+  --cm-hover: rgb(242 233 220 / 0.08);
+  --cm-ember: #e8763d;
+  --cm-primary-text: #1b120b;
+  --cm-primary-hover: #eb8654;
 
   /* type */
   --font-display: 'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif;
@@ -52,7 +64,7 @@
 
     --text: #f0e7db;
     --text-soft: #b3a591;
-    --text-faint: #7d6f5c;
+    --text-faint: #ad9d87;
 
     --ember: #e8763d;
     --ember-soft: #3d2618;
@@ -64,6 +76,16 @@
 
     --shadow-card: 0 1px 2px rgb(0 0 0 / 0.3), 0 4px 16px rgb(0 0 0 / 0.25);
     --shadow-pop: 0 2px 6px rgb(0 0 0 / 0.4), 0 12px 32px rgb(0 0 0 / 0.45);
+  }
+}
+
+@media (prefers-contrast: more) {
+  :root {
+    --text-faint: var(--text-soft);
+    --border: var(--border-strong);
+    --cm-soft: var(--cm-text);
+    --cm-faint: var(--cm-text);
+    --cm-line: var(--cm-text);
   }
 }
 
@@ -139,10 +161,13 @@ button {
   font-size: 12.5px;
   font-weight: 600;
   letter-spacing: 0.01em;
-  color: var(--pill);
+  color: var(--text);
   background: color-mix(in srgb, var(--pill) 13%, transparent);
   border: 1px solid color-mix(in srgb, var(--pill) 30%, transparent);
-  white-space: nowrap;
+  max-width: 100%;
+  min-width: 0;
+  white-space: normal;
+  overflow-wrap: anywhere;
 }
 
 .pill .dot {

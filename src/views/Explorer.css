@@ -200,7 +200,7 @@
 }
 
 .ex-chakra.is-active .ex-chakra-count {
-  color: color-mix(in srgb, var(--c) 75%, var(--text));
+  color: var(--text);
   border-color: color-mix(in srgb, var(--c) 45%, var(--border));
 }
 
