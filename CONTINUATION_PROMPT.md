@@ -4,16 +4,48 @@ Read `CLAUDE.md` first (architecture + conventions; it is current). This file is
 newest-first log of where the work stands and what is still open.
 
 **Live**: https://bikram-chi.vercel.app · **Repo**: https://github.com/robjohncolson/bikram (PUBLIC
-since 2026-08-27) · deploy with `npx vercel deploy --prod --yes` · `npm test` = 103+ tests / 14 files,
-all green on the 2026-09-27 working tree (see the top entries). **Deploys now happen from GitHub on
-push to `main` via Vercel's Git integration**; the CLI token on this machine is expired.
+since 2026-08-27) · `npm test` = 296 tests / 30 files, all green at `350f4ed` (2026-09-30).
+**Deploys happen from GitHub on push to `main` via Vercel's Git integration**; the CLI token on
+this machine is expired.
 
 ---
 
-## ✔ 2026-09-30 — THE LIBRARY INTEGRATED: 56 POSTURES, SIX FAMILIES (uncommitted)
+## ▶ NEXT (resume here)
 
-`docs/library-integration-spec.md`, as uncommitted working-tree changes on top of the merged
-fan-out (six groups, `docs/library-fanout-spec.md`; not reviewed, not committed):
+1. **Robert's open decision — library arm proportions.** The rig's arms are too short for the
+   book's binds and clasps: 7–13 cm short of the wrist-clasps beyond the feet (paschimottanasana,
+   janu sirsasana, trianga), 22–35 cm short in the standing folds and upavistha konasana, 30 cm
+   in the bound lotus, 35–56 cm apart for the hands clasped behind (marichyasana I/II, ardha
+   matsyendrasana). Full table: `docs/library.md`. Options: (a) keep one figure (steps already
+   say what the figure holds, the book's technique in full); (b) a LIBRARY-ONLY skeleton with
+   longer arms — the 26 & 2 skeleton, sprites and parity fixtures untouched, but every library
+   sheet re-checked (a fan-out-sized pass). Do not change bone lengths until he decides.
+2. Warrior I's left side has no stage (both sides need a separate feet-turn stage; 8 max).
+3. Maha mudra / janu sirsasana: the bent knee opens ~65°, the book asks 90°+ (equal thigh and
+   shin with the heel at the perineum) — a rig/solver question.
+4. Lineage notes the reviewers flagged but left: the pregnancy notes are a reading of p. 40,
+   the p. 59 boat note is also applied to paripurna navasana, a few cautions read as facts.
+5. `/pose/half-moon`: long subtitle lines run past the edge at 360 px (seen in a screenshot;
+   not caused by the library work — check whether it is old).
+6. Not in the library on purpose: `savasana` (a 26 & 2 id; ids are never shared), the four
+   pranayama entries and dhyana (not asanas).
+
+Workflow that built this (Robert's): spec → Opus 5.5 agent implements → Codex (gpt-6-astra,
+cross-agent runner, `--task-type review --read-only`) reviews → fix → commit, push, Ops status
+(`send.py … --ref bikram`). Parallel work: one agent per family in its own git worktree, never
+editing shared files (`scripts/blender/library/README.md` says who owns what), merged by hand.
+
+---
+
+## ✔ 2026-09-30 — THE LIBRARY INTEGRATED: 56 POSTURES, SIX FAMILIES (`350f4ed`, pushed)
+
+`docs/library-integration-spec.md` on top of the merged fan-out (six groups in parallel
+worktrees, `docs/library-fanout-spec.md`, group commits `b64b7a6` standing, `b83a981` backbend,
+`cda7c4d` seated, `050f69e` folds, `30d6ad4` lotus, `9473d8a` twist). Codex review fixed: a
+singular trunk-width projection on exact sideways aims (`level_width` fallback), stage-bound
+steps claiming contacts the figure never makes (now each says what the figure holds), warrior I
+and maha mudra exit steps bound to the wrong stage, the upright-spine lotus note split out of
+`LOTUS_CROSSING` for the fish and the lotus seal:
 - TESTS: the trunk-across test narrowed to its intent — a trunk bone's width within 25° of the
   width its aim implies (the parent's width carried square) turned by the stage's roll, or of that
   level width (a squaring roll); exactly-reversed and reversed-sideways aims still fail (teeth:
@@ -39,13 +71,14 @@ fan-out (six groups, `docs/library-fanout-spec.md`; not reviewed, not committed)
   parsva pindasana, bharadvajasana, jatara); families retitled ("Backbends and arm supports",
   "Twists and lying leg stretches"); `/library` has a family index. The REACH TABLE is in
   `docs/library.md` (Robert's open decision: library-only arm proportions?).
-- OPEN: warrior I's left side has no stage; the arms' reach (table); Codex review, commit, push.
+- OPEN: see NEXT at the top.
 
 ---
 
-## ✔ 2026-09-29 (late) — A LOTUS-CAPABLE RIG, AND THE LIBRARY READY TO FAN OUT (uncommitted)
+## ✔ 2026-09-29 (late) — A LOTUS-CAPABLE RIG, AND THE LIBRARY READY TO FAN OUT (`a30b1ce`, pushed)
 
-`docs/library-lotus-rig-spec.md`, as uncommitted working-tree changes (not reviewed, not committed):
+`docs/library-lotus-rig-spec.md`; Codex-reviewed (over-broad trunk/socket/laced-hands exemptions, a cropped frame,
+repeat steps on the wrong side's stage, a degenerate `knee_on` basis — all fixed):
 - CLEARANCE: `src/rig/clearance.ts` (rendered hull, named rules: shared joint, trunk neighbours
   (≤ 2 trunk edges), hip socket (own side, beyond 13 cm of the hip), laced hands (finger regions,
   `hands: 'laced'` stages only); 1 cm, one tolerance; cross-language fixture + `_selftest.py`;
@@ -69,10 +102,9 @@ fan-out (six groups, `docs/library-fanout-spec.md`; not reviewed, not committed)
 Not done / known: the second foot is on the first shin, not the thigh; the hands do not hold the
 feet on the way in (they wait on the mat); `/pose/*` and the class were not re-screenshotted.
 
-## ✔ 2026-09-29 — THE POSTURE LIBRARY, FIRST FAMILY: INVERSIONS (uncommitted)
+## ✔ 2026-09-29 — THE POSTURE LIBRARY, FIRST FAMILY: INVERSIONS (`375663e`, pushed)
 
-`docs/library-inversions-spec.md`, as uncommitted working-tree changes (not reviewed, not
-committed). A second collection beside the 26 & 2, never mixed into it (`docs/library.md`):
+`docs/library-inversions-spec.md` (Codex-reviewed, committed as `375663e`). A second collection beside the 26 & 2, never mixed into it (`docs/library.md`):
 - Ten inversions as live-figure-only rig sheets: `scripts/blender/library/*.py` (+ `_lib.py`:
   solvers, the floor check over every stage/ghost, the `notice` vocabulary). Reach and floor
   checks silent for every stage. `render_motion.py` finds them only for the preview
@@ -102,7 +134,7 @@ hands hold the shins (the rig's arms are a hand short of its feet); no breath on
 figure; the headstand text follows the book (weight on the head) where the Codex review wanted
 the forearms to carry it; `notice` is text only (the hook for drawing the hard-to-see work later).
 
-## ✔ 2026-09-29 (late night) — THE OTHER TWELVE POSTURES REFINED (uncommitted)
+## ✔ 2026-09-29 (late night) — THE OTHER TWELVE POSTURES REFINED (`31349e4`, pushed)
 
 `docs/posing-refinement-2-spec.md`, as uncommitted working-tree changes (not reviewed, not
 committed). References: Wikimedia Commons photographs and the yogajala cheat-sheet illustrations,
@@ -158,7 +190,7 @@ Still open: commit + push; Codex review.
 
 ---
 
-## ✔ 2026-09-29 (night) — POSTURES REFINED AFTER THE REFERENCE PHOTOGRAPHS (uncommitted)
+## ✔ 2026-09-29 (night) — POSTURES REFINED AFTER THE REFERENCE PHOTOGRAPHS (`f237a2d`, pushed)
 
 `docs/posing-refinement-spec.md`, as uncommitted working-tree changes (Codex-reviewed, fixes
 below; not committed). The changes are all in `scripts/blender/postures/*.py` (plus
