@@ -13,10 +13,8 @@ the left a little in) when the legs are apart: the hips then turn on
 planted feet — turned with the hips, the straight legs swing the drawn
 figure 7 cm into the mat. The turn is the whole figure turned about the
 vertical (`_lib.turn`, a roll of the pelvis), allowed since the
-integration pass narrowed the trunk-across rule. Right side only: both
-sides in 8 stages leave no stage for the feet to turn between them (tried:
-the hips turning with the feet dip 6-7 cm), so the left side is a step
-without a stage. Seen from the side: the stages facing the front face on,
+integration pass narrowed the trunk-across rule. Both sides have a separate
+feet-turn stage between them. Seen from the side: the stages facing the front face on,
 the warrior in profile. Shape from the book's photographs; the stages are
 ours.
 """
@@ -27,7 +25,7 @@ _spec = importlib.util.spec_from_file_location('_library_standing', Path(__file_
 S = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(S)
 L = S.L
-L.begin('virabhadrasana_i')
+L.begin('virabhadrasana_i', skeleton='library')
 
 STANCE = 0.61       # each ankle this far along the stance line (Y) from the middle
 # the mat's FRONT is -X, toward the side camera: every stage facing the
@@ -75,14 +73,14 @@ def sideways(k, joined=True, feet=FORWARD):
     ankles = {'R': (-STANCE * k, 0.0), 'L': (STANCE * k, 0.0)}
     pose = {'pelvis.location': (0, 0, 0)}
     S.arms_up(pose, join=joined)
-    S.fit_pelvis(pose, {f'hip.{s}': ((ankles[s][0], ankles[s][1], S.ANKLE_Z), S.LEG) for s in 'LR'}, y=0.0)
+    S.fit_pelvis(pose, {f'hip.{s}': ((ankles[s][0], ankles[s][1], S.ankle_z()), S.leg_length()) for s in 'LR'}, y=0.0)
     for s in 'LR':
         S.straight_leg(pose, s, ankles[s], feet[s])
     S.arms_up(pose, join=joined)
     return L.turn(pose, SIDE)
 
 
-APART = sideways(1.0, feet=FOR_RIGHT)
+APART = sideways(1.0, joined=False, feet=FOR_RIGHT)
 # halfway out (and back): straight legs spread from together to the full
 # stance in one blend dip the drawn figure 5 cm through the mat
 STEP = sideways(0.45)
@@ -115,6 +113,8 @@ def warrior(front='R', bad=False):
     return L.turn(pose, 180.0) if front == 'R' else pose
 
 
+APART_LEFT = sideways(1.0, joined=False, feet={'L': (1, 0), 'R': (0.45, -0.9)})
+WARRIOR_LEFT = warrior('L')
 WARRIOR = warrior()
 GHOST = L.diff(warrior(bad=True), WARRIOR)
 
@@ -135,9 +135,12 @@ POSTURE = L.check({
         {'label': 'Arms up', 'pose': REACH, 'hold': 2, 'notice': ['shoulders']},
         {'label': 'Palms joined', 'pose': STEP, 'hold': 3, 'notice': ['shoulders']},
         {'label': 'Legs apart', 'pose': APART, 'hold': 4, 'notice': ['feet', 'hips']},
-        {'label': 'Warrior', 'pose': WARRIOR, 'hold': 10, 'guides': GUIDES, 'ghost': GHOST,
+        {'label': 'Warrior right', 'pose': WARRIOR, 'hold': 10, 'guides': GUIDES, 'ghost': GHOST,
          'notice': ['quads', 'hips', 'upper-back', 'breath']},
         {'label': 'Turn to the front', 'pose': APART, 'hold': 3, 'notice': ['hips']},
+        {'label': 'Turn feet left', 'pose': APART_LEFT, 'hold': 3, 'notice': ['feet']},
+        {'label': 'Warrior left', 'pose': WARRIOR_LEFT, 'hold': 10, 'notice': ['quads', 'hips', 'upper-back', 'breath']},
+        {'label': 'Return to front', 'pose': APART_LEFT, 'hold': 3, 'notice': ['hips']},
         {'label': 'Step in', 'pose': STEP_IN, 'hold': 2, 'notice': ['shoulders']},
         {'label': 'Stand', 'pose': STAND, 'hold': 3, 'notice': ['feet']},
     ],

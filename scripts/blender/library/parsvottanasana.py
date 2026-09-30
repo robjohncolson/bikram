@@ -12,10 +12,7 @@ trunk rises, and the feet come together. The feet stand turned for the fold
 out, so the hips turn on planted feet (turned with the hips, the straight
 legs swing the drawn figure 3-6 cm into the mat). The turn is the whole
 figure turned about the vertical (`_lib.turn`, a roll of the pelvis), allowed since the integration pass narrowed the
-trunk-across rule. Seen from the side, right side only (the book's swing of
-the folded trunk round to the left side is a step without a stage): the
-stages facing the front face +X, away from the side camera, so the joined
-palms show on the back; the stages facing the right foot are in profile.
+trunk-across rule. Both sides are shown from the side camera, with the centre facing +X.
 Shape from the book's photographs; the stages are ours.
 """
 import importlib.util
@@ -26,7 +23,7 @@ _spec = importlib.util.spec_from_file_location('_library_standing', Path(__file_
 S = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(S)
 L = S.L
-L.begin('parsvottanasana')
+L.begin('parsvottanasana', skeleton='library')
 
 FRONT_Y = -0.50      # the front (right) ankle ahead of the midline
 BACK_Y = 0.50        # the back (left) ankle behind it (about a metre between them)
@@ -44,7 +41,7 @@ def fwd(deg):
 
 def stance(pose):
     """Both legs straight to the stance's ankles, the pelvis fitted between."""
-    S.fit_pelvis(pose, {f'hip.{s}': ((ANKLES[s][0], ANKLES[s][1], S.ANKLE_Z), S.LEG) for s in 'LR'}, free='y')
+    S.fit_pelvis(pose, {f'hip.{s}': ((ANKLES[s][0], ANKLES[s][1], S.ankle_z()), S.leg_length()) for s in 'LR'}, free='y')
     for s in 'LR':
         S.straight_leg(pose, s, ANKLES[s], FEET[s])
     return pose
@@ -58,10 +55,6 @@ SIDE = 90.0
 STAND = S.together({})
 S.arms_by_thighs(STAND)
 STAND = L.turn(STAND, SIDE)
-
-# the hands on their way round behind the back (and back again)
-LOW = L.turn(S.hands_low_back(S.together({})), SIDE)
-
 
 def sideways(fold=None):
     """The feet jumped apart sideways, the body facing the front, the palms
@@ -77,7 +70,7 @@ def sideways(fold=None):
     if fold:
         for s, sx in (('L', 1), ('R', -1)):
             pose[f'clavicle.{s}'] = L.n(L.add((sx, 0, 0), pose['spine.upper'], 0.2))
-    S.fit_pelvis(pose, {f'hip.{s}': ((ankles[s][0], ankles[s][1], S.ANKLE_Z), S.LEG) for s in 'LR'}, y=0.0)
+    S.fit_pelvis(pose, {f'hip.{s}': ((ankles[s][0], ankles[s][1], S.ankle_z()), S.leg_length()) for s in 'LR'}, y=0.0)
     # the feet stay turned for the fold (the right a quarter turn out, the
     # left well in), so the turn of the hips pivots on them: turned together
     # with the hips, the straight legs swing the figure 3-6 cm into the mat
@@ -88,7 +81,8 @@ def sideways(fold=None):
     return L.turn(S.namaste_back(pose), SIDE)
 
 
-APART = sideways()
+# Begin the step apart while the hands travel behind the waist.
+LOW = L.turn(S.hands_low_back(S.wide({}, 0.25)), SIDE)
 
 # the trunk lifted and the head thrown back
 HEAD_BACK = {'pelvis.location': (0, 0, 0), 'spine.lower': L.n((0, 0.06, 1)), 'spine.upper': L.n((0, 0.18, 1)),
@@ -123,9 +117,13 @@ GHOST = L.diff(folded({'pelvis': 35.0, 'spine.lower': 95.0, 'spine.upper': 150.0
 # turn out of the fold swings the figure 3-5 cm into the mat on the way
 CENTRE = sideways({b: a * 0.7 for b, a in FOLD.items()})
 
+def opposite(pose):
+    return L.turn(L.mirror(pose), 180.0)
+
+
 _AT = L.fk(FOLDED)
 GUIDES = [
-    {'from': _AT['hip.R'], 'to': (ANKLES['R'][0], ANKLES['R'][1], S.ANKLE_Z)},   # the front leg, straight
+    {'from': _AT['hip.R'], 'to': (ANKLES['R'][0], ANKLES['R'][1], S.ankle_z())},   # the front leg, straight
 ]
 
 POSTURE = L.check({
@@ -137,13 +135,17 @@ POSTURE = L.check({
     'stages': [
         {'label': 'Stand', 'pose': STAND, 'hold': 3, 'notice': ['feet']},
         {'label': 'Hands behind', 'pose': LOW, 'hold': 3, 'view': 'quarter-back', 'notice': ['shoulders']},
-        {'label': 'Legs apart', 'pose': APART, 'hold': 3, 'notice': ['shoulders', 'feet']},
         {'label': 'Head back', 'pose': HEAD_BACK, 'hold': 4, 'notice': ['upper-back', 'neck']},
         {'label': 'Going down', 'pose': HALFWAY, 'hold': 2, 'notice': ['hamstrings']},
         {'label': 'Fold', 'pose': FOLDED, 'hold': 10, 'guides': GUIDES, 'ghost': GHOST,
          'notice': ['hamstrings', 'hips', 'shoulders', 'breath']},
         {'label': 'Back to the centre', 'pose': CENTRE, 'hold': 3, 'view': 'back', 'notice': ['upper-back']},
+        {'label': 'Turn feet left', 'pose': opposite(CENTRE), 'hold': 3, 'notice': ['feet']},
+        {'label': 'Head back left', 'pose': opposite(HEAD_BACK), 'hold': 4, 'notice': ['upper-back', 'neck']},
+        {'label': 'Going down left', 'pose': opposite(HALFWAY), 'hold': 2, 'notice': ['hamstrings']},
+        {'label': 'Fold left', 'pose': opposite(FOLDED), 'hold': 10, 'notice': ['hamstrings', 'hips', 'shoulders', 'breath']},
+        {'label': 'Centre from left', 'pose': opposite(CENTRE), 'hold': 3, 'notice': ['upper-back']},
         # the loop back to Stand lowers the hands by the sides
-        {'label': 'Feet together', 'pose': LOW, 'hold': 2, 'notice': ['shoulders']},
+        {'label': 'Step in and release', 'pose': LOW, 'hold': 2, 'notice': ['shoulders']},
     ],
 })

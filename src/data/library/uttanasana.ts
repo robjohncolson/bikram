@@ -8,7 +8,7 @@ export const uttanasana: LibraryAsana = {
   english: 'Intense forward stretch',
   steps: [
     { text: 'Stand in Tadasana with the knees tight.', stage: 0 },
-    { text: 'Breathing out, bend forward and touch the fingers to the floor, then lay the palms down beside the feet, behind the heels, the knees never bending. (The figure’s arms are shorter than the book asks: its hands hang toward the floor without reaching it.)', stage: 1 },
+    { text: 'Breathing out, bend forward and touch the fingers to the floor, then lay the palms down beside the feet, behind the heels, the knees never bending. (The figure stops short: its wrists remain about 26 cm from the floor targets here, and about 11 cm away in the deeper fold.)', stage: 1 },
     { text: 'Try to lift the head and lengthen the spine. Shift the hips slightly forward so the legs stand perpendicular to the floor, and take two deep breaths.', stage: 1 },
     { text: 'Breathing out, bring the trunk nearer the legs and rest the head on the knees. Keep the kneecaps pulled well up.', stage: 2 },
     { text: 'Stay, breathing deeply and evenly.', stage: 2 },

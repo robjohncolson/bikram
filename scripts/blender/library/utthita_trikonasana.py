@@ -9,10 +9,8 @@ body in one plane; up again, the feet turned for the left side and the
 same over the left leg; up, and back to Tadasana. Seen from the front.
 Shape from the book's photographs; the stages are ours.
 
-The rig's arm reaches the right shin just above the ankle with the trunk
-tilted 70 degrees — the book's first form ("the palm near the ankle"); the
-palm flat on the floor, which the book gives "if possible", is out of this
-rig's reach without folding the trunk out of the plane.
+The lower fingertips stop 15.4 cm above the mat. The palm remains beside
+the shin; reaching the floor would require a different trunk arrangement.
 """
 import importlib.util
 from pathlib import Path
@@ -21,7 +19,7 @@ _spec = importlib.util.spec_from_file_location('_library_standing', Path(__file_
 S = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(S)
 L = S.L
-L.begin('utthita_trikonasana')
+L.begin('utthita_trikonasana', skeleton='library')
 
 HALF = 0.58          # the ankles this far either side of the midline
 TILT = 72.0          # the trunk's sideways tilt from upright, degrees
@@ -95,7 +93,7 @@ def guides(sd):
     ]
 
 
-FRAME = {'center_z': 0.95, 'scale': 2.1}
+FRAME = {'center_z': 1.02, 'scale': 2.35}
 
 POSTURE = L.check({
     'id': 'library:utthita-trikonasana',

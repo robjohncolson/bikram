@@ -21,9 +21,9 @@ _spec = importlib.util.spec_from_file_location('_library_standing', Path(__file_
 S = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(S)
 L = S.L
-L.begin('uttanasana')
+L.begin('uttanasana', skeleton='library')
 
-FLAT = L.n((0, -1, -0.1))    # the palm flat on the mat, fingers forward
+FLAT = L.flat_hand((0, -1, 0))    # the palm flat on the mat, fingers forward
 # the deepest clearance-clean fold and the lowest clean concave back with the
 # feet together (both searched over the trunk angles; degrees from upright)
 FOLD = {'pelvis': 115.0, 'spine.lower': 134.0, 'spine.upper': 178.0, 'neck': 186.0, 'head': 192.0}
@@ -37,10 +37,11 @@ def floor_wrist(at, s):
     """Where the wrist would go with the palm on the mat beside the foot,
     level with the back of the heel."""
     sx = 1 if s == 'L' else -1
-    return (at[f'ankle.{s}'][0] + sx * 0.11, at[f'ankle.{s}'][1] + 0.04, L.PALM_R + 0.004)
+    return (at[f'ankle.{s}'][0] + sx * 0.11, at[f'ankle.{s}'][1] + 0.04, L.WRIST_Z)
 
 
 def to_floor(pose, hint):
+    L.clavicles_follow(pose)
     at = L.fk(pose)
     for s, sx in (('L', 1), ('R', -1)):
         S.reach_toward(pose, s, floor_wrist(at, s), (sx * hint[0], hint[1], hint[2]), FLAT)
