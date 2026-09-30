@@ -8,7 +8,7 @@ import { holdUntilLoaded } from '../components/rigFallback';
 import type { BreathPhase } from '../components/PoseMotion';
 import { clipSeconds, figureFrameAt, figurePlan, figurePoseAt, planEnd, segmentTimeline } from '../pacer';
 import type { CueLayer, FigureFrame, FigurePlan, FigurePose, PoseTrack, SegmentPosition } from '../pacer';
-import { figureBeatProgress } from './pacerLifecycle';
+import { figureBeatProgress, keepPausedPulseFrame } from './pacerLifecycle';
 import './PacerClassMode.css';
 
 /** Where the class clock is: the live segment and the beats into it. */
@@ -91,6 +91,7 @@ const BREATH_STEPS = 48;
  * jumps. See `pacer/figure.ts` for the mapping itself.
  */
 function useClassFigureFrame(
+  poseId: string,
   plan: FigurePlan | undefined,
   clock: FigureClockProps | undefined,
   breath: BreathPhase | undefined,
@@ -132,13 +133,16 @@ function useClassFigureFrame(
 
   const [figure, setFigure] = useState<ClassFigure | undefined>(undefined);
   const lastRef = useRef<ClassFigure | undefined>(undefined);
+  const lastPosition = useRef<{ poseId: string; segment: number } | undefined>(undefined);
   useEffect(() => {
     if (!seg) {
       lastRef.current = undefined;
+      lastPosition.current = undefined;
       setFigure(undefined);
       return;
     }
-    if (paused && seg.kind === 'pulse' && lastRef.current) return;
+    if (lastRef.current && keepPausedPulseFrame(paused, seg.kind, poseId, segIndex, lastPosition.current)) return;
+    lastPosition.current = { poseId, segment: segIndex };
     const compute = (now: number) => {
       const beatMs = beatSeconds * 1000;
       // paused: no extrapolation, the beat's own frame (so a skip while
@@ -180,7 +184,7 @@ function useClassFigureFrame(
       raf = requestAnimationFrame(tick);
     });
     return () => cancelAnimationFrame(raf);
-  }, [seg, steps, beatsIn, beatSeconds, stamp, subdivision, divisions, total, breathPhase, breathSeconds, paused, rig]);
+  }, [poseId, segIndex, seg, steps, beatsIn, beatSeconds, stamp, subdivision, divisions, total, breathPhase, breathSeconds, paused, rig]);
 
   return seg ? figure : undefined;
 }
@@ -295,7 +299,7 @@ export function PacerClassMode(props: PacerClassModeProps) {
     if (!rig) return;
     for (const id of [props.pose.id, ...rigBridgeIds(), ...RIG_LIVE]) loadRigData(id).catch(() => {});
   }, [rig, props.pose.id]);
-  const classFigure = useClassFigureFrame(plan, props.figureClock, props.breath, props.paused, rig);
+  const classFigure = useClassFigureFrame(props.pose.id, plan, props.figureClock, props.breath, props.paused, rig);
   const figure = classFigure?.frame;
   const segMotion =
     plan && props.figureClock

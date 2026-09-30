@@ -64,6 +64,8 @@ export interface Metronome {
   pause(): void;
   /** Continue the preserved slot after an explicit pause. */
   resume(): void;
+  /** Replace a paused track: discard its subdivision and begin a fresh beat on resume. */
+  resetPausedBeat(): void;
   readonly running: boolean;
   /** merge + clamp settings; takes effect from the next scheduled beat */
   update(partial: Partial<MetronomeSettings>): void;
@@ -260,6 +262,15 @@ export function createMetronome(
       pausedAt = null;
       clockOffset = wallNow() - ctx.currentTime;
       schedule();
+    },
+    resetPausedBeat() {
+      this.pause();
+      if (pausedAt === null) return;
+      subdivision = 0;
+      beat = 0;
+      bar = 0;
+      serial = 0;
+      nextTime = pausedAt + 0.12;
     },
     stop() {
       running = false;

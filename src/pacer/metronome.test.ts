@@ -172,7 +172,7 @@ it('silences a pending half-beat pulse when the class pauses', () => {
 });
 
 
-it.each([0.2, 0.45, 0.9])('preserves all pulses and figure edges through a pause %s seconds after an integer tick', (pauseOffset) => {
+it.each([0, 1].flatMap((set) => [0.2, 0.45, 0.9].map((offset) => [set, offset])))('preserves all pulses and figure edges through a pause in set %s at offset %s', (set, pauseOffset) => {
   vi.useFakeTimers();
   const ctx = new Context();
   vi.stubGlobal('AudioContext', function () { return ctx; });
@@ -186,7 +186,7 @@ it.each([0.2, 0.45, 0.9])('preserves all pulses and figure edges through a pause
   const metro = createMetronome((event) => pending.push(event), () => ctx.currentTime);
   metro.setPhaseSource((serial) => segmentBeatPhase(track,
     Math.min(track.totalBeats - 1, anchor ? anchor.beat + serial - anchor.serial : track.totalBeats - left)));
-  const pauseTime = 0.12 + track.spans[1].startBeat + track.spans[1].entryBeats + 5 + pauseOffset;
+  const pauseTime = 0.12 + track.spans[set].startBeat + track.spans[set].entryBeats + 5 + pauseOffset;
   let didPause = false;
   metro.start();
   for (let t = 0; t < track.totalBeats + 4; t += 0.01) {
@@ -233,7 +233,7 @@ it.each([0.2, 0.45, 0.9])('preserves all pulses and figure edges through a pause
   expect(pumps).toEqual([60, 60]);
   expect(pumpTimes).toEqual(heard.map((osc) => osc.start.mock.calls[0][0]));
   expect(didPause).toBe(true);
-  if (pauseOffset === 0.45) expect(ctx.createOscillator.mock.results.some(({ value }) => value.stop.mock.calls.length > 1)).toBe(true);
+  if (set === 1 && pauseOffset === 0.45) expect(ctx.createOscillator.mock.results.some(({ value }) => value.stop.mock.calls.length > 1)).toBe(true);
   metro.dispose();
 });
 
@@ -257,5 +257,39 @@ it('holds the scheduled duration for a tempo transition beat in both clocks', ()
   vi.advanceTimersByTime(40);
   expect(beats[2].beatSeconds).toBe(0.5);
   expect(beats[2].time).toBeCloseTo(1.12);
+  metro.dispose();
+});
+
+it.each([0.2, 0.45])('drops the old pulse slot after paused skips at %s seconds', (pauseOffset) => {
+  vi.useFakeTimers();
+  const ctx = new Context();
+  vi.stubGlobal('AudioContext', function () { return ctx; });
+  const pulse = buildPoseTrack(getPose('kapalbhati')!, 60);
+  const twist = buildPoseTrack(getPose('spine-twisting')!, 60);
+  let track = pulse;
+  let startBeat = pulse.spans[1].startBeat + pulse.spans[1].entryBeats + 5;
+  const beats: BeatEvent[] = [];
+  const metro = createMetronome((event) => beats.push(event), () => ctx.currentTime);
+  metro.setPhaseSource((serial) => segmentBeatPhase(track, startBeat + serial));
+  metro.start();
+  ctx.currentTime = 0.12 + pauseOffset;
+  vi.advanceTimersByTime(40);
+  metro.pause();
+  for (const next of [twist, pulse]) {
+    track = next;
+    startBeat = 0;
+    metro.resetPausedBeat();
+    beats.length = 0;
+    ctx.currentTime += 2;
+    metro.resume();
+    const phase = segmentBeatPhase(track, 0);
+    expect(beats[0]).toMatchObject({
+      serial: 0, subdivision: 0, divisions: phase.pacer.pulsesPerBeat ?? 1,
+      beat: phase.beat, bar: phase.bar, beatsPerBar: phase.pacer.beatsPerBar,
+      late: false,
+    });
+    expect(beats[0].time).toBeCloseTo(ctx.currentTime + 0.12);
+    metro.pause();
+  }
   metro.dispose();
 });

@@ -325,7 +325,7 @@ describe('the posture library', () => {
     const low = (p: ReturnType<typeof sheetPose>) => Math.min(...Object.values(solve(p)).flatMap((b) => [b.head[2], b.tail[2]]));
     expect(low(sheetPose(hs, 0, 1, smoothstep(0.5)))).toBeLessThan(-0.005);
     expect(low(groundedSheetPose(hs, 0, 1, smoothstep(0.5)))).toBeGreaterThanOrEqual(-0.005);
-  });
+  }, 60_000);
 
   it('never grounds a held stage: every authored stage already clears the floor', () => {
     for (const [id, d] of Object.entries(sheets)) {

@@ -82,3 +82,10 @@ export function classFigurePosition(track: PoseTrack, budget: number, left: numb
 export function figureBeatProgress(now: number, stamp: number, seconds: number, subdivision = 0, divisions = 1) {
   return Math.min(1, Math.max(0, subdivision / divisions + (now - stamp) / (seconds * 1000)));
 }
+
+export function keepPausedPulseFrame(
+  paused: boolean, kind: string, poseId: string, segment: number,
+  previous?: { poseId: string; segment: number },
+): boolean {
+  return paused && kind === 'pulse' && previous?.poseId === poseId && previous.segment === segment;
+}

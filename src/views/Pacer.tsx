@@ -701,6 +701,11 @@ export function Pacer() {
       recallAttemptRef.current = undefined;
       silenceVoice();
       metRef.current?.chime();
+      if (c.phase === 'paused') {
+        metRef.current?.resetPausedBeat();
+        clearPending();
+        setPulseClock(undefined);
+      }
       anchorRef.current = null;
       const track = buildTrack(idx);
       trackRef.current = track;
@@ -712,7 +717,7 @@ export function Pacer() {
         revealed: !cuesRef.current.rehearse || idx === classFromRef.current,
       });
     },
-    [buildTrack, commitClass],
+    [buildTrack, commitClass, clearPending],
   );
 
   const beginClass = useCallback(() => {
