@@ -50,6 +50,16 @@ export interface SpeakOptions {
 /** Calm-teacher delivery: slightly slower than default speech. */
 const RATE = 0.95;
 
+/** Prime TTS alongside the clip element while the start gesture is active. */
+export function unlockSpeech(): void {
+  if (!speechSupported()) return;
+  const synth = window.speechSynthesis;
+  synth.resume();
+  const utterance = new SpeechSynthesisUtterance('');
+  utterance.volume = 0;
+  synth.speak(utterance);
+}
+
 export function speak(text: string, opts: SpeakOptions = {}): void {
   if (!speechSupported() || !text) return;
   const synth = window.speechSynthesis;
@@ -61,6 +71,7 @@ export function speak(text: string, opts: SpeakOptions = {}): void {
     const voice = synth.getVoices().find((v) => v.name === opts.voiceName);
     if (voice) utterance.voice = voice;
   }
+  synth.resume();
   synth.speak(utterance);
 }
 

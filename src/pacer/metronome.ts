@@ -12,7 +12,8 @@ const LOOKAHEAD_S = 0.15;
 const TICK_MS = 40;
 /**
  * A beat this far behind the audio clock was missed while the tab was
- * throttled or the context suspended (screen lock, backgrounding). Such
+ * throttled. A frozen context is reconciled against the wall clock on
+ * resume; every beat missed during that suspension is late. Such
  * beats are still delivered — the class clock must stay honest — but
  * flagged `late` so nothing ticks, speaks, or blinks for them in a burst.
  */
@@ -70,7 +71,10 @@ export interface Metronome {
   dispose(): void;
 }
 
-export function createMetronome(onBeat: (e: BeatEvent) => void): Metronome {
+export function createMetronome(
+  onBeat: (e: BeatEvent) => void,
+  wallNow: () => number = () => performance.now() / 1000,
+): Metronome {
   let ctx: AudioContext | null = null;
   let master: GainNode | null = null;
   let timer: ReturnType<typeof setInterval> | null = null;
@@ -78,6 +82,7 @@ export function createMetronome(onBeat: (e: BeatEvent) => void): Metronome {
   let running = false;
   let quiet = false;
   let nextTime = 0;
+  let clockOffset = 0;
   let beat = 0;
   let bar = 0;
   let serial = 0;
@@ -86,7 +91,9 @@ export function createMetronome(onBeat: (e: BeatEvent) => void): Metronome {
   /** Bring a suspended/interrupted context back while we are meant to run
    *  (screen unlock, return from another app, end of a phone call). */
   function keepAlive() {
-    if (running && ctx && ctx.state !== 'running') void ctx.resume();
+    if (!running || !ctx) return;
+    if (ctx.state !== 'running') void ctx.resume().catch(() => {});
+    else schedule();
   }
 
   function ensureAudio(): boolean {
@@ -132,10 +139,18 @@ export function createMetronome(onBeat: (e: BeatEvent) => void): Metronome {
   }
 
   function schedule() {
-    if (!ctx) return;
+    if (!running || !ctx || ctx.state !== 'running') return;
     const now = ctx.currentTime;
-    while (nextTime < now + LOOKAHEAD_S) {
-      const late = now - nextTime > LATE_S;
+    const offset = wallNow() - now;
+    const frozen = offset - clockOffset;
+    // Audio clocks are quantized; retain small drift until it is meaningful.
+    const resumed = frozen > 0.1;
+    if (resumed) {
+      nextTime -= frozen;
+      clockOffset = offset;
+    }
+    while (running && nextTime < now + LOOKAHEAD_S) {
+      const late = now - nextTime > LATE_S || (resumed && nextTime < now);
       const ph = phaseSource?.(serial) ?? null;
       if (ph) {
         beat = ph.beat;
@@ -168,11 +183,12 @@ export function createMetronome(onBeat: (e: BeatEvent) => void): Metronome {
         return;
       }
       if (!ensureAudio() || !ctx) return;
-      void ctx.resume();
+      void ctx.resume().catch(() => {});
       running = true;
       beat = 0;
       bar = 0;
       serial = 0;
+      clockOffset = wallNow() - ctx.currentTime;
       nextTime = ctx.currentTime + 0.12;
       schedule();
       timer = setInterval(schedule, TICK_MS);

@@ -1,6 +1,6 @@
 import { voiceClips } from './voiceclips';
 import { clipDurations } from './clipdurations';
-import { stopSpeaking } from './voice';
+import { stopSpeaking, unlockSpeech } from './voice';
 
 /**
  * Recorded-clip channel of the sampler. Clips are pre-synthesized files
@@ -52,83 +52,132 @@ interface ClipItem {
 const SILENT_WAV =
   'data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA';
 
-let shared: HTMLAudioElement | null = null;
-let playing: ClipItem | null = null;
-let queue: ClipItem[] = [];
-/** Bumped on every play/stop so stale media events cannot act on a newer clip. */
-let seq = 0;
+export type ClipAudio = Pick<HTMLAudioElement,
+  'src' | 'preload' | 'dataset' | 'volume' | 'paused' | 'duration' | 'readyState' |
+  'play' | 'pause' | 'load' | 'removeAttribute' | 'addEventListener' | 'removeEventListener'>;
 
-function element(): HTMLAudioElement | null {
-  if (shared) return shared;
-  if (typeof Audio === 'undefined') return null;
-  shared = new Audio();
-  shared.preload = 'auto';
-  return shared;
-}
+export function createClipPlayer(makeAudio: () => ClipAudio | null) {
+  let shared: ClipAudio | null = null;
+  let cleanup: (() => void) | null = null;
+  let playing: ClipItem | null = null;
+  let queue: ClipItem[] = [];
+  /** Bumped on every play/stop so stale media events cannot act on a newer clip. */
+  let seq = 0;
 
-/**
- * Prime the clip channel from a user gesture (the start button). Safe to
- * call repeatedly; a no-op outside browsers.
- */
-export function unlockClips(): void {
-  const el = element();
-  if (!el || el.dataset.unlocked === '1') return;
-  el.dataset.unlocked = '1';
-  el.src = SILENT_WAV;
-  void el.play().catch(() => {
-    // the gesture did not unlock us — clips may still play where the
-    // platform allows it, and failures fall back to speech synthesis
-    delete el.dataset.unlocked;
-  });
-}
-
-function drain(): void {
-  const next = queue.shift();
-  if (next) playNow(next);
-}
-
-function playNow(item: ClipItem): void {
-  const el = element();
-  if (!el) {
-    item.fallback?.();
-    drain();
-    return;
+  function element(): ClipAudio | null {
+    if (shared) return shared;
+    shared = makeAudio();
+    if (!shared) return null;
+    shared.preload = 'auto';
+    return shared;
   }
-  const token = ++seq;
-  playing = item;
-  const finish = (failed: boolean) => {
-    if (token !== seq) return; // superseded by a newer play or a stop
-    el.removeEventListener('ended', onEnded);
-    el.removeEventListener('error', onError);
+
+  /**
+   * Prime the clip channel from a user gesture (the start button). Safe to
+   * call repeatedly; a no-op outside browsers.
+   */
+  function unlockClips(): void {
+    unlockSpeech();
+    const el = element();
+    if (!el || el.dataset.unlocked === '1') return;
+    el.dataset.unlocked = '1';
+    el.src = SILENT_WAV;
+    void el.play().catch(() => {
+      // the gesture did not unlock us — clips may still play where the
+      // platform allows it, and failures fall back to speech synthesis
+      delete el.dataset.unlocked;
+    });
+  }
+
+  function drain(): void {
+    const next = queue.shift();
+    if (next) playNow(next);
+    else if (shared) {
+      shared.removeAttribute('src');
+      shared.load();
+    }
+  }
+
+  function playNow(item: ClipItem): void {
+    const el = element();
+    if (!el) {
+      item.fallback?.();
+      drain();
+      return;
+    }
+    const token = ++seq;
+    playing = item;
+    el.volume = Math.min(1, Math.max(0, item.volume));
+    el.src = item.url;
+    let watchdog: ReturnType<typeof setTimeout>;
+    const detach = () => {
+      for (const event of ['error', 'pause', 'stalled', 'abort']) el.removeEventListener(event, onError);
+      el.removeEventListener('ended', onEnded);
+      el.removeEventListener('loadedmetadata', armWatchdog);
+      clearTimeout(watchdog);
+      if (cleanup === detach) cleanup = null;
+    };
+    const finish = (failed: boolean) => {
+      detach();
+      if (token !== seq) return;
+      seq++;
+      playing = null;
+      if (failed) {
+        el.pause();
+        item.fallback?.();
+      }
+      drain();
+    };
+    const onEnded = () => finish(false);
+    const onError = () => finish(true);
+    const armWatchdog = () => {
+      clearTimeout(watchdog);
+      const seconds = Math.max(clipDurations[item.url] ?? 30, Number.isFinite(el.duration) ? el.duration : 0);
+      watchdog = setTimeout(() => finish(true), (seconds + 5) * 1000);
+    };
+    cleanup = detach;
+    el.addEventListener('loadedmetadata', armWatchdog);
+    armWatchdog();
+    try {
+      // Wait out events queued by replacing the previous resource. A play
+      // rejection or the watchdog covers failures before playback starts.
+      void el.play().then(() => {
+        if (token !== seq) return;
+        el.addEventListener('ended', onEnded);
+        for (const event of ['error', 'pause', 'stalled', 'abort']) el.addEventListener(event, onError);
+      }).catch(() => finish(true));
+    } catch {
+      finish(true);
+    }
+  }
+
+  function playClip(
+    url: string,
+    opts: { volume?: number; interrupt?: boolean; fallback?: () => void } = {},
+  ): void {
+    const item: ClipItem = { url, volume: opts.volume ?? 1, fallback: opts.fallback };
+    if (opts.interrupt) stopClips();
+    if (playing) queue.push(item);
+    else playNow(item);
+  }
+
+  function stopClips(): void {
+    queue = [];
+    seq++; // invalidate the live clip's listeners before touching the element
+    cleanup?.();
     playing = null;
-    if (failed) item.fallback?.();
-    drain();
-  };
-  const onEnded = () => finish(false);
-  const onError = () => finish(true);
-  el.addEventListener('ended', onEnded);
-  el.addEventListener('error', onError);
-  el.volume = Math.min(1, Math.max(0, item.volume));
-  el.src = item.url;
-  el.play().catch(() => finish(true));
+    if (shared) {
+      shared.pause();
+      shared.removeAttribute('src');
+      shared.load();
+    }
+  }
+  return { unlockClips, playClip, stopClips };
 }
 
-export function playClip(
-  url: string,
-  opts: { volume?: number; interrupt?: boolean; fallback?: () => void } = {},
-): void {
-  const item: ClipItem = { url, volume: opts.volume ?? 1, fallback: opts.fallback };
-  if (opts.interrupt) stopClips();
-  if (playing) queue.push(item);
-  else playNow(item);
-}
-
-export function stopClips(): void {
-  queue = [];
-  seq++; // invalidate the live clip's listeners before touching the element
-  playing = null;
-  if (shared && !shared.paused) shared.pause();
-}
+export const { unlockClips, playClip, stopClips } = createClipPlayer(
+  () => typeof Audio === 'undefined' ? null : new Audio(),
+);
 
 /** Silence both sampler channels — clips and speech synthesis. */
 export function silenceVoice(): void {

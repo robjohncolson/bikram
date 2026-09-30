@@ -20,16 +20,28 @@ export function wakeLockSupported(): boolean {
 export function createWakeLock(): WakeLock {
   let sentinel: WakeLockSentinel | null = null;
   let wanted = false;
+  let pending = false;
+  let generation = 0;
 
   async function request() {
-    if (!wakeLockSupported() || sentinel) return;
+    if (!wanted || !wakeLockSupported() || sentinel || pending) return;
+    pending = true;
+    const token = generation;
     try {
-      sentinel = await navigator.wakeLock.request('screen');
-      sentinel.addEventListener('release', () => {
-        sentinel = null;
+      const acquired = await navigator.wakeLock.request('screen');
+      if (!wanted || token !== generation) {
+        await acquired.release().catch(() => {});
+        return;
+      }
+      sentinel = acquired;
+      acquired.addEventListener('release', () => {
+        if (sentinel === acquired) sentinel = null;
       });
     } catch {
       // denied (low battery, permissions) — practice continues unlocked
+    } finally {
+      pending = false;
+      if (wanted && token !== generation) void request();
     }
   }
 
@@ -47,6 +59,7 @@ export function createWakeLock(): WakeLock {
     },
     release() {
       wanted = false;
+      generation++;
       void sentinel?.release().catch(() => {});
       sentinel = null;
     },
