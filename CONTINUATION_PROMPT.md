@@ -4,7 +4,8 @@ Read `CLAUDE.md` first (architecture + conventions; it is current). This file is
 newest-first log of where the work stands and what is still open.
 
 **Live**: https://bikram-chi.vercel.app · **Repo**: https://github.com/robjohncolson/bikram (PUBLIC
-since 2026-08-27) · `npm test` = 917 tests / 62 files, all green at `e4c5569` (2026-09-30); `npx oxlint` clean.
+since 2026-08-27) · `npm test` = 893 tests / 62 files, all green at `e737c55` (2026-09-30; the drop from 917 is
+30 duplicate `dist/sw.test.js` runs now excluded, plus the new Vedic tests); `npx oxlint` clean.
 **Deploys happen from GitHub on push to `main` via Vercel's Git integration**; the CLI token on
 this machine is expired.
 
@@ -12,24 +13,64 @@ this machine is expired.
 
 ## ▶ NEXT (resume here)
 
-1. **Robert tests a class on his Galaxy S24 (Android Chrome, installed to the home screen).**
-   Watch: wake lock, voice + Kapalbhati half-beat pulses on the speaker, locking the phone for a
-   posture or two (catch-up), class mode in portrait and landscape.
-2. Behind-back binds (marichyasana I/II, ardha matsyendrasana, bound lotus) stay short even on the
+1. **Moon days notes — Robert's call.** The Vedic card is sourced link by link; the older "By the
+   moon" / "By the day" notes are looser: real traditions (Ashtanga moon days, the planetary week)
+   mixed with modern phase lore ("balsamic" is 20th-c. Rudhyar) and posture pairings that are OUR
+   invention. Offered: (a) relabel the pairings "our pairing", keep "tradition" only where it is
+   one (Claude's lean); (b) drop the lore, keep only documented traditions. Unanswered.
+2. Robert mainly uses the LAPTOP ("looks alright"); he took the Android pass on trust. A class on
+   his Galaxy S24 (Chrome) is still the honest device check: wake lock, voice + Kapalbhati
+   half-beat pulses, locking the phone mid-class, landscape class mode.
+3. Behind-back binds (marichyasana I/II, ardha matsyendrasana, bound lotus) stay short even on the
    longer arms: shoulder range, not length. Recorded in the steps; the reach table in
    `docs/library.md` still carries the ORIGINAL rows plus the infrastructure pass's probe — the
    family agents' new rows are in their reports, not yet merged into the table.
-3. Lineage notes the reviewers flagged but left: the pregnancy notes are a reading of p. 40,
+4. Lineage notes the reviewers flagged but left: the pregnancy notes are a reading of p. 40,
    the p. 59 boat note is also applied to paripurna navasana, a few cautions read as facts.
-4. Wind-Removing stays at two sets (Claude recommended, Robert asked; the short class trims it).
-5. Robert uses ANDROID (Galaxy S24, Chrome) — iOS paths are secondary. Multi-tab worker behaviour
-   is tested with node fakes only.
-6. Not in the library on purpose: `savasana` (a 26 & 2 id), the four pranayama entries and dhyana.
+5. Wind-Removing stays at two sets (Claude recommended, Robert asked; the short class trims it).
+6. Robert's phone is ANDROID (Galaxy S24, Chrome) — iOS paths are secondary. Multi-tab worker
+   behaviour is tested with node fakes only.
+7. The flashcards are HIDDEN (`STUDY = false`), not deleted — Robert doubts he will use them;
+   do not build on the trainer unless he asks.
+8. Not in the library on purpose: `savasana` (a 26 & 2 id), the four pranayama entries and dhyana.
 
 Workflow that built this (Robert's): spec → Opus 5.5 agent implements → Codex (gpt-6-astra,
 cross-agent runner, `--task-type review --read-only`) reviews → fix → commit, push, Ops status
 (`send.py … --ref bikram`). Parallel work: one agent per family in its own git worktree, never
 editing shared files (`scripts/blender/library/README.md` says who owns what), merged by hand.
+Since 2026-09-30 Robert wants his Codex tokens USED: Codex implements too (briefs in the
+scratchpad, `cross-agent.py --task-type implement --allow-verification --max-files-changed 0`,
+one git worktree per batch with node_modules junctioned in), Claude reviews diffs and
+screenshots, integrates, and a read-only Codex review runs on every merge before the push.
+Cleanup: unlink each worktree's node_modules junction FIRST (`cmd //c rmdir`), check it is gone,
+then `git worktree remove` — removing with the junction in place emptied the real node_modules
+once (`npm ci` restored it).
+
+---
+
+## ✔ 2026-09-30 (last) — MOON DAYS: A LIBRARY POSTURE OF THE DAY, AND A VEDIC SKY (`e737c55`, pushed)
+
+- LIBRARY POSTURE OF THE DAY (Robert: "can it select from Iyengar's poses too?"): a second card
+  walks the 56 in book order, once per 56 days (`ofTheDay` in `src/sky`, shared with the class's
+  26-day walk; `Today.tsx` imports the library lazily, `src/sky` never does). Wording fixed: the
+  class walk is 26 days, not "a lunar month"; the footer names the trainer only with STUDY on.
+- IS THE ASTROLOGY SOUND? (Robert asked.) Answered: the astronomy is (Meeus, tested); the
+  posture-of-the-day is a date rotation, not astrology; the phase/weekday notes mix real
+  traditions with modern lore and OUR posture pairings, all framed as tradition, no effect claims.
+- VEDIC SKY CARD (Robert: ground the postures in Vedic astrology — "sure sure!"): beside the old
+  notes. ASTRONOMY: sidereal Moon/Sun by mean Lahiri ayanamsa (Swiss Ephemeris J2000
+  precession polynomial; tested vs three published reference values to 1'), nakshatra + pada,
+  tithi + paksha, Purnima/Amavasya flagged as the Ashtanga custom. TEXT: Kalapurusha, Brihat
+  Jataka 1.4, checked against the public-domain Aiyar translation (1905, pp. 2–3; Claude read the
+  scanned table: Aries head, Taurus face, Gemini breast, Cancer heart, Leo belly, Virgo navel,
+  Libra abdomen, Scorpio genital organ, Sagittarius thighs, Capricorn knees, Aquarius ankles,
+  Pisces feet). OURS (labelled): region → muscle groups for the 26 (primary first) and library
+  stage-notice regions, ranked by the held form + the SHARE of stages naming the region (a raw
+  count let the 32-stage recross sheets win; the first version just took book order).
+  `src/sky/vedic.ts` + `vedic.test.ts`; shared `EFFECT_CLAIMS` guard (`src/sky/claims.ts`). No
+  classical text links asanas to astrology — the card says which link is text and which is ours.
+- HOUSEKEEPING: `public/sw.test.js` was being DEPLOYED (served at /sw.test.js) and collected twice
+  (from dist/); it now lives at `scripts/sw.test.js`, and vitest excludes `dist/**`.
 
 ---
 
