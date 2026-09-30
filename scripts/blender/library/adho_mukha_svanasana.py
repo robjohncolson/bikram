@@ -18,7 +18,7 @@ _spec = importlib.util.spec_from_file_location('_library_backbend', Path(__file_
 B = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(B)
 L = B.L
-L.begin('adho_mukha_svanasana')
+L.begin('adho-mukha-svanasana', skeleton='library')
 
 APART = 0.06        # the feet about a foot apart
 OUT = 0.25
@@ -47,7 +47,7 @@ def dog(trunk_deg, head=((0, 0.05, -1), (0, 0.15, -1)), crown=True):
                  'hipbone.L': (1, 0, 0), 'hipbone.R': (-1, 0, 0)})
     L.place(pose, 'crown', (0, 0, CROWN_Z))
     sh = L.fk(pose)['shoulder.L']
-    run = math.sqrt(max(B.STRAIGHT ** 2 - (OUT - sh[0]) ** 2 - (B.WRIST_Z - sh[2]) ** 2, 0.0))
+    run = math.sqrt(max(B.straight() ** 2 - (OUT - sh[0]) ** 2 - (B.WRIST_Z - sh[2]) ** 2, 0.0))
     # slide the whole body so the straight arm lands on the palm's spot
     pose['pelvis.location'] = L.add(pose['pelvis.location'], (0, HAND_Y + run - sh[1], 0))
     spots = {'L': (OUT, HAND_Y, B.WRIST_Z), 'R': (-OUT, HAND_Y, B.WRIST_Z)}
@@ -82,7 +82,7 @@ def arms_straight(up):
 
 def arm_gap(up):
     sh = L.fk(arms_straight(up))['shoulder.L']
-    return L.dist(sh, (OUT, HAND_Y, B.WRIST_Z)) - B.STRAIGHT
+    return L.dist(sh, (OUT, HAND_Y, B.WRIST_Z)) - B.straight()
 
 
 # the arms straightened: the body lifts in one line on the palms and tucked
@@ -113,7 +113,7 @@ def half_v(a):
         pose['pelvis.location'] = p
         at = L.fk(pose)
         return (L.dist(at['hip.L'], PLANK_ANKLES['L']) - (L.THIGH + L.SHIN - 0.004),
-                L.dist(at['shoulder.L'], WRIST_L) - B.STRAIGHT)
+                L.dist(at['shoulder.L'], WRIST_L) - B.straight())
     p = list(pose['pelvis.location'])
     for _ in range(30):
         e = err(tuple(p))
