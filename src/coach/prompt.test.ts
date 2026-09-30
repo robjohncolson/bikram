@@ -21,3 +21,9 @@ describe('coach tradition context', () => {
     expect(prompt.indexOf('== The tradition')).toBeGreaterThan(prompt.indexOf('== The 26 postures =='));
   });
 });
+
+it('omits the memory-trainer section when no store is supplied', () => {
+  const ctx = { journal: emptyJournal(), program: FULL_CLASS, now: Date.UTC(2026, 8, 30) };
+  expect(buildSystemPrompt(ctx)).not.toMatch(/memory.trainer/i);
+  expect(buildSystemPrompt({ ...ctx, store: emptyStore() })).toContain('== Memory trainer:');
+});

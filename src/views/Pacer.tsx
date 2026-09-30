@@ -22,7 +22,6 @@ import {
   breathPhaseFromBeat,
   phaseSeconds,
   playClip,
-  programById,
   classMinutes as programMinutes,
   programPoses,
   segmentAtBeat,
@@ -69,11 +68,11 @@ import { PoseFigure } from '../components/PoseFigure';
 import { preloadRig } from '../components/rigPreload';
 import { PacerClassMode } from './PacerClassMode';
 import { CoachDebrief } from './CoachDebrief';
-import { COACH_PROGRAM_ID, loadCoachProgram, saveCoachProgram, validateProposal } from '../coach';
-import { classFigurePosition, stopClassPlayback, segmentSettings, segmentBeatPhase, rehearsalDelay, eligibleHandoff, practicedSpan, guardClassUnload, shouldReorient, practiceSaveMessage } from './pacerLifecycle';
+import { COACH_PROGRAM_ID, loadCoachProgram } from '../coach';
+import { pacerSelection, classFigurePosition, stopClassPlayback, segmentSettings, segmentBeatPhase, rehearsalDelay, eligibleHandoff, practicedSpan, guardClassUnload, shouldReorient, practiceSaveMessage } from './pacerLifecycle';
 import { STUDY } from '../features';
 import { TonightCard } from '../components/TonightCard';
-import { studyRehearsal } from '../navigation';
+import { pacerQuery, shouldBlockClassNavigation, studyRehearsal } from '../navigation';
 import './Pacer.css';
 
 const STORAGE_KEY = 'yoga-pacer-v1';
@@ -94,7 +93,8 @@ type ClassRun =
   | { phase: 'done'; saved: boolean; pacedSeconds: number; handoffs: Pose[] };
 
 function ClassNavigationGuard({ active, onLeave }: { active: boolean; onLeave: () => void }) {
-  const blocker = useBlocker(active);
+  const blocker = useBlocker(({ currentLocation, nextLocation }) =>
+    shouldBlockClassNavigation(active, currentLocation.pathname, nextLocation.pathname));
   const dialog = useRef<HTMLDialogElement>(null);
   useEffect(() => {
     if (blocker.state === 'blocked') dialog.current?.showModal();
@@ -112,33 +112,6 @@ function ClassNavigationGuard({ active, onLeave }: { active: boolean; onLeave: (
       </div>
     </dialog>, document.body,
   );
-}
-
-/**
- * `/pace?program=short|coach` picks a program; `/pace?from=<order>` implies
- * the full class; `/pace?build=<base64 json>` carries a proposed class in
- * the coach's format (a link handed over after a debrief elsewhere) — it
- * is validated like any proposal and, when it holds, saved as the coach's
- * build and started from.
- */
-function initialProgram(coach: ClassProgram | undefined): ClassProgram {
-  const q = new URLSearchParams(window.location.search);
-  const build = q.get('build');
-  if (build) {
-    try {
-      const r = validateProposal(JSON.parse(atob(build.replace(/-/g, '+').replace(/_/g, '/'))));
-      if (r.ok) {
-        saveCoachProgram(r.proposal.program);
-        return r.proposal.program;
-      }
-    } catch {
-      /* not a build link: fall through */
-    }
-  }
-  if (q.get('from')) return programById('full');
-  const id = q.get('program');
-  if (id === COACH_PROGRAM_ID && coach) return coach;
-  return programById(id);
 }
 
 /** Canonical seconds before each posture of a class (on the breath grid), and the class total. */
@@ -277,17 +250,25 @@ export function Pacer() {
    *  runs, holds (frozen) while it is paused, undefined in pulse mode */
   const [breath, setBreath] = useState<BreathCue | undefined>(undefined);
   /** the class the coach proposed after the last debrief, once adopted */
+  const [initialSelection] = useState(() => pacerSelection(search, loadCoachProgram())!);
   const [coachProgram, setCoachProgram] = useState<ClassProgram | undefined>(loadCoachProgram);
-  const [program, setProgram] = useState<ClassProgram>(() => initialProgram(loadCoachProgram()));
+  const [program, setProgram] = useState<ClassProgram>(initialSelection.program);
   const programs = useMemo(() => (coachProgram ? [...PROGRAMS, coachProgram] : PROGRAMS), [coachProgram]);
   /** The program's postures, trimmed — the class walks this list. */
   const classPoses = useMemo(() => programPoses(program), [program]);
   const clock = useMemo(() => classClock(classPoses, settings.beatsPerBar), [classPoses, settings.beatsPerBar]);
-  // /pace?from=<order> — a posture page's "practice from here"
-  const [startIdx, setStartIdx] = useState(() => {
-    const from = Number(new URLSearchParams(window.location.search).get('from'));
-    return Number.isInteger(from) && from >= 1 && from <= poses.length ? from - 1 : 0;
-  });
+  const [startIdx, setStartIdx] = useState(initialSelection.startIdx);
+  const selectionQuery = pacerQuery(search);
+  const appliedQuery = useRef(selectionQuery);
+  useEffect(() => {
+    if (appliedQuery.current === selectionQuery) return;
+    const selection = pacerSelection(selectionQuery, loadCoachProgram(), classRun.phase);
+    if (!selection) return;
+    appliedQuery.current = selectionQuery;
+    setProgram(selection.program);
+    setStartIdx(selection.startIdx);
+    setCoachProgram(loadCoachProgram());
+  }, [selectionQuery, classRun.phase]);
   const [immersed, setImmersed] = useState(false);
 
   const settingsRef = useRef(settings);
@@ -861,9 +842,9 @@ export function Pacer() {
     const journal = loadJournal();
     const last = lastClass(journal);
     const streak = practiceStreak(journal, now);
-    const tstore = loadStore(now);
+    const tstore = STUDY ? loadStore(now) : undefined;
     const shaky =
-      !STUDY || Object.keys(tstore.kcs).length === 0
+      !tstore || Object.keys(tstore.kcs).length === 0
         ? []
         : poses
             .slice(0, -1)

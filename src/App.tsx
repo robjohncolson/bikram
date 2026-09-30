@@ -30,7 +30,7 @@ function PaceRedirect() {
 }
 
 export default function App() {
-  const { pathname, search } = useLocation();
+  const { pathname } = useLocation();
   const section = navigationSection(pathname);
   const more = useRef<HTMLDetailsElement>(null);
   useEffect(() => { if (more.current) more.current.open = false; }, [pathname]);
@@ -66,7 +66,7 @@ export default function App() {
       <main>
         <Routes>
           <Route path="*" element={<NotFound />} />
-          <Route path="/" element={<Pacer key={search} />} />
+          <Route path="/" element={<Pacer />} />
           <Route path="/sequence" element={<Timeline />} />
           <Route path="/pose/:id" element={<PoseDetail />} />
           <Route path="/explore" element={<Explorer />} />

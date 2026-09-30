@@ -20,3 +20,18 @@ export function navigationSection(path: string): 'practice' | 'sequence' | 'libr
 export function studyRehearsal(saved: boolean, study = STUDY): boolean {
   return study && saved;
 }
+
+/** Figure flags do not change the chosen class. */
+export function pacerQuery(search: string): string {
+  const query = new URLSearchParams(search);
+  const selection = new URLSearchParams();
+  for (const key of ['program', 'from', 'build']) {
+    const value = query.get(key);
+    if (value !== null) selection.set(key, value);
+  }
+  return selection.toString();
+}
+
+export function shouldBlockClassNavigation(active: boolean, currentPath: string, nextPath: string): boolean {
+  return active && currentPath !== nextPath;
+}

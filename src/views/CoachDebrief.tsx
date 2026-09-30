@@ -4,6 +4,7 @@ import type { ClassProgram } from '../pacer';
 import { askCoach, buildSystemPrompt, OPENING_LINE, readProposal, saveCoachProgram } from '../coach';
 import type { ChatMessage, Proposal } from '../coach';
 import { loadJournal, loadStore, lastClass } from '../trainer';
+import { STUDY } from '../features';
 import './CoachDebrief.css';
 
 interface Turn {
@@ -39,7 +40,7 @@ export function CoachDebrief({
   const system = useMemo(() => {
     const now = Date.now();
     const journal = loadJournal();
-    return buildSystemPrompt({ journal, store: loadStore(now), program, last: lastClass(journal), now });
+    return buildSystemPrompt({ journal, store: STUDY ? loadStore(now) : undefined, program, last: lastClass(journal), now });
   }, [program]);
   const [turns, setTurns] = useState<Turn[]>([]);
   const [draft, setDraft] = useState('');

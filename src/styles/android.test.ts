@@ -62,7 +62,7 @@ describe('Android installation', () => {
     expect(manifest.start_url).toBe('/');
     expect(manifest.scope).toBe('/');
     expect(manifest.short_name).toBeTruthy();
-    expect(manifest.shortcuts.map((shortcut: { url: string }) => shortcut.url)).toEqual(['/pace', '/train', '/today']);
+    expect(manifest.shortcuts.map((shortcut: { url: string }) => shortcut.url)).toEqual(['/', '/today']);
     expect(read('index.html')).toContain('<meta name="color-scheme" content="light dark"');
     const lightBackground = read('src/styles/global.css').match(/--bg:\s*(#[a-f0-9]+);/)?.[1];
     expect(manifest.background_color).toBe(lightBackground);

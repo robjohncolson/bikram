@@ -13,7 +13,7 @@ import { band, nodeP } from '../trainer';
 
 export interface CoachContext {
   journal: Journal;
-  store: TrainerStore;
+  store?: TrainerStore;
   /** the program just practised */
   program: ClassProgram;
   /** the class record just written, when there is one */
@@ -101,9 +101,11 @@ export function buildSystemPrompt(ctx: CoachContext): string {
     '== Recent practice journal ==',
     journalLines(ctx.journal, ctx.now),
     '',
-    '== Memory trainer: how well each posture is known (unseen / shaky / developing / solid) ==',
-    masteryLines(ctx.store, ctx.now),
-    '',
+    ...(ctx.store ? [
+      '== Memory trainer: how well each posture is known (unseen / shaky / developing / solid) ==',
+      masteryLines(ctx.store, ctx.now),
+      '',
+    ] : []),
     '== Chakras ==',
     chakras.map((c) => `${c.id}: ${c.englishName} (${c.sanskritName}), ${c.location}, element ${c.element}`).join('\n'),
     '',

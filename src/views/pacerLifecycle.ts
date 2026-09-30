@@ -1,6 +1,8 @@
+import { poses } from '../data';
+import { COACH_PROGRAM_ID, saveCoachProgram, validateProposal } from '../coach';
 import type { PoseSegment } from '../data';
-import { phaseAtBeat, segmentAtBeat, silenceVoice } from '../pacer';
-import type { Metronome, WakeLock, PacerSettings, PoseTrack } from '../pacer';
+import { phaseAtBeat, programById, segmentAtBeat, silenceVoice } from '../pacer';
+import type { ClassProgram, Metronome, WakeLock, PacerSettings, PoseTrack } from '../pacer';
 
 /** Rehearsal: beats between the hand-off chime and the announce. */
 const REHEARSAL_DELAY_BEATS = 4;
@@ -88,4 +90,34 @@ export function keepPausedPulseFrame(
   previous?: { poseId: string; segment: number },
 ): boolean {
   return paused && kind === 'pulse' && previous?.poseId === poseId && previous.segment === segment;
+}
+
+/**
+ * `/?program=short|coach` picks a program; `/?from=<order>` implies
+ * the full class; `/?build=<base64 json>` carries a proposed class in
+ * the coach's format (a link handed over after a debrief elsewhere) — it
+ * is validated like any proposal and, when it holds, saved as the coach's
+ * build and started from.
+ */
+export function pacerSelection(search: string, coach?: ClassProgram, phase = 'idle') {
+  if (phase !== 'idle') return undefined;
+  const q = new URLSearchParams(search);
+  const from = Number(q.get('from'));
+  const startIdx = Number.isInteger(from) && from >= 1 && from <= poses.length ? from - 1 : 0;
+  const build = q.get('build');
+  if (build) {
+    try {
+      const r = validateProposal(JSON.parse(atob(build.replace(/-/g, '+').replace(/_/g, '/'))));
+      if (r.ok) {
+        saveCoachProgram(r.proposal.program);
+        return { program: r.proposal.program, startIdx };
+      }
+    } catch {
+      /* not a build link: fall through */
+    }
+  }
+  if (q.get('from')) return { program: programById('full'), startIdx };
+  const id = q.get('program');
+  if (id === COACH_PROGRAM_ID && coach) return { program: coach, startIdx };
+  return { program: programById(id), startIdx };
 }

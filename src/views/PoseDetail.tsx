@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import type { CSSProperties } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { chakraById, getNeighbors, getPose, muscleById, poses } from '../data';
+import { Link, useLocation, useParams } from 'react-router-dom';
+import { applyFigureFlag, chakraById, getNeighbors, getPose, muscleById, poses } from '../data';
 import { NotFound } from './NotFound';
 import { band, loadStore, nodeP } from '../trainer';
 import type { ClassicalNote, MuscleId, Pose } from '../data';
@@ -212,6 +212,8 @@ function HeroMotion({ motion }: { motion: NonNullable<Pose['motion']> }) {
 
 export function PoseDetail() {
   const { id } = useParams();
+  const { search } = useLocation();
+  useEffect(() => { applyFigureFlag(search); }, [search]);
   const pose = id ? getPose(id) : undefined;
 
   useEffect(() => {

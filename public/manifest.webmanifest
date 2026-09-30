@@ -11,8 +11,7 @@
   "theme_color": "#faf6f0",
   "categories": ["health", "fitness", "education"],
   "shortcuts": [
-    { "name": "Begin class", "url": "/pace" },
-    { "name": "Review", "url": "/train" },
+    { "name": "Begin class", "url": "/" },
     { "name": "Today", "url": "/today" }
   ],
   "icons": [
