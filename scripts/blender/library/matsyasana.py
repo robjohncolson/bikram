@@ -37,7 +37,7 @@ ARCHED = LT.hold_feet(LT.lying_lotus(LT.ARCH))
 
 FRAME = {'center_z': 0.36, 'scale': 1.55}
 
-POSTURE = L.check({
+POSTURE = {
     'id': 'library:matsyasana',
     'position': {'start': 'seated', 'end': 'seated'},
     'view': 'side',
@@ -54,4 +54,14 @@ POSTURE = L.check({
         {'label': 'Lift the back', 'pose': LOW_ELBOWS, 'hold': 3, 'notice': ['core']},
         {'label': 'Up on the elbows', 'pose': ELBOWS, 'hold': 3, 'notice': ['core']},
     ],
-})
+}
+
+RELEASE = LT.palms_beside(L.lotus(L.sit(at=LT.BACK_SEAT), first='R'), out=0.36)
+POSTURE['stages'].append({'label': 'Release to sitting', 'pose': RELEASE, 'hold': 1,
+                          'view': 'quarter', 'frame': {'center_z': 0.45, 'scale': 1.85},
+                          'notice': ['hips', 'breath']})
+POSTURE['stages'] = LT.both_crossings(POSTURE['stages'], LT.recross_stages(at=LT.BACK_SEAT))
+for stage in POSTURE['stages']:
+    if stage['hold'] < 6:
+        stage['hold'] = 1
+POSTURE = L.check(POSTURE)

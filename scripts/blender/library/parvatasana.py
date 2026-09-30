@@ -39,7 +39,7 @@ GUIDES = [
     {'from': (0, L.SEAT[1], 0.0), 'to': (0, L.SEAT[1], 1.2)},   # the spine and the arms on one upright line
 ]
 
-POSTURE = L.check({
+POSTURE = {
     'id': 'library:parvatasana',
     'position': {'start': 'seated', 'end': 'seated'},
     'view': 'front',
@@ -56,4 +56,16 @@ POSTURE = L.check({
         {'label': 'Arms forward', 'pose': FORWARD, 'hold': 3, 'hands': 'laced', 'view': 'quarter',
          'notice': ['shoulders']},
     ],
-})
+}
+
+RELEASE = LT.palms_beside(L.lotus(L.sit(at=L.SEAT), first='R'), out=0.36)
+POSTURE['stages'].append({'label': 'Unlace to the knees', 'pose': LOTUS, 'hold': 1,
+                          'notice': ['shoulders', 'wrists']})
+POSTURE['stages'].append({'label': 'Release to sitting', 'pose': RELEASE, 'hold': 1,
+                          'view': 'quarter', 'frame': {'center_z': 0.45, 'scale': 1.85},
+                          'notice': ['hips', 'breath']})
+POSTURE['stages'] = LT.both_crossings(POSTURE['stages'], LT.recross_stages(at=L.SEAT))
+for stage in POSTURE['stages']:
+    if stage['hold'] < 6:
+        stage['hold'] = 1
+POSTURE = L.check(POSTURE)

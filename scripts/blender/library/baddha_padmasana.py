@@ -5,7 +5,8 @@ From the lotus (`padmasana.py`'s crossing, right foot first, so the left
 foot is uppermost and its toe is caught first): the left arm swings back
 round the waist toward the right hip, then the right arm round toward the
 left hip, the forearms crossing behind the back; the head thrown back; and
-the right hand, then the left, returned to the knees.
+the right hand, then the left, released. The hands stay clear while the
+feet uncross one at a time, rest straight and rebuild the opposite crossing.
 
 The library figure still stops by the far hip, its fingertips 24.8-25.7 cm
 from the big toes they should hold (`_lotus.BIND`, reported, not hidden in
@@ -36,7 +37,7 @@ HEAD_BACK = LT.bind(LT.bind({**LT.seated_lotus(), 'neck': L.n((0, 0.45, 0.9)), '
 # one arm or both swung out wide: the frame opens to keep the hands in
 WIDE = {'center_z': 0.45, 'scale': 1.75}
 
-POSTURE = L.check({
+POSTURE = {
     'id': 'library:baddha-padmasana',
     'position': {'start': 'seated', 'end': 'seated'},
     'view': 'front',
@@ -54,4 +55,13 @@ POSTURE = L.check({
         {'label': 'Arms out', 'pose': OUT, 'hold': 3, 'view': 'back', 'frame': WIDE, 'notice': ['shoulders']},
         {'label': 'Hands forward', 'pose': LIFT, 'hold': 3, 'frame': WIDE, 'notice': ['shoulders']},
     ],
-})
+}
+
+# The hands stay clear of the thighs while each foot changes places.
+# The lifted arms serve as both the preparation and the released position.
+POSTURE['stages'] = POSTURE['stages'][1:]
+POSTURE['stages'] = LT.both_crossings(POSTURE['stages'], LT.recross_stages(arms=LIFT))
+for stage in POSTURE['stages']:
+    if stage['hold'] < 6:
+        stage['hold'] = 1
+POSTURE = L.check(POSTURE)

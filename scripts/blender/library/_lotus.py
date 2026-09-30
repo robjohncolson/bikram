@@ -412,3 +412,56 @@ def palms_beside(pose, back=0.0, out=0.3):
         L.arm(pose, side, (hip[0] + sx * out, hip[1] + back, L.WRIST_Z),
               (sx, 0.5, 0), L.flat_hand((0, -1, 0)))
     return pose
+
+
+def recross_stages(arms=None, at=None):
+    """Uncross the upper foot, then the first; rest and reverse that order.
+
+    The arms have already released before this path starts. Keep them in
+    the caller's clear position throughout, or plant the palms wide.
+    Each lift belongs to only one leg; the other foot keeps its support.
+    """
+    at = at or L.SEAT
+
+    def hands(pose):
+        if arms is None:
+            return palms_beside(pose, out=0.36)
+        for bone, direction in arms.items():
+            if bone.startswith(('upperarm.', 'forearm.', 'hand.')):
+                pose[bone] = direction
+        return pose
+
+    staff = hands(L.legs_forward(L.sit(at=at)))
+    half = hands(L.half_lotus(L.legs_forward(L.sit(at=at)), 'R'))
+    first_up = hands(L.carry_foot(L.legs_forward(L.sit(at=at)), 'R',
+                                 fk(half)['ankle.R'], (0, 0, 1),
+                                 up=0.12, hint=(-1, -0.2, 0.8)))
+    lotus = hands(L.lotus(L.sit(at=at), first='R'))
+    top_up = hands(L.lift_shin({**lotus}, 'L', fk(lotus)['ankle.L'], (0, 0, 1)))
+    return [
+        {'label': label, 'pose': pose, 'hold': 1, 'view': 'quarter',
+         'frame': {'center_z': 0.45, 'scale': 1.85}, 'notice': ['hips']}
+        for label, pose in [
+            ('Lift the left foot clear', top_up),
+            ('Extend the left leg', half),
+            ('Lift the right foot clear', first_up),
+            ('Legs long', staff),
+            ('Lift the left foot', L.mirror(first_up)),
+            ('Set the left foot on the thigh', L.mirror(half)),
+            ('Carry the right foot over', L.mirror(top_up)),
+        ]
+    ]
+
+
+def both_crossings(stages, bridge):
+    """Two complete held forms joined by the same reversible leg path."""
+    first = stages + bridge
+    second = []
+    for st in first:
+        label = st['label'].replace('Left', 'OTHER').replace('Right', 'Left').replace('OTHER', 'Right')
+        label = label.replace('left', 'OTHER').replace('right', 'left').replace('OTHER', 'right')
+        other = {**st, 'label': label + ' (other crossing)', 'pose': L.mirror(st['pose'])}
+        if 'ghost' in st:
+            other['ghost'] = L.mirror(st['ghost'])
+        second.append(other)
+    return first + second
