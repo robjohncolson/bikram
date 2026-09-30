@@ -266,6 +266,11 @@ function sameKey(a: unknown[] | undefined, b: unknown[] | undefined): boolean {
   return a.length === b.length && a.every((x, i) => x === b[i]);
 }
 
+/** A rebuilt scene must refresh even absent layers, clearing their old pixels. */
+export function teachingLayerChanged(previous: unknown[] | undefined, next: unknown[] | undefined, rebuilt: boolean): boolean {
+  return rebuilt || !sameKey(previous, next);
+}
+
 export class RigScene {
   private renderer: WebGLRenderer;
   private camera = new OrthographicCamera(-1, 1, 1, -1, NEAR, FAR);
@@ -413,7 +418,8 @@ export class RigScene {
    * preserved drawing buffer is needed).
    */
   render(layers: RigLayers, cam: CameraState, colors: RigColors, out: RigTargets) {
-    if (this.skeleton !== layers.figure.skeleton) {
+    const rebuilt = this.skeleton !== layers.figure.skeleton;
+    if (rebuilt) {
       this.figure.dispose();
       this.ghost.dispose();
       this.skeleton = layers.figure.skeleton;
@@ -430,7 +436,7 @@ export class RigScene {
     // the figure): each is redrawn only when its content, the camera, the
     // size or its colour changes — an empty layer is cleared once
     const ghostKey = layers.ghost ? [layers.ghost, view, colors.ghost.join()] : undefined;
-    if (!sameKey(ghostKey, this.drawn.ghost)) {
+    if (teachingLayerChanged(this.drawn.ghost, ghostKey, rebuilt)) {
       if (layers.ghost) {
         r.clear(true, true, true);
         this.ghost.pose(solve(layers.ghost));
@@ -447,7 +453,7 @@ export class RigScene {
 
     const segs = layers.guides ?? [];
     const guideKey = segs.length ? [segs, view, colors.guides.join()] : undefined;
-    if (!sameKey(guideKey, this.drawn.guides)) {
+    if (teachingLayerChanged(this.drawn.guides, guideKey, rebuilt)) {
       if (segs.length) {
         r.clear(true, true, true);
         const flat: number[] = [];
