@@ -1,29 +1,15 @@
 """
-Bharadvajasana (the twist dedicated to the sage Bharadvaja) — library sheet,
-live figure only.
+Bharadvajasana, with both sides on the library skeleton.
 
-From sitting with the legs straight, both knees bend and the feet go back
-to the right, beside the right hip; seated on the floor, the trunk turns
-about 45 degrees to the left, the straight right arm reaches across to the
-outside of the left knee and the right hand slides under it onto the
-floor; the left arm swings behind the back toward the right arm; the head
-turns to look over the right shoulder. The book turns to the left first;
-the sheet shows that side (the other is the mirror image; its step is
-unbound).
+The folded legs form a Z so the shins clear each other. The rear palm is
+lifted beside the hip before the second leg folds; this lets the legs and
+first part of the turn share a stage without sweeping a hand through a
+thigh. Both sides release through that partial turn and knee-out stage.
 
-On this hull the legs fold as a Z: the right shin lies back beside the
-right hip, the left shin across the front, its foot out to the right in
-front of the right knee (a left shin laid all the way back to the right
-foot passes through the right thigh). The right leg folds first (its knee
-lifted, the shin out to the side: swept straight back it passes through
-the seat), and the hands move by way of the thighs and the mat, a quarter
-turn at a time (an arm swung straight across passes through a thigh or the
-trunk). The trunk's turn is a rolled spine (`_twist.twist`). The right
-hand rests on the outside of the left thigh near the knee (the floor
-under the knee is just within reach, but the arm reaching there passes
-through the thigh); the left hand rests on the back of the waist, the
-rig's arm ~30 cm short of the right upper arm the book has it take.
-Shape from the book's photographs; the stages are ours.
+The front hand stays outside the opposite thigh. The rear hand reaches
+along the waist; the book's upper-arm grip remains undemonstrated. A
+shoulder-adjusted grip cleared its held hull but its entry crossed the
+pelvis, so it is not used. See the family report for measurements.
 """
 import importlib.util
 import math
@@ -33,7 +19,7 @@ _spec = importlib.util.spec_from_file_location('_library_twist', Path(__file__).
 T = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(T)
 L = T.L
-L.begin('bharadvajasana')
+L.begin('bharadvajasana', skeleton='library')
 
 OUT = 0.3      # palms on the mat this far out from the hips while the legs move
 TURN = 45.0    # the book's turn of the trunk, to the left
@@ -127,7 +113,7 @@ def palm_behind(pose, side='L', back=0.22, out=0.12):
     return pose
 
 
-def arm_behind(pose, deg, across=0.08, gap=0.035, up=0.04):
+def arm_behind(pose, deg, across=0.08, gap=0.065, up=0.07):
     """The left arm swung behind the back, the back of the hand against the
     back of the waist, reaching toward the right side."""
     at = L.fk(pose)
@@ -155,7 +141,7 @@ def twisted(deg=TURN):
 
 def turning(deg=HALF_TURN):
     """On the way round: the trunk a first part of the turn, the right palm
-    on top of the left thigh, the left palm on the mat out beside the hip
+    on top of the left thigh, the left hand lifted out beside the hip
     (the right arm swung straight from its own thigh to the outside of the
     left knee dips through the left thigh; the left arm swung straight from
     its thigh to behind the back passes through the trunk)."""
@@ -166,7 +152,7 @@ def turning(deg=HALF_TURN):
     hand_to_knee(pose, t=0.5, up=3.0)
     at = L.fk(pose)
     hip = at['hip.L']
-    L.arm(pose, 'L', (hip[0] + OUT + 0.05, hip[1] + 0.12, 0.11), (1, 0.5, 0), L.n((0.1, -0.5, -1)))
+    L.arm(pose, 'L', (hip[0] + OUT + 0.05, hip[1] + 0.12, 0.18), (1, 0.5, 0), L.n((0.1, -0.5, 0)))
     return T.twist(pose, deg)
 
 
@@ -196,10 +182,11 @@ def one_leg(shin, knee=L.KNEE_FLOOR):
     return pose
 
 
-SIT = staff()
+SIT = T.open_hands(staff())
 # the right shin swings out to the side before it folds back: swept
 # straight from the front to the back it passes through the seat
 RIGHT_OUT = one_leg(115, knee=0.26)
+L.arm(RIGHT_OUT, 'L', (0.45, 0.37, 0.18), (1, 0.5, 0), L.n((0.1, -0.5, 0)))
 RIGHT_BACK = one_leg(186)
 # the legs in the Z, the palms riding the thighs (an arm swung from the front of the body
 # straight round behind the back passes through the trunk)
@@ -213,16 +200,20 @@ POSTURE = T.check({
     'id': 'library:bharadvajasana',
     'position': {'start': 'seated', 'end': 'seated'},
     'view': 'quarter-back',
-    'frame': L.SEATED_FRAME,
+    'frame': {**L.SEATED_FRAME, 'scale': 1.8},
     'transition': 10,
     'stages': [
-        {'label': 'Sit', 'pose': SIT, 'hold': 3, 'notice': ['lower-back', 'breath']},
-        {'label': 'Right knee out', 'pose': RIGHT_OUT, 'hold': 2, 'notice': ['hips']},
-        {'label': 'Feet to the right', 'pose': FEET_RIGHT, 'hold': 3, 'notice': ['hips']},
-        {'label': 'Hand to the knee', 'pose': TURNING, 'hold': 2, 'notice': ['upper-back']},
-        {'label': 'Turn left', 'pose': TWIST, 'hold': 8, 'notice': ['upper-back', 'lower-back', 'neck']},
-        {'label': 'Unwind', 'pose': TURNING, 'hold': 2, 'notice': ['breath']},
-        {'label': 'Face front', 'pose': FEET_RIGHT, 'hold': 3, 'notice': ['breath']},
-        {'label': 'Right leg out', 'pose': RIGHT_OUT, 'hold': 2, 'notice': ['breath']},
+        {'label': 'Sit', 'pose': SIT, 'hold': 3, 'notice': ['hips', 'breath']},
+        {'label': 'Right knee out', 'pose': RIGHT_OUT, 'hold': 3, 'notice': ['hips', 'breath']},
+        {'label': 'Turn toward left knee', 'pose': TURNING, 'hold': 3, 'notice': ['upper-back', 'shoulders', 'breath']},
+        {'label': 'Turn left', 'pose': TWIST, 'hold': 8, 'notice': ['upper-back', 'lower-back', 'shoulders', 'breath']},
+        {'label': 'Release left twist', 'pose': TURNING, 'hold': 3, 'notice': ['upper-back', 'shoulders', 'breath']},
+        {'label': 'Right leg out', 'pose': RIGHT_OUT, 'hold': 3, 'notice': ['hips', 'breath']},
+        {'label': 'Legs long', 'pose': SIT, 'hold': 3, 'notice': ['hips', 'breath']},
+        {'label': 'Left knee out', 'pose': T.mirror(RIGHT_OUT), 'hold': 3, 'notice': ['hips', 'breath']},
+        {'label': 'Turn toward right knee', 'pose': T.mirror(TURNING), 'hold': 3, 'notice': ['upper-back', 'shoulders', 'breath']},
+        {'label': 'Turn right', 'pose': T.mirror(TWIST), 'hold': 8, 'notice': ['upper-back', 'lower-back', 'shoulders', 'breath']},
+        {'label': 'Release right twist', 'pose': T.mirror(TURNING), 'hold': 3, 'notice': ['upper-back', 'shoulders', 'breath']},
+        {'label': 'Left leg out', 'pose': T.mirror(RIGHT_OUT), 'hold': 3, 'notice': ['hips', 'breath']},
     ],
 })
