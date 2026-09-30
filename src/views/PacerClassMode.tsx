@@ -341,8 +341,8 @@ export function PacerClassMode(props: PacerClassModeProps) {
   // announce segment changes politely; the beat-by-beat state stays silent
   const [announced, setAnnounced] = useState('');
   useEffect(() => {
-    if (props.segmentLabel) setAnnounced(props.segmentLabel);
-  }, [props.segmentLabel]);
+    setAnnounced(props.hidden ? '' : props.segmentLabel ?? '');
+  }, [props.hidden, props.segmentLabel]);
 
   return (
     <div
@@ -400,7 +400,7 @@ export function PacerClassMode(props: PacerClassModeProps) {
         </div>
 
         <div className="cm-readout">
-          {props.segmentLabel && (
+          {!props.hidden && props.segmentLabel && (
             <p className="cm-seg" data-kind={props.segmentKind}>
               {props.segmentLabel}
             </p>
@@ -472,7 +472,7 @@ export function PacerClassMode(props: PacerClassModeProps) {
       </footer>
 
       <div className="cm-live" aria-live="polite">
-        {announced}
+        {props.hidden ? '' : announced}
       </div>
     </div>
   );

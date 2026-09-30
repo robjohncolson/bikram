@@ -925,13 +925,13 @@
   color: var(--text-faint);
 }
 
-.pc-debrief-item[aria-pressed='true'] {
+.pc-debrief-item[data-answer='missed'] {
   border-color: color-mix(in srgb, var(--ember) 55%, var(--border));
   background: color-mix(in srgb, var(--ember) 10%, transparent);
   color: var(--text);
 }
 
-.pc-debrief-item[aria-pressed='true'] .pc-debrief-mark {
+.pc-debrief-item[data-answer='missed'] .pc-debrief-mark {
   color: var(--ember-text);
 }
 
@@ -940,4 +940,15 @@
   max-width: 60ch;
   font-size: 14px;
   line-height: 1.55;
+}
+
+.pc-leave {
+  max-width: min(28rem, calc(100vw - 2rem));
+  padding: 1.5rem;
+  color: var(--text);
+}
+
+.pc-leave::backdrop {
+  background: var(--bg-sunken);
+  opacity: 0.85;
 }
