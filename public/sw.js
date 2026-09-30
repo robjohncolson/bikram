@@ -5,6 +5,8 @@ const CACHE = 'yoga-26and2-v2';
 const VOICE_CACHE = 'yoga-voice-v1';
 const MOTION_CACHE = 'yoga-motion-v1';
 const BATCH = 6;
+// The shell asset lists of the latest two builds (see saveShell).
+const GENERATIONS = '/__shell-generations.json';
 
 function isAudio(res) {
   const type = res.headers.get('content-type') || '';
@@ -47,9 +49,17 @@ async function saveShell(res) {
     await cache.put(url, asset);
   }
   await cache.put('/index.html', res);
+  // Keep two shell generations: a page still running the previous build (the
+  // cached shell served by the navigation fallback) lazy-loads its own chunks.
+  const record = await cache.match(GENERATIONS);
+  const gens = record ? await record.json() : { current: [], previous: [] };
+  const current = [...wanted].sort();
+  const changed = JSON.stringify(current) !== JSON.stringify(gens.current);
+  const kept = { current, previous: changed ? gens.current : gens.previous };
+  await cache.put(GENERATIONS, new Response(JSON.stringify(kept), { headers: { 'content-type': 'application/json' } }));
   if (canPrune(await self.clients.matchAll({ type: 'window', includeUncontrolled: true }))) {
     const cached = (await cache.keys()).map((req) => req.url).filter((url) => new URL(url).pathname.startsWith('/assets/'));
-    await Promise.all(staleUrls(cached, [...wanted], location.origin).map((url) => cache.delete(url)));
+    await Promise.all(staleUrls(cached, [...kept.current, ...kept.previous], location.origin).map((url) => cache.delete(url)));
   }
 }
 

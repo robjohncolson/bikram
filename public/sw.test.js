@@ -231,6 +231,30 @@ describe('worker lifecycle', () => {
     expect(await cache.match('/assets/old.js')).toBeUndefined();
     expect(await cache.match('/assets/app-abc.js')).toBeTruthy();
   });
+
+  it('keeps the previous build assets for a page still running it', async () => {
+    const w = worker();
+    const cache = await w.caches.open('yoga-26and2-v2');
+    const build = (tag) => new Response(`<script type="module" src="/assets/app-${tag}.js"></script>`, { headers: { 'content-type': 'text/html' } });
+    const navigate = async (tag) => {
+      w.fetch.mockImplementation(async (req) => {
+        const url = typeof req === 'string' ? req : req.url;
+        if (url.endsWith('.js')) return new Response('export default 1', { headers: { 'content-type': 'text/javascript' } });
+        return build(tag);
+      });
+      const nav = w.dispatch('fetch', { request: w.request('/', { mode: 'navigate' }) });
+      await nav.response;
+      await nav.done;
+    };
+    await navigate('a');
+    await navigate('b');
+    await navigate('b');
+    expect(await cache.match('/assets/app-a.js')).toBeTruthy();
+    await navigate('c');
+    expect(await cache.match('/assets/app-a.js')).toBeUndefined();
+    expect(await cache.match('/assets/app-b.js')).toBeTruthy();
+    expect(await cache.match('/assets/app-c.js')).toBeTruthy();
+  });
 });
 
 describe('live client retention and slow shell refresh', () => {
