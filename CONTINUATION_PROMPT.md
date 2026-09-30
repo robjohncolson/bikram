@@ -4,7 +4,7 @@ Read `CLAUDE.md` first (architecture + conventions; it is current). This file is
 newest-first log of where the work stands and what is still open.
 
 **Live**: https://bikram-chi.vercel.app · **Repo**: https://github.com/robjohncolson/bikram (PUBLIC
-since 2026-08-27) · `npm test` = 296 tests / 30 files, all green at `350f4ed` (2026-09-30).
+since 2026-08-27) · `npm test` = 429 tests / 41 files, all green at `ec856bd` (2026-09-30); `npx oxlint` clean.
 **Deploys happen from GitHub on push to `main` via Vercel's Git integration**; the CLI token on
 this machine is expired.
 
@@ -20,20 +20,40 @@ this machine is expired.
    say what the figure holds, the book's technique in full); (b) a LIBRARY-ONLY skeleton with
    longer arms — the 26 & 2 skeleton, sprites and parity fixtures untouched, but every library
    sheet re-checked (a fan-out-sized pass). Do not change bone lengths until he decides.
-2. Warrior I's left side has no stage (both sides need a separate feet-turn stage; 8 max).
-3. Maha mudra / janu sirsasana: the bent knee opens ~65°, the book asks 90°+ (equal thigh and
-   shin with the heel at the perineum) — a rig/solver question.
-4. Lineage notes the reviewers flagged but left: the pregnancy notes are a reading of p. 40,
+2. Warrior I's left side has no stage: both sides need 12 stages (Tadasana in/out, a feet-turn
+   stage per side). The 8-stage cap is only a convention (`library.test.ts` + library README);
+   raising it breaks nothing in code. Nine other library postures are one-sided for the same
+   reason. Robert to decide: raise to 12 for warrior I only, or all ten as a batch.
+3. Lineage notes the reviewers flagged but left: the pregnancy notes are a reading of p. 40,
    the p. 59 boat note is also applied to paripurna navasana, a few cautions read as facts.
-5. `/pose/half-moon`: long subtitle lines run past the edge at 360 px (seen in a screenshot;
-   not caused by the library work — check whether it is old).
-6. Not in the library on purpose: `savasana` (a 26 & 2 id; ids are never shared), the four
+4. Not in the library on purpose: `savasana` (a 26 & 2 id; ids are never shared), the four
    pranayama entries and dhyana (not asanas).
 
 Workflow that built this (Robert's): spec → Opus 5.5 agent implements → Codex (gpt-6-astra,
 cross-agent runner, `--task-type review --read-only`) reviews → fix → commit, push, Ops status
 (`send.py … --ref bikram`). Parallel work: one agent per family in its own git worktree, never
 editing shared files (`scripts/blender/library/README.md` says who owns what), merged by hand.
+
+---
+
+## ✔ 2026-09-30 (later) — THE 2026-09-03 AUDIT DEFECTS, FIXED BY CODEX (`1c6f671`…`ec856bd`, pushed)
+
+Six Codex (gpt-6-astra) batches in parallel worktrees, one owned-file set each, merged into
+`codex/integrate`, Codex-reviewed (5 findings fixed, re-reviewed, 1 more fixed by Claude):
+§0.1 #2 #9 #10 #11 #12 (pacer lifecycle: segment overrides survive settings, End class and
+leaving finish the class and record it, in-page leave confirm via `useBlocker` — main.tsx is now
+`createBrowserRouter` with one splat route —, debrief lists only reached hand-offs, rehearsal
+withholds labels/preview), #15 #21 (metronome catches up after a suspended AudioContext; clip
+queue never wedges, stalls recover behind a progress watchdog; speech primed; wake-lock race),
+#7 #8 (worker precaches the shell + all chunks at install, 3 s navigation fallback without
+aborting the refresh, manifest revalidated, pruning only with one window open and keeping the
+previous build's assets, 206 ranges from the voice cache; `public/sw-lib.js` is the tested pure
+part; vercel.json caches hashed assets/motion immutably), #20 (oxlint actually runs; clean),
+#4 #13 #16 #17 #18 (DST-proof streak, newer saves never clobbered and malformed ones recover,
+404 route, Sit-Up's own name, id-keyed neighbours; #3 was already fixed, now tested), #14 + the
+360 px overflow (WCAG AA in both themes, `contrast.test.ts`), and maha mudra / janu sirsasana's
+bent knee at 90–96°. STILL OPEN from §0.1: #19 (Locust second set — waits on the §0.2 content
+decisions). Not device-tested: iOS interruptions, multi-tab worker behaviour (node fakes only).
 
 ---
 
