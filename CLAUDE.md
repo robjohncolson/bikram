@@ -253,10 +253,16 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   "corrects" the other. Rendered by PoseDetail's `ClassicalSection`.
 - `src/data/library/` — the POSTURE LIBRARY, a second collection beside the
   26 & 2 and never mixed into it (not the class, trainer, coach or
-  `RIG_LIVE`). FAMILIES (`LibraryFamily`, shown in this order, empty ones
-  left out): standing, backbend, seated, lotus (the crossed-leg seats:
-  siddhasana, padmasana), inversion (the ten + the lotus shoulderstand, as
-  the book groups them), twist. One `LibraryAsana` per file (`<id>.ts`,
+  `RIG_LIVE`). 56 POSTURES — every asana of the illustrated index but
+  savasana (a 26 & 2 id) — in six FAMILIES (`LibraryFamily`, shown in this
+  order, empty ones left out; `library.test.ts` pins each family's members
+  by id in book order): standing (10), backbend (9: "Backbends and arm
+  supports" — the dogs, chaturanga and purvottanasana too), seated (12),
+  lotus (7: the crossed-leg seats and the lotus variations), inversion (13:
+  the headstand and shoulderstand runs, the lotus shoulderstands included,
+  as the book groups them), twist (5: "Twists and lying leg stretches" —
+  supta padangusthasana too). `/library` opens with an in-page family index
+  (links to the section headings). One `LibraryAsana` per file (`<id>.ts`,
   contract in `types.ts`: steps with an optional rig `stage`, hold,
   cautions, links, sutras); `index.ts` DISCOVERS them (`import.meta.glob`
   of `./*.ts` minus index/common/common-*/tests, every `LibraryAsana`
@@ -309,11 +315,35 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   lying/inverted poses are mirror-labelled, pass `front`): `lotus`,
   `half_lotus`, `siddha`, `rest_on`, `knee_on`, `knee_out`, `carry_foot`/
   `lift_shin` (one-leg-at-a-time midpoints), `foot_sole` (aims and ROLLS a
-  foot so its heel/ball side faces a direction; rolls allowed on leaf bones
-  only, which move no joint). On this hull the second lotus foot rests on
-  the first shin, not the thigh (both on the thighs drives the shins 3–4 cm
-  into each other — measured). Frames: `SEATED_FRAME`, `LOTUS_FRAME`,
-  `INVERTED_LOTUS_FRAME`. Parity fixture `library.padmasana--lotus`.
+  foot so its heel/ball side faces a direction). On this hull the second
+  lotus foot rests on the first shin, not the thigh (both on the thighs
+  drives the shins 3–4 cm into each other — measured). Frames:
+  `SEATED_FRAME`, `LOTUS_FRAME`, `INVERTED_LOTUS_FRAME`. Parity fixture
+  `library.padmasana--lotus`. ROLLED TRUNKS (`_lib.py`, shared since the
+  integration pass): ANY bone may roll; an omitted child of a rolled bone
+  RIDES it (the renderer's rule), and `fk`/`direction` follow it via the
+  roll-aware `_hull.solve` — `pose.test.ts` holds a Python fixture of rolled
+  stages (`src/rig/clearance-fixtures/rolled-fk-from-python.json`,
+  `_selftest.py --write`) to 1e-4. Helpers: `roll`, `twist` + `shoulders`
+  (a wrung spine over square hips), `turn(pose, deg)` (the whole figure
+  about the vertical, a pelvis roll: warrior I and parsvottanasana jump
+  apart facing the front, then turn to the front foot), `square` (rolls an
+  ill-turned trunk bone back to level), `clavicles_follow`, `lying_back` +
+  `back` (lying back with the head toward +Y), `mirror`, `reach_short`.
+  TRUNK ACROSS (`library.test.ts` + `_lib.check`'s `across warning`): a
+  trunk bone's width must stay within 25° of the width its aim implies
+  (the parent's width carried square to the new direction) turned by the
+  stage's own roll — or of that level width itself (a squaring roll); only
+  an exactly-reversed or reversed-and-sideways aim (the shortest arc's
+  unasked diagonal) fails. `_lib.check` also warns when the rendered hull
+  sinks > 1 cm (ghosts too). PLANTED CONTACTS: between two stages the live
+  figure carries a joint straight only when it lies within 3 cm of the
+  floor in BOTH stages and moves < 3 cm across (`anchorToContacts`;
+  `_lib.PLANT_Z`/`PLANT_XY`/`planted`); a flat palm tips its fingertips to
+  `FINGER_Z` (`flat_hand`) to plant, and a stance whose hips turn keeps its
+  feet already turned (a turn of the feet with the hips dips the figure
+  6–7 cm). Reach shortfalls (the rig's arms are the 26 & 2's, a hand short
+  of its feet) are one table in `docs/library.md` — no bone lengths change.
 - Forgetting decay: `trainer/bkt.ts` decays each leaf's P(known) back
   toward its prior between practice sessions. The half-life stretches
   only with SPACED correct answers (`KcState.spaced`: a hit ≥ 6 h after

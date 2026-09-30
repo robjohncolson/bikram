@@ -23,7 +23,8 @@ export const marichyasanaII: LibraryAsana = {
     { text: 'The straight leg will not stay down at first: tighten the thigh so the kneecap draws up, and the calf, and the leg stays firm and long on the floor.', page: 110 },
     ...SEATED_TWIST,
   ],
-  prepares: ['ardha-matsyendrasana'],
+  prepares: ['marichyasana-i', 'bharadvajasana'],
+  counter: ['ardha-matsyendrasana'],
   related: ['spine-twisting'],
   sutras: [...SUTRAS],
 };

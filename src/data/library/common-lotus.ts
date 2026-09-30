@@ -14,10 +14,26 @@ export const EVERY_SEAT: LineageNote[] = [
   { text: 'Faulty practice shows itself as discomfort within days; if you cannot find the fault yourself, go to someone who has practised well for guidance.', page: 40 },
 ];
 
-/** The lotus: both feet on the thighs. */
+const LOTUS_KNEES: LineageNote = {
+  text: 'Anyone not used to sitting on the floor will feel sharp pain round the knees at first; with steady, patient practice it fades, and the pose can then be held at ease for a long time.',
+  page: 67,
+};
+const LOTUS_BOTH_WAYS: LineageNote = {
+  text: 'Cross the legs the other way as well — the left foot first on the right thigh — so both legs develop evenly.',
+  page: 67,
+};
+
+/**
+ * The lotus crossing wherever the trunk goes (lying back in the fish,
+ * folded in the lotus seal): the knees, both ways of crossing, the general
+ * hints — not the seated lotus's upright spine, which those poses leave.
+ */
+export const LOTUS_CROSSING: LineageNote[] = [LOTUS_KNEES, LOTUS_BOTH_WAYS, ...EVERY_SEAT];
+
+/** The lotus sat upright: both feet on the thighs, the spine erect (padmasana's own page). */
 export const LOTUS_LINEAGE: LineageNote[] = [
-  { text: 'Anyone not used to sitting on the floor will feel sharp pain round the knees at first; with steady, patient practice it fades, and the pose can then be held at ease for a long time.', page: 67 },
-  { text: 'Keep the spine upright from its base to the neck.', page: 67 },
-  { text: 'Cross the legs the other way as well — the left foot first on the right thigh — so both legs develop evenly.', page: 67 },
+  LOTUS_KNEES,
+  { text: 'Sitting in the lotus, keep the spine upright from its base to the neck.', page: 67 },
+  LOTUS_BOTH_WAYS,
   ...EVERY_SEAT,
 ];

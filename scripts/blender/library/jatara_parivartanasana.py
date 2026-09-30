@@ -9,14 +9,13 @@ the same to the right, back up, and down. The book lowers the legs to the
 left first; so does the sheet.
 
 The hips turn onto their side under the lowered legs, the right leg over
-the left: the pelvis rolls (`_twist.roll`), the hip bones stack further,
+the left: the pelvis rolls 75 degrees (`_lib.roll`), the hip bones stack,
 and the spine rolls back the other way so the chest stays flat on the
-mat. What this rig allows, measured: `library.test.ts` keeps the pelvis's
-width across the body (its roll under ~25 degrees), so the pelvis's hull
-cannot turn onto its side; the upper leg then clears the belly only by
-riding 8 degrees above the lower one (feet ~30 cm apart instead of
-together). With the pelvis rolled 75 degrees the book's form is clean
-(tested and reported, not used). Shape from the book's photographs; the
+mat; the legs lie together at the side, as the book has them. (Until the
+integration pass the library test capped any trunk roll at ~25 degrees,
+and the sheet rode the upper leg 8 degrees above the lower one; the
+narrowed trunk-across rule lets a roll that is asked for through.)
+Shape from the book's photographs; the
 stages are ours. Seen from a quarter round, so the cross of the arms and
 the legs' swing both read.
 """
@@ -54,10 +53,10 @@ def legs_up(arms_out=True):
 # roll (its hull), the hip bones stacked further, the spine rolled back so
 # the chest stays square on the mat; the pelvis lifted to rest the lower hip
 # on the mat
-PELVIS_ROLL = 24.0
+PELVIS_ROLL = 75.0   # the hip line onto its side (measured clean; 24 before the integration)
 HIP_TILT = 2.5       # the hip line's rise over its run, the upper hip over the lower
 SPREAD_Y = 0.30      # how far toward the head the feet travel for each metre out
-UPPER_LEG = 8.0      # the upper leg rides this many degrees above the lower one
+UPPER_LEG = 0.0      # the legs together, the upper one on the lower
 REST_ON = 0.003      # the lowest point of the hull this far above the mat
 
 

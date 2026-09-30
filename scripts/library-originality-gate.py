@@ -29,7 +29,8 @@ CORPORA = (
     Path('C:/Users/rober/Downloads/yoga-ocr'),
 )
 TEXT = {'.ts', '.tsx', '.css', '.md', '.py', '.json', '.mjs', '.js', '.html', '.txt'}
-ALWAYS = ('docs/library-inversions-spec.md', 'docs/library-lotus-rig-spec.md', 'CLAUDE.md', 'CONTINUATION_PROMPT.md')
+ALWAYS = ('docs/library-inversions-spec.md', 'docs/library-lotus-rig-spec.md', 'docs/library-fanout-spec.md',
+          'docs/library-integration-spec.md', 'CLAUDE.md', 'CONTINUATION_PROMPT.md')
 WINDOW = 8
 
 

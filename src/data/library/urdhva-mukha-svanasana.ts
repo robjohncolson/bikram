@@ -19,7 +19,7 @@ export const urdhvaMukhaSvanasana: LibraryAsana = {
     { text: 'Keep the legs straight and firm and never let the knees rest on the floor; the palms and toes alone bear the body.', page: 56 },
     ...EVERY_BACKBEND,
   ],
-  prepares: ['bhujangasana-i'],
+  prepares: ['chaturanga-dandasana', 'bhujangasana-i'],
   counter: ['adho-mukha-svanasana'],
   related: ['cobra'],
   sutras: [...SUTRAS],

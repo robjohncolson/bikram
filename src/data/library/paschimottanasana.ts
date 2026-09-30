@@ -25,8 +25,8 @@ export const paschimottanasana: LibraryAsana = {
     FOLD_MENSTRUATION,
     ...EVERY_FOLD,
   ],
-  prepares: ['janu-sirsasana', 'trianga-mukhaikapada-paschimottanasana', 'marichyasana-i'],
-  counter: ['savasana'],
+  prepares: ['dandasana', 'janu-sirsasana', 'trianga-mukhaikapada-paschimottanasana', 'marichyasana-i'],
+  counter: ['purvottanasana', 'savasana'],
   related: ['head-to-knee-stretching'],
   sutras: [...SUTRAS, SUTRA_48],
 };

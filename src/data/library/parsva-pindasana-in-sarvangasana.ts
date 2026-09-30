@@ -15,7 +15,7 @@ export const parsvaPindasanaInSarvangasana: LibraryAsana = {
     { text: 'Press the left shoulder down and the left hand firmly into the back. Stay, breathing normally.', stage: 4 },
     // the other side: the figure only shows the knees going to the right, so this step points at no stage
     { text: 'Breathing out, come up from the right and take the folded legs across to the left, the left foot near the left ear, for the same time.' },
-    { text: 'Come back through the centre and up to the lotus in the shoulderstand.', stage: 5 },
+    { text: 'Come back through the centre and up to the lotus in the shoulderstand.', stage: 6 },
     { text: 'Uncross the legs, left foot first, back to the shoulderstand; then cross them the other way and repeat both sides.', stage: 7 },
   ],
   hold: 'Twenty to thirty seconds on each side with normal breathing (p. 104).',

@@ -19,7 +19,7 @@ export const virasana: LibraryAsana = {
   ],
   hold: 'Seated with the wrists on the knees, as long as you can; a minute with the arms up and a minute folded forward (p. 62).',
   cautions: HERO_LINEAGE,
-  counter: ['savasana'],
+  counter: ['supta-virasana', 'savasana'],
   related: ['fixed-firm'],
   sutras: [
     ...SUTRAS,

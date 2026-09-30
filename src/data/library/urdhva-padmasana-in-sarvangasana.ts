@@ -9,7 +9,7 @@ export const urdhvaPadmasanaInSarvangasana: LibraryAsana = {
     { text: 'Lie on the back on a folded blanket, arms beside you.', stage: 0 },
     { text: 'Come up into the supported shoulderstand, the palms on the back.', stage: 1 },
     { text: 'Bend the knees and cross the legs as in the lotus: first the right foot onto the left thigh.', stage: 2 },
-    { text: 'Then the left foot onto the right thigh, soles turned toward the chest.', stage: 3 },
+    { text: 'Then the left foot onto the right thigh.', stage: 3 },
     { text: 'Stretch the crossed legs straight up, draw the knees closer together and take the legs back, away from the pelvis, as far as they will go.', stage: 3 },
     { text: 'Stay with deep, even breathing.', stage: 3 },
     { text: 'Uncross the legs, left foot first, and return to the shoulderstand.', stage: 4 },

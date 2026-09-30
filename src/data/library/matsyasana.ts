@@ -1,6 +1,6 @@
 import type { LibraryAsana } from '../types';
 import { SUTRAS } from './common';
-import { LOTUS_LINEAGE } from './common-lotus';
+import { LOTUS_CROSSING } from './common-lotus';
 
 export const matsyasana: LibraryAsana = {
   id: 'matsyasana',
@@ -22,7 +22,7 @@ export const matsyasana: LibraryAsana = {
   hold: 'Thirty seconds to a minute in the arch, breathing deeply (p. 68), and the same with the legs crossed the other way.',
   cautions: [
     { text: 'If the arch onto the crown and the folded forearms are beyond you, lie flat on the back in the lotus with the arms stretched straight over the head instead.', page: 68 },
-    ...LOTUS_LINEAGE,
+    ...LOTUS_CROSSING,
   ],
   prepares: ['padmasana'],
   counter: ['savasana'],

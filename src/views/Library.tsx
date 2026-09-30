@@ -4,8 +4,9 @@ import './Library.css';
 
 /**
  * The posture library: the wider classical repertoire, family by family.
- * Text cards only — no figures here (ten live WebGL contexts on one page
- * is too many); each posture's own page draws it.
+ * Text cards only — no figures here (a live WebGL context per card is too
+ * many); each posture's own page draws it. A short family index at the top
+ * links to the section headings.
  */
 export function Library() {
   return (
@@ -19,6 +20,21 @@ export function Library() {
           collection: none of it is part of the 26&nbsp;&amp;&nbsp;2 class.
         </p>
       </header>
+      {/* 56 cards run long on a phone: the families as in-page links to their headings */}
+      <nav className="container lib-index" aria-label="Families">
+        <ul className="lib-index-list">
+          {libraryFamilies.map((f) => (
+            <li key={f.id}>
+              <a href={`#lib-${f.id}`} className="lib-index-link">
+                {f.title}
+                <span className="lib-index-count" aria-label={`${f.asanas.length} postures`}>
+                  {f.asanas.length}
+                </span>
+              </a>
+            </li>
+          ))}
+        </ul>
+      </nav>
       {libraryFamilies.map((f) => (
         <section key={f.id} className="container lib-family" aria-labelledby={`lib-${f.id}`}>
           <h2 id={`lib-${f.id}`} className="lib-family-title">

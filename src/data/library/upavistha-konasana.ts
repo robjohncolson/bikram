@@ -9,8 +9,8 @@ export const upavisthaKonasana: LibraryAsana = {
   steps: [
     { text: 'Sit with both legs stretched straight in front of you.', stage: 0 },
     { text: 'Take the legs out to the sides one at a time, as wide as they will go, keeping them straight with the backs of the legs on the mat.', stage: 1 },
-    { text: 'Take each big toe between the thumb and the first two fingers. Lift the spine and spread the ribs, draw the diaphragm up, and stay a few seconds with deep breaths.', stage: 2 },
-    { text: 'Now hold the feet, and breathing out, bend forward and rest the head on the mat.', stage: 3 },
+    { text: 'Take each big toe between the thumb and the first two fingers (the figure’s arms, shorter than the book asks, reach only its knees, where the hands rest). Lift the spine and spread the ribs, draw the diaphragm up, and stay a few seconds with deep breaths.', stage: 2 },
+    { text: 'Now hold the feet, and breathing out, bend forward and rest the head on the mat; the figure’s hands slide down the legs as far as they reach.', stage: 3 },
     { text: 'Then lengthen the neck and put the chin down, and work toward resting the chest on the mat.', stage: 4 },
     { text: 'Stay with normal breathing.', stage: 4 },
     { text: 'Breathing in, lift the trunk from the mat.', stage: 5 },
@@ -23,6 +23,7 @@ export const upavisthaKonasana: LibraryAsana = {
     FOLD_MENSTRUATION,
     ...EVERY_FOLD,
   ],
-  counter: ['savasana'],
+  counter: ['baddha-konasana', 'savasana'],
+  prepares: ['dandasana', 'paschimottanasana'],
   sutras: [...SUTRAS],
 };

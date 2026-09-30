@@ -21,5 +21,6 @@ export const purvottanasana: LibraryAsana = {
     ...EVERY_BACKBEND,
   ],
   counter: ['savasana'],
+  prepares: ['paschimottanasana'],
   sutras: [...SUTRAS],
 };

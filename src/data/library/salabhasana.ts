@@ -21,7 +21,8 @@ export const salabhasana: LibraryAsana = {
     { text: 'Lifting the chest and legs is hard at first; it grows easier as the abdominal muscles strengthen.', page: 53 },
     ...EVERY_BACKBEND,
   ],
-  counter: ['savasana'],
+  counter: ['dhanurasana', 'savasana'],
+  prepares: ['bhujangasana-i'],
   related: ['locust', 'full-locust'],
   sutras: [...SUTRAS],
 };

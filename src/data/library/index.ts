@@ -118,8 +118,9 @@ const FAMILY_TEXT: Record<LibraryFamily, { title: string; blurb: string }> = {
     blurb: 'Poses built on the feet: the legs grow strong and steady, and the rest of the practice stands on them.',
   },
   backbend: {
-    title: 'Backbends',
-    blurb: 'The spine arched back, lying on the front or pushing up from the floor: the chest opens and the back grows supple.',
+    title: 'Backbends and arm supports',
+    blurb:
+      'The spine arched back, lying on the front, kneeling or pushing up from the floor, with the poses held up on the hands and feet — the four-limbed staff, the two dogs, the upward plank: the chest opens, the back grows supple and the arms learn to carry the body.',
   },
   seated: {
     title: 'Seated',
@@ -131,11 +132,12 @@ const FAMILY_TEXT: Record<LibraryFamily, { title: string; blurb: string }> = {
   },
   inversion: {
     title: 'Inversions',
-    blurb: 'The headstand and the shoulderstand, and the variations built on them. Learn them with a teacher; read the cautions first.',
+    blurb: 'The headstand and the shoulderstand, and the variations built on them. Read what the lineage asks of each before you try it.',
   },
   twist: {
-    title: 'Twists',
-    blurb: 'The spine turned about its own length, seated or lying: the trunk wrings and the back loosens.',
+    title: 'Twists and lying leg stretches',
+    blurb:
+      'The spine turned about its own length, seated or lying, so the trunk wrings and the back loosens; with them the stretch lying on the back, one straight leg raised to the hand and the head lifted toward the knee.',
   },
 };
 

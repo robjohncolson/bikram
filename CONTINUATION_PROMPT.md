@@ -1,4 +1,4 @@
-# CONTINUATION_PROMPT — 26 & 2 / bikram (resume here, 2026-09-29)
+# CONTINUATION_PROMPT — 26 & 2 / bikram (resume here, 2026-09-30)
 
 Read `CLAUDE.md` first (architecture + conventions; it is current). This file is the
 newest-first log of where the work stands and what is still open.
@@ -7,6 +7,39 @@ newest-first log of where the work stands and what is still open.
 since 2026-08-27) · deploy with `npx vercel deploy --prod --yes` · `npm test` = 103+ tests / 14 files,
 all green on the 2026-09-27 working tree (see the top entries). **Deploys now happen from GitHub on
 push to `main` via Vercel's Git integration**; the CLI token on this machine is expired.
+
+---
+
+## ✔ 2026-09-30 — THE LIBRARY INTEGRATED: 56 POSTURES, SIX FAMILIES (uncommitted)
+
+`docs/library-integration-spec.md`, as uncommitted working-tree changes on top of the merged
+fan-out (six groups, `docs/library-fanout-spec.md`; not reviewed, not committed):
+- TESTS: the trunk-across test narrowed to its intent — a trunk bone's width within 25° of the
+  width its aim implies (the parent's width carried square) turned by the stage's roll, or of that
+  level width (a squaring roll); exactly-reversed and reversed-sideways aims still fail (teeth:
+  synthetic (0,0,-1) pelvis, reversed lower spine, tipped inverted pelvis). Before it caught
+  utthita-parsvakonasana (and the triangle, any side bend past ~26°, any roll). Explicit
+  180 s timeout on the held-stage clearance test; 56 entries and every family's members pinned by
+  id; vitest excludes `.claude/**`, `.gitignore` has `.claude/worktrees/`.
+- SHARED HELPERS in `_lib.py`: rolls on any bone with the riding-children rule (`fk`/`direction`
+  roll-aware), `roll`/`twist`/`shoulders`/`turn`/`square`/`mirror`/`plain`/`reach_short`,
+  `check` now also warns on the trunk-across rule and a hull > 1 cm into the mat (ghosts too),
+  `clavicles_follow`, `lying_back`/`back`, planted contacts (`PLANT_Z`, `flat_hand`, `planted`).
+  `_twist.py` is a thin re-export; `_lotus.py`/`_backbend.py` use the shared pieces (same output).
+  Rolled-FK fixture (`_selftest.py --write`) held by `pose.test.ts` to 1e-4.
+- RE-POSED: jatara parivartanasana (pelvis rolled 75°, legs together at the side), warrior I
+  (jump apart facing the front, turn to the right foot; one side — both sides dip 6–7 cm without
+  a feet-turn stage), parsvottanasana (same turn; head back to the centre before rising),
+  parsva pindasana (hip turn 110°: the LEFT knee by the head on the right, as the book), and three
+  ghosts (parsva halasana, parsvaika pada sarvangasana: squared pelvis; supta virasana: knee on
+  the circle, sole kept).
+- CONTENT: cross-family `prepares`/`counter` from the course tables; three review passes fixed
+  steps against their stages (trikonasana, parsvakonasana, warrior II, padangusthasana,
+  padahastasana, marichyasana I, trianga, baddha konasana, sirsasana, setu bandha, urdhva padmasana,
+  parsva pindasana, bharadvajasana, jatara); families retitled ("Backbends and arm supports",
+  "Twists and lying leg stretches"); `/library` has a family index. The REACH TABLE is in
+  `docs/library.md` (Robert's open decision: library-only arm proportions?).
+- OPEN: warrior I's left side has no stage; the arms' reach (table); Codex review, commit, push.
 
 ---
 

@@ -158,16 +158,8 @@ def hand_down_leg(pose, side, gap=0.012, margin=0.01, out=0.8):
 # toward -Y). The seat is moved forward so the lying body sits across the
 # camera's pivot.
 BACK_SEAT = (0, -0.22, 0.10)
-BACK_CLAVICLE = {'clavicle.L': (1, 0.2, 0), 'clavicle.R': (-1, 0.2, 0)}   # the rest shoulder line, laid back
-BACK_HIPBONE = {'hipbone.L': (1, -0.2, 0), 'hipbone.R': (-1, -0.2, 0)}
-
-
-def back(deg):
-    """A trunk direction for the body lying back (head toward +Y), lifted
-    `deg` degrees off the mat; negative dips it toward the floor (the neck
-    and head of the arch). 90 is sitting upright."""
-    a = math.radians(deg)
-    return (0, math.cos(a), math.sin(a))
+# the body lying back is `_lib`'s (`lying_back`, `back`), shared since the integration
+BACK_CLAVICLE, BACK_HIPBONE, back = L.BACK_CLAVICLE, L.BACK_HIPBONE, L.back
 
 
 # the arch, measured: the pelvis on the mat tipped 25 degrees, the chest
@@ -185,12 +177,8 @@ def lying_lotus(arch=FLAT):
     sits at the lying height of `_lib.LIE`. The lap follows the
     pelvis's tip (`flex`), so the crossing is the seated one laid down.
     Arms left for the caller."""
-    tp, tl, tu, tn, th = arch
-    z = L.LIE_AT['pelvis'][2]
-    pose = {'pelvis.location': sub((BACK_SEAT[0], BACK_SEAT[1] + 0.02, z), L.J['pelvis']),
-            'pelvis': back(tp), 'spine.lower': back(tl), 'spine.upper': back(tu), 'neck': back(tn), 'head': back(th),
-            **BACK_CLAVICLE, **BACK_HIPBONE}
-    return lotus_knees_down(pose, flex=tp)
+    pose = L.lying_back(arch, at=(BACK_SEAT[0], BACK_SEAT[1] + 0.02, L.LIE_AT['pelvis'][2]))
+    return lotus_knees_down(pose, flex=arch[0])
 
 
 def arms_on_mat(pose, spread=0.5):
@@ -278,29 +266,40 @@ def half_up():
 def pinda(up=PINDA_UP, flex=PINDA_FLEX, hips=None):
     """Pindasana: the crossed legs folded down from the hips over the face,
     the palms on the back. `hips` = (turn, tilt) degrees turns the hip line
-    about the upright trunk and tips it (parsva pindasana)."""
+    about the upright trunk and tips it (parsva pindasana): the lap then
+    faces the way the turn carries the chest's side (`lap`'s `front`, kept
+    continuous past a quarter turn). A trunk tipped off the upside-down line
+    to the side is squared (`_lib.square`): its width stays across the body."""
     pose = L.on_shoulders(up=up)
+    front = CHEST
+    if up[0]:
+        for b in ('pelvis', 'spine.lower', 'spine.upper'):
+            L.square(pose, b)
     if hips:
         turn, tilt = (math.radians(a) for a in hips)
         side = (math.cos(turn) * math.cos(tilt), math.sin(turn) * math.cos(tilt), math.sin(tilt))
         pose['hipbone.L'] = n(add(side, (0, 0, 0.15)))
         pose['hipbone.R'] = n(add(neg(side), (0, 0, 0.15)))
+        front = (math.sin(turn), -math.cos(turn), 0.0)
     L.hands_on_back(pose, **PINDA_HANDS)
-    return L.lotus(pose, first='R', flex=flex, front=CHEST)
+    return L.lotus(pose, first='R', flex=flex, front=front)
 
 
-# PARSVA PINDASANA, measured: the folded lotus carried round to the right
-# (-X, the side of the R-labelled shoulder) — the hip line turned 60
-# degrees about the upright trunk and tipped 10. The trunk itself cannot
-# lean to the side: a trunk bone aimed off the exact upside-down line
-# sideways turns about a diagonal and the hips swing front to back (the
-# library test's "hips and chest across the body"). The knees come down
-# only part way: the right knee to about 27 cm off the mat beside the
-# head, the left knee staying up over it, some 38 cm high (the book's left
-# knee by the right ear, both knees on the floor, needs the thighs folded
-# further than the crossed feet allow on this hull; a search over turn,
-# tip and fold). `side='L'` mirrors it.
-PARSVA = {'up': (0.0, -0.1, 1), 'hips': (-60, 10)}
+# PARSVA PINDASANA, measured (the integration pass, 2026-09-30): the folded
+# lotus carried round to the right (-X, the side of the R-labelled
+# shoulder in these mirror-labelled poses) — the hip line turned 110
+# degrees about the trunk, the trunk tipped a little toward that side
+# (squared, so its width stays across) and the thighs folded 115 degrees.
+# That brings the LEFT knee round beside the head on the right, as the
+# book has it (its left knee by the right ear), and leaves the right knee
+# back beside the right shoulder. Both knees stop about 34 cm off the mat:
+# folded further the crossed feet press into the belly on this hull (a
+# search over turn, tip, fold and lean with the clearance check), and the
+# book itself says the knee by the ear reaches the floor only after long
+# practice. (The fan-out's 60-degree turn put the LEFT knee out beyond the
+# crown and the right knee nearer the head: the book's arrangement
+# reversed.) `side='L'` mirrors it.
+PARSVA = {'up': (-0.15, -0.1, 1), 'hips': (-110, 0), 'flex': 115.0}
 
 
 def parsva_pinda(side='R'):
@@ -308,7 +307,7 @@ def parsva_pinda(side='R'):
     sx = 1 if side == 'R' else -1
     up = (sx * PARSVA['up'][0], PARSVA['up'][1], PARSVA['up'][2])
     turn, tilt = PARSVA['hips']
-    return pinda(up=up, hips=(sx * turn, sx * tilt))
+    return pinda(up=n(up), hips=(sx * turn, sx * tilt), flex=PARSVA['flex'])
 
 
 # --- parvatasana: the arms stretched overhead, fingers laced ----------------------

@@ -26,20 +26,10 @@ n, add, sub, dot, dist, neg, scale, cross = L.n, L.add, L.sub, L.dot, L.dist, L.
 PRONE_Y = -0.16          # the pelvis joint along the mat: crown to toes centred on the pivot
 PRONE_Z = 0.105          # the pelvis joint's height lying down: the belly's hull on the mat
 PRONE_FRAME = {'center_z': 0.42, 'scale': 2.2}
-WRIST_Z = 0.045          # a palm flat on the mat: the wrist joint this high
-# the fingertips a little lower than the wrist, their joint under 3 cm: the
-# live figure then treats them as a floor contact shared by two stages and
-# carries them straight between (`anchorToContacts`), so a palm that stays
-# put never swings through the mat on the way
-FINGER_Z = 0.025
-
-
-def flat_hand(f):
-    """A palm flat on the mat with the fingers along `f` (horizontal), tipped
-    down just enough that the fingertips rest at FINGER_Z."""
-    h = n((f[0], f[1], 0))
-    drop = (WRIST_Z - FINGER_Z) / L.HAND
-    return n(add(scale(h, math.sqrt(1 - drop * drop)), (0, 0, -drop)))
+# a flat palm's wrist height, its fingertips' (under 3 cm: a planted contact
+# the live figure carries straight between stages) and the hand that lies
+# so — the planted-contact rule, shared in `_lib` since the integration
+WRIST_Z, FINGER_Z, flat_hand = L.WRIST_Z, L.FINGER_Z, L.flat_hand
 FLAT_FOOT = n((0, 1, -0.2))     # the top of the foot on the mat, the toes pointing back
 
 

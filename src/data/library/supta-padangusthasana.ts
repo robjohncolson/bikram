@@ -21,7 +21,7 @@ export const suptaPadangusthasana: LibraryAsana = {
     { text: 'Draw the raised leg toward the head without letting its knee bend, and keep the other leg stretched fully along the floor all the while.', page: 108 },
     ...EVERY_TWIST,
   ],
-  prepares: ['bharadvajasana'],
+  prepares: ['parsvaika-pada-sarvangasana'],
   counter: ['savasana'],
   related: ['wind-removing'],
   sutras: [...SUTRAS],

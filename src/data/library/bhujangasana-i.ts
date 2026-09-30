@@ -20,7 +20,7 @@ export const bhujangasanaI: LibraryAsana = {
     { text: 'Lift only until the pubis meets the floor, and keep it there; the weight is taken on the legs and the palms.', page: 55 },
     ...EVERY_BACKBEND,
   ],
-  prepares: ['salabhasana'],
+  prepares: ['chaturanga-dandasana', 'salabhasana'],
   counter: ['adho-mukha-svanasana'],
   related: ['cobra'],
   sutras: [...SUTRAS],

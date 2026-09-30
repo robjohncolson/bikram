@@ -48,9 +48,11 @@ S.arms_along(ARMS, 1, out=0.08, drop=0.06)
 _KNEES_UP = {**ARMS}
 for _s, _sx in (('L', 1), ('R', -1)):
     _at = L.fk(ARMS)
-    _hip = _at[f'hip.{_s}']
-    _knee = L.add(_hip, L.n((_sx * 0.45, -1, 0.55)), L.THIGH)
+    # the knee lifted off the mat and out, on the circle that keeps the ankle where it was
+    _knee = L.knee_on(_at[f'hip.{_s}'], _at[f'ankle.{_s}'], (0, 0, 1), 0.27, (_sx, -1, 0))
     L.set_leg(_KNEES_UP, _s, _knee, _at[f'ankle.{_s}'])
+    # the foot keeps its sole where it was: its roll is taken from the new shin
+    L.foot_sole(_KNEES_UP, _s, L.sole_facing(ARMS, _s), L.direction(ARMS, f'foot.{_s}'))
 GHOST = L.diff(_KNEES_UP, ARMS)
 
 GUIDES = [

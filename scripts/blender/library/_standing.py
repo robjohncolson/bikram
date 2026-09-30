@@ -11,10 +11,12 @@ the shin upright over its ankle (the lunges). The trunk is authored first;
 the legs are solved under it; `ground` then sets the pelvis height so the
 standing ankles sit on the mat.
 
-The figure never turns its trunk about the vertical (the library refuses a
-roll on a trunk bone), so the postures that face the front foot
-(Virabhadrasana I, Parsvottanasana) keep the face toward -Y and put the
-front foot there: the stance runs along Y, seen from the side.
+The helpers build every stance facing -Y. The postures that face the front
+foot (Virabhadrasana I, Parsvottanasana) put the front foot there, the
+stance along Y, seen from the side; since the integration pass their
+front-facing stages are the same builds turned a quarter turn about the
+vertical (`_lib.turn`), so the figure jumps apart facing the mat's front
+and then turns to the foot, as the book does.
 """
 import importlib.util
 import math

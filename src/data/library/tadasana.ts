@@ -21,6 +21,7 @@ export const tadasana: LibraryAsana = {
     { text: 'Even with the feet apart, keep each heel and its toes on a line parallel to the body’s midline rather than splayed at an angle.', page: 41 },
     ...EVERY_STANDING,
   ],
+  counter: ['utthita-trikonasana'],
   related: ['pranayama'],
   sutras: [...SUTRAS],
 };

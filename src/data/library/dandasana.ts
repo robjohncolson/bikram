@@ -16,7 +16,8 @@ export const dandasana: LibraryAsana = {
   ],
   hold: 'The book sets no time; it is the seat that the boats and the bound angle begin from (pp. 57–65).',
   cautions: EVERY_SEAT,
-  counter: ['savasana'],
+  counter: ['paripurna-navasana', 'savasana'],
+  prepares: ['uttanasana'],
   related: ['head-to-knee-stretching'],
   sutras: SUTRAS,
 };

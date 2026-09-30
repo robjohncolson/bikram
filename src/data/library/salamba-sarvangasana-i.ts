@@ -17,8 +17,8 @@ export const salambaSarvangasanaI: LibraryAsana = {
   ],
   hold: 'Not less than five minutes, increasing gradually toward fifteen (p. 93).',
   cautions: SHOULDERSTAND_LINEAGE,
-  prepares: ['head-to-knee-stretching'],
-  counter: ['savasana'],
+  prepares: ['salamba-sirsasana-i', 'head-to-knee-stretching'],
+  counter: ['halasana', 'savasana'],
   related: ['rabbit'],
   sutras: [...SUTRAS, SUTRA_48],
 };

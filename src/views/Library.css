@@ -19,6 +19,49 @@
   max-width: 60ch;
 }
 
+/* the family index: in-page links to the section headings, wrapping chips */
+.lib-index {
+  margin-bottom: 30px;
+}
+
+.lib-index-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.lib-index-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  font-size: 14px;
+  color: var(--text);
+  background: var(--bg-raised);
+  transition: border-color 0.18s ease;
+}
+
+.lib-index-link:hover,
+.lib-index-link:focus-visible {
+  border-color: color-mix(in srgb, var(--ember) 45%, var(--border));
+}
+
+.lib-index-count {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+/* a heading reached by the index (its id is the link's target) clears the sticky app bar */
+.lib-family-title {
+  scroll-margin-top: calc(var(--nav-height) + 16px);
+}
+
 .lib-family + .lib-family {
   margin-top: 40px;
 }

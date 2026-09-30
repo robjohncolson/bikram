@@ -9,10 +9,12 @@ centre to the lotus, and uncrossed, left foot first, to the shoulderstand
 the sheet began in. Eight stages hold one side: the left side is the step
 left unbound on the page.
 
-The knees come down only part way (`_lotus.PARSVA`): the knee nearer the
-floor stops about 27 cm above it, the other stays up over the head —
-the book itself says the knee by the ear reaches the floor only after
-long practice. Shape from the book's photographs; the stages are ours.
+The hips turn a little past a quarter turn and the folded legs go down
+to the right (`_lotus.PARSVA`): the LEFT knee comes round beside the head
+on the right, the right knee lies back by the right shoulder, as the book
+has them (its left knee by the right ear). Both knees stop about 34 cm off
+the mat — the book itself says the knee by the ear reaches the floor only
+after long practice. Shape from the book's photographs; the stages are ours.
 """
 import importlib.util
 from pathlib import Path

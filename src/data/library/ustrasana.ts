@@ -23,7 +23,8 @@ export const ustrasana: LibraryAsana = {
     { text: 'Come out one hand at a time, each to its hip, before you sit down.', page: 50 },
     ...EVERY_BACKBEND,
   ],
-  counter: ['savasana'],
+  counter: ['urdhva-dhanurasana', 'savasana'],
+  prepares: ['dhanurasana', 'urdhva-mukha-svanasana'],
   related: ['camel'],
   sutras: [...SUTRAS],
 };

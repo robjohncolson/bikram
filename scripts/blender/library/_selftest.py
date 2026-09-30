@@ -17,6 +17,11 @@ previewed as a sheet). Plain Python, no bpy:
    `library.test.ts` holds `src/rig/clearance.ts` to (pairs and depths
    within 1 mm). The check here fails when the committed fixture no longer
    matches what the Python port computes.
+3. ROLLED TRUNKS — `_lib.fk` on stages that roll non-leaf bones (the
+   riding-children rule: omitted children of a rolled bone ride it, listed
+   ones do not), written to
+   `src/rig/clearance-fixtures/rolled-fk-from-python.json`, which
+   `pose.test.ts` holds `src/rig/pose.ts` to (every joint within 1e-4).
 """
 import contextlib
 import importlib.util
@@ -29,6 +34,7 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
 FIXTURE = ROOT / 'src' / 'rig' / 'clearance-fixtures' / 'clashes-from-python.json'
+ROLLED_FIXTURE = ROOT / 'src' / 'rig' / 'clearance-fixtures' / 'rolled-fk-from-python.json'
 
 
 def _load(name, path):
@@ -123,8 +129,69 @@ def L_clean(pose):
     return {k: c(v) for k, v in pose.items()}
 
 
+def rolled_cases():
+    """Rolled trunks for the cross-language FK fixture: the riding-children
+    rule (an omitted child of a rolled bone rides it, two deep), a listed
+    child that does not, and the rolled stages the sheets draw."""
+    jat = _load('_selftest_jatara', HERE / 'jatara_parivartanasana.py')
+    bhar = _load('_selftest_bharadvajasana', HERE / 'bharadvajasana.py')
+    held = lambda mod, label: next(s['pose'] for s in mod.POSTURE['stages'] if s['label'] == label)
+    return [
+        # the pelvis rolled 60: the spine, the hips and everything above omitted, so all of it rides
+        ('pelvis rolled, children riding', {'pelvis': {'dir': (0, -0.3, 1), 'roll': 60.0}}),
+        # the same roll with the spine listed: the spine is aimed in world space, only the hips ride
+        ('pelvis rolled, spine listed', {'pelvis': {'dir': (0, -0.3, 1), 'roll': 60.0},
+                                         'spine.lower': (0, 0, 1), 'spine.upper': (0, 0.1, 1)}),
+        # a rolled lower spine carries the upper spine, the neck, the head and the clavicles
+        ('spine rolled, riding two deep', {'spine.lower': {'dir': (0.2, -0.4, 1), 'roll': -35.0},
+                                           'upperarm.L': (1, 0, -0.3)}),
+        # a rolled neck carries the head
+        ('neck rolled, head riding', {'neck': {'dir': (0, -0.3, 1), 'roll': 40.0}}),
+        ('jatara parivartanasana, legs to the left', held(jat, 'Legs to the left')),
+        # the held twist (the longest hold): the spine and neck rolled, every child listed
+        ('bharadvajasana, the held twist', max(bhar.POSTURE['stages'], key=lambda s: s['hold'])['pose']),
+    ]
+
+
+def rolled_fixture():
+    """[{case, pose, joints}] — `_lib.fk` (roll-aware) for `rolled_cases`,
+    written to ROLLED_FIXTURE; `pose.test.ts` holds `solve(applyStage(pose))`
+    to it within 1e-4. Also checks the Python side: the riding children move
+    (the plain direction chain would put them elsewhere) and a listed child
+    does not."""
+    out = []
+    for name, pose in rolled_cases():
+        at = L.fk(pose)
+        out.append({'case': name, 'pose': L_clean(pose), 'joints': {j: [round(c, 6) for c in p] for j, p in at.items()}})
+    first = L.fk(rolled_cases()[0][1])
+    flat = L.fk(L.plain(rolled_cases()[0][1]))
+    expect(L.dist(first['neck'], flat['neck']) > 0.05, 'the riding spine did not follow the pelvis roll')
+    listed = rolled_cases()[1][1]
+    expect(max(L.dist(a, b) for a, b in zip(L.fk(listed).values(), L.fk(L.plain(listed)).values())) > 0.01,
+           'the riding hips did not follow the pelvis roll')
+    expect(L.dist(L.fk(listed)['neck'], L.fk(L.plain(listed))['neck']) < 1e-9, 'a listed spine moved under the roll')
+    return out
+
+
+def across_cases():
+    """The trunk-across rule (`_lib.trunk_width_deviation`, `library.test.ts`):
+    exact sideways aims (no projection to take) are plain bends; reversed
+    aims still fail."""
+    for x in (1, -1):
+        for pose in ({'pelvis': (x, 0, 0)}, {'spine.lower': (x, 0, 0), 'spine.upper': (x, 0, 0)},
+                     {'pelvis': {'dir': (x, 0, 0), 'roll': 40.0}}):
+            dev = L.trunk_width_deviation(pose)
+            expect(all(math.isfinite(v) and v < 1 for v in dev.values()), f'across: {pose} -> {dev}')
+        sq = L.square({'pelvis': (x, 0, 0)}, 'pelvis')
+        expect(L.trunk_width_deviation(sq)['pelvis'] < 1, f'square of a sideways pelvis: {sq}')
+    expect(L.trunk_width_deviation({'pelvis': (0, 0, -1)})['pelvis'] > L.ACROSS_DEG, 'across: a reversed pelvis passed')
+    expect(L.trunk_width_deviation({'spine.lower': (0, 0, -1)})['spine.lower'] > L.ACROSS_DEG, 'across: a reversed spine passed')
+
+
 def main():
     knee_cases()
+    across_cases()
+    rolled = json.dumps(rolled_fixture(), indent=1) + '\n'
     data = compute()
     names = {d['case']: d for d in data}
     expect(names['rest']['clashes'] == [], 'rest pose clashes')
@@ -140,12 +207,13 @@ def main():
     expect(any('wrist' in c[0] and 'wrist' in c[1] for c in names['crossed wrists, laced']['clashes']),
            'crossed wrists, laced: the wrists were exempt')
     text = json.dumps(data, indent=1) + '\n'
-    if '--write' in sys.argv:
-        FIXTURE.parent.mkdir(parents=True, exist_ok=True)
-        FIXTURE.write_text(text, encoding='utf-8', newline='\n')
-        print(f'wrote {FIXTURE.relative_to(ROOT)}')
-    elif not FIXTURE.is_file() or FIXTURE.read_text(encoding='utf-8') != text:
-        FAILS.append(f'{FIXTURE.relative_to(ROOT)} is stale: rerun with --write')
+    for path, body in ((FIXTURE, text), (ROLLED_FIXTURE, rolled)):
+        if '--write' in sys.argv:
+            path.parent.mkdir(parents=True, exist_ok=True)
+            path.write_text(body, encoding='utf-8', newline='\n')
+            print(f'wrote {path.relative_to(ROOT)}')
+        elif not path.is_file() or path.read_text(encoding='utf-8') != body:
+            FAILS.append(f'{path.relative_to(ROOT)} is stale: rerun with --write')
     for f in FAILS:
         print(f'selftest FAIL: {f}', file=sys.stderr)
     print(f'selftest: {len(FAILS)} failures')

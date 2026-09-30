@@ -14,7 +14,7 @@ export const salambaSirsasanaI: LibraryAsana = {
     { text: 'Stretch the legs up until the body stands in one vertical line from the crown to the heels. The head takes the weight; the forearms and hands only guard the balance, and the shoulders stay lifted away from the floor.', stage: 4 },
     { text: 'To come down, bend the knees back in, both legs moving together on an exhalation.', stage: 5 },
     { text: 'Rest the feet and then the knees on the floor, the head still down.', stage: 6 },
-    { text: 'Then raise the head, and stay kneeling for a few breaths before you sit up.', stage: 7 },
+    { text: 'Then lift the head from the blanket and rest.', stage: 7 },
   ],
   hold: 'A beginner stays about two minutes and works toward five; once mastered, the book gives ten to fifteen minutes as comfortable (p. 88).',
   cautions: HEADSTAND_LINEAGE,

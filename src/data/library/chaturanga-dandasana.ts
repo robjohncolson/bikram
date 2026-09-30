@@ -20,5 +20,6 @@ export const chaturangaDandasana: LibraryAsana = {
     ...EVERY_BACKBEND,
   ],
   counter: ['adho-mukha-svanasana'],
+  prepares: ['uttanasana', 'purvottanasana'],
   sutras: [...SUTRAS],
 };

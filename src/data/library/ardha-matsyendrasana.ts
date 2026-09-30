@@ -24,6 +24,8 @@ export const ardhaMatsyendrasana: LibraryAsana = {
     { text: 'If the arm will not yet go round the opposite knee, hold the opposite foot with the arm kept straight; if sitting on the foot is too hard, sit on the floor.', page: 113 },
     ...SEATED_TWIST,
   ],
+  prepares: ['marichyasana-ii'],
+  counter: ['paschimottanasana'],
   related: ['spine-twisting'],
   sutras: [...SUTRAS],
 };

@@ -14,7 +14,8 @@ export const utthitaParsvakonasana: LibraryAsana = {
     { text: 'Firm the loins and stretch the backs of the legs. Move the chest up and back until chest, hips and legs lie in one line, and let the whole back of the body — the spine above all — lengthen.', stage: 3 },
     { text: 'Inhale, lift the palm, straighten the right leg and raise the arms; then turn the feet and bend the left knee for the other side.', stage: 4 },
     { text: 'Come down over the left thigh the same way, the left palm on the floor and the right arm over the ear.', stage: 5 },
-    { text: 'Inhale up to the wide stance, then exhale and jump back into Tadasana.', stage: 6 },
+    { text: 'Inhale up to the wide stance, the arms level.', stage: 6 },
+    { text: 'Exhale and jump back into Tadasana.', stage: 7 },
   ],
   hold: 'Half a minute to a minute on each side, breathing deeply and evenly (p. 43).',
   cautions: [
@@ -22,7 +23,7 @@ export const utthitaParsvakonasana: LibraryAsana = {
     { text: 'To bring the chest, hips and legs into one line, move the chest up and back rather than letting it hang toward the floor.', page: 43 },
     ...EVERY_STANDING,
   ],
-  prepares: ['utthita-trikonasana'],
+  prepares: ['tadasana', 'utthita-trikonasana'],
   counter: ['uttanasana'],
   related: ['triangle'],
   sutras: [...SUTRAS],

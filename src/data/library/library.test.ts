@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
-import { CLEARANCE_TOL, J, SKIN_EXTRA, SKIN_FIT, anchorToContacts, bodyRecipe, clashes, hullPoints, jointRadii, pairRule, pieceNames, placeBone, placeJoint, applyStage, groundedSheetPose, liftToFloor, sheetPose, smoothstep, solve, stageCamera } from '../../rig';
+import { CLEARANCE_TOL, J, SKIN_EXTRA, SKIN_FIT, anchorToContacts, bodyRecipe, clashes, hullPoints, jointRadii, pairRule, pieceNames, placeBone, placeJoint, applyStage, groundedSheetPose, liftToFloor, restDirections, sheetPose, smoothstep, solve, stageCamera } from '../../rig';
 import type { Solved, Vec3 } from '../../rig';
-import { rotate } from '../../rig/math';
+import { axisAngle, rotate, rotationDifference } from '../../rig/math';
 import illustrated from '../classical/illustrated-index.json';
 import sutras from '../classical/sutras-index.json';
 import { getPose } from '../index';
@@ -144,6 +144,57 @@ function soleSide(s: Solved, side: 'L' | 'R', facing: Vec3): [number, number] {
   return [off('heel'), off('ball')];
 }
 
+/** How far (degrees) a trunk bone's width may stray from the width its authored aim and roll imply. */
+const TRUNK_WIDTH_DEG = 25;
+const REST_DIR = restDirections();
+
+const angleDeg = (a: Vec3, b: Vec3) => (Math.acos(Math.min(1, Math.max(-1, dot(a, b)))) * 180) / Math.PI;
+
+/**
+ * Per trunk bone, how far (degrees) its posed width (rest +X carried by its
+ * world rotation) strays from the width the stage asks for. The width an
+ * aim implies is LEVEL: the parent's posed width made square to the bone's
+ * target direction. The drawn width may be that level width turned by the
+ * stage's own roll (a clean aim plus the roll asked for) or the level width
+ * itself (a roll that squares an ill-turned aim, `_lib.square`). A well-posed
+ * aim leaves ~0; the degenerate half turn of an exactly reversed aim ~90.
+ * The same rule as `_lib.trunk_width_deviation`.
+ */
+/** Below this the aim runs along the parent's width: no projection to take (`_lib.LEVEL_EPS`). */
+const LEVEL_EPS = 1e-3;
+
+/**
+ * The width an aim implies (`_lib.level_width`): the parent's width made
+ * square to the aim; for an aim along that width itself (an exact sideways
+ * aim, where the projection vanishes), the parent's width transported
+ * through the authored bend — the shortest arc from where the parent left
+ * the bone to the aim.
+ */
+function levelWidth(p: ReturnType<typeof applyStage>, b: string, parent: string | null, dir: Vec3): Vec3 {
+  const w0 = parent ? rotate(p.bones[parent].q, [1, 0, 0]) : ([1, 0, 0] as Vec3);
+  const k = dot(w0, dir);
+  const v = sub(w0, [dir[0] * k, dir[1] * k, dir[2] * k]);
+  if (Math.hypot(...v) > LEVEL_EPS) return unit(v);
+  const start = parent ? unit(rotate(p.bones[parent].q, REST_DIR[b])) : REST_DIR[b];
+  return unit(rotate(rotationDifference(start, dir), w0));
+}
+
+function trunkWidthDeviation(stage: RigStagePose): Record<string, number> {
+  const p = applyStage(stage);
+  const out: Record<string, number> = {};
+  for (const [b, parent] of [['pelvis', null], ['spine.lower', 'pelvis'], ['spine.upper', 'spine.lower']] as const) {
+    const q = p.bones[b].q;
+    const e = stage[b];
+    const dir = unit(e === undefined ? rotate(q, REST_DIR[b]) : Array.isArray(e) ? (e as Vec3) : (e.dir as Vec3));
+    const roll = e !== undefined && !Array.isArray(e) ? (e.roll ?? 0) : 0;
+    const level = levelWidth(p, b, parent, dir);
+    const rolled = roll ? rotate(axisAngle(dir, (roll * Math.PI) / 180), level) : level;
+    const got = rotate(q, [1, 0, 0]);
+    out[b] = Math.min(angleDeg(rolled, got), angleDeg(level, got));
+  }
+  return out;
+}
+
 describe('the posture library', () => {
   it('pairs every library sheet with an entry, and every entry with a sheet', () => {
     expect(Object.keys(sheets).sort()).toEqual(libraryAsanas.map((a) => a.id).sort());
@@ -206,15 +257,40 @@ describe('the posture library', () => {
     expect(checked).toBeGreaterThan(40);
   });
 
-  it('keeps the hips and chest across the body (no trunk aimed exactly upside down)', () => {
-    // exactly opposite its rest a bone turns about a diagonal and the trunk's width swings front to back
+  it('keeps the hips and chest across the body (no trunk turned about an unasked diagonal)', () => {
+    // A trunk bone aimed EXACTLY opposite where its parent left it turns by the shortest arc's
+    // degenerate half turn — about Blender's diagonal perpendicular — and the trunk's width swings
+    // front to back. Any other aim, tilt or roll ends where it was asked: its width is the parent's
+    // width carried square to the new direction, then rolled by the stage's own roll.
     for (const [id, d] of Object.entries(sheets)) {
-      for (const st of d.stages) {
-        const p = applyStage(st.pose);
-        for (const b of ['pelvis', 'spine.lower', 'spine.upper']) {
-          expect(Math.abs(rotate(p.bones[b].q, [1, 0, 0])[0]), `${id} ${st.label} ${b}`).toBeGreaterThan(0.9);
+      d.stages.forEach((st, i) => {
+        for (const [what, pose] of [['pose', st.pose], ['ghost', st.ghost && { ...st.pose, ...st.ghost }]] as const) {
+          if (!pose) continue;
+          for (const [b, dev] of Object.entries(trunkWidthDeviation(pose))) {
+            expect(dev, `${id} #${i} ${st.label} ${what} ${b}: width ${dev.toFixed(0)}° off the authored aim and roll`).toBeLessThanOrEqual(TRUNK_WIDTH_DEG);
+          }
         }
-      }
+      });
+    }
+    // teeth: a pelvis aimed exactly upside down (or a lower spine folded exactly back on it) fails
+    expect(trunkWidthDeviation({ pelvis: [0, 0, -1] }).pelvis).toBeGreaterThan(TRUNK_WIDTH_DEG);
+    expect(trunkWidthDeviation({ 'spine.lower': [0, 0, -1] })['spine.lower']).toBeGreaterThan(TRUNK_WIDTH_DEG);
+    // and an inverted trunk tipped to the side and back swings its width by the shortest arc too
+    const tipped: Vec3 = unit([-0.2, -0.1, -0.97]);
+    expect(trunkWidthDeviation({ pelvis: tipped }).pelvis).toBeGreaterThan(TRUNK_WIDTH_DEG);
+    // what the narrowing lets through, asked for: the side bend, the headstand's hair-off-vertical,
+    // a rolled trunk (the hip line turned onto its side), and the same tipped pelvis squared by its roll
+    expect(trunkWidthDeviation({ pelvis: [0.64, 0, 0.77], 'spine.lower': [0.9, 0, 0.44] }).pelvis).toBeLessThan(1);
+    expect(trunkWidthDeviation({ pelvis: [0, 0.02, -1] }).pelvis).toBeLessThan(1);
+    expect(Math.max(...Object.values(trunkWidthDeviation({ pelvis: { dir: [0, -1, 0.05], roll: 75 }, 'spine.lower': [0, -1, 0.1], 'spine.upper': [0, -1, 0.1] })))).toBeLessThan(1);
+    expect(trunkWidthDeviation({ pelvis: { dir: tipped, roll: -126.272 } }).pelvis).toBeLessThan(1);
+    // an exact sideways aim (along the parent's width: no projection) is a plain bend, not a fault
+    for (const x of [1, -1]) {
+      const side = trunkWidthDeviation({ pelvis: [x, 0, 0] });
+      expect(Number.isFinite(side.pelvis) && side.pelvis < 1, `pelvis (${x}, 0, 0): ${side.pelvis}`).toBe(true);
+      const spine = trunkWidthDeviation({ 'spine.lower': [x, 0, 0], 'spine.upper': [x, 0, 0] });
+      for (const [b, dev] of Object.entries(spine)) expect(Number.isFinite(dev) && dev < 1, `spine.lower (${x}, 0, 0) ${b}: ${dev}`).toBe(true);
+      expect(trunkWidthDeviation({ pelvis: { dir: [x, 0, 0], roll: 40 } }).pelvis).toBeLessThan(1);
     }
   });
 
@@ -354,6 +430,29 @@ describe('the posture library', () => {
     expect(libraryFamilies.find((f) => f.id === 'lotus')!.asanas.map((a) => a.id)).toEqual(expect.arrayContaining(['siddhasana', 'padmasana']));
   });
 
+  it('holds the whole illustrated repertoire: 56 entries, each family’s members pinned by id in the book’s order', () => {
+    // the fan-out's six groups merged onto the first 13 (docs/library-fanout-spec.md, docs/library-integration-spec.md)
+    const MEMBERS: Record<string, string[]> = {
+      standing: ['tadasana', 'utthita-trikonasana', 'utthita-parsvakonasana', 'virabhadrasana-i', 'virabhadrasana-ii', 'parsvottanasana',
+        'prasarita-padottanasana', 'padangusthasana', 'padahastasana', 'uttanasana'],
+      backbend: ['ustrasana', 'salabhasana', 'dhanurasana', 'chaturanga-dandasana', 'bhujangasana-i', 'urdhva-mukha-svanasana',
+        'adho-mukha-svanasana', 'purvottanasana', 'urdhva-dhanurasana'],
+      seated: ['dandasana', 'paripurna-navasana', 'ardha-navasana', 'virasana', 'supta-virasana', 'baddha-konasana', 'maha-mudra',
+        'janu-sirsasana', 'trianga-mukhaikapada-paschimottanasana', 'marichyasana-i', 'upavistha-konasana', 'paschimottanasana'],
+      lotus: ['siddhasana', 'padmasana', 'parvatasana', 'matsyasana', 'baddha-padmasana', 'yoga-mudrasana', 'ardha-baddha-padma-paschimottanasana'],
+      inversion: ['salamba-sirsasana-i', 'urdhva-dandasana', 'salamba-sarvangasana-i', 'halasana', 'karnapidasana', 'supta-konasana',
+        'parsva-halasana', 'eka-pada-sarvangasana', 'parsvaika-pada-sarvangasana', 'setu-bandha-sarvangasana',
+        'urdhva-padmasana-in-sarvangasana', 'pindasana-in-sarvangasana', 'parsva-pindasana-in-sarvangasana'],
+      twist: ['jatara-parivartanasana', 'supta-padangusthasana', 'bharadvajasana', 'marichyasana-ii', 'ardha-matsyendrasana'],
+    };
+    expect(libraryAsanas.length).toBe(56);
+    expect(Object.fromEntries(Object.entries(MEMBERS).map(([f, ids]) => [f, ids.length]))).toEqual({
+      standing: 10, backbend: 9, seated: 12, lotus: 7, inversion: 13, twist: 5,
+    });
+    expect(libraryFamilies.map((f) => f.id)).toEqual(Object.keys(MEMBERS));
+    for (const f of libraryFamilies) expect(f.asanas.map((a) => a.id), f.id).toEqual(MEMBERS[f.id]);
+  });
+
   it('discovers the posture files and orders them by the book’s numbering', () => {
     const nums = libraryAsanas.map((a) => a.bookNumber);
     expect(nums).toEqual([...nums].sort((a, b) => a - b));
@@ -388,7 +487,7 @@ describe('the posture library', () => {
       });
     }
     expect(checked).toBeGreaterThan(90);
-  });
+  }, 180_000);
 
   it('keeps every limb out of every other on the way between stages (8 samples a transition, the path the library draws)', () => {
     let worst = 0;

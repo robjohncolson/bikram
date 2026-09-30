@@ -1,9 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import type { RigData } from '../data/types';
+import type { RigData, RigStagePose } from '../data/types';
 import { applyStage, blend, breathe, ghostPose, midpoints, mirrorStage, sheetPose, smoothstep, solve } from './index';
 import type { Solved } from './index';
 import { rotate, rotationDifference, type Vec3 } from './math';
-import { BONE_NAMES } from './skeleton';
+import { BONES, BONE_NAMES } from './skeleton';
 
 /**
  * PARITY with the Blender renderer: `src/rig/fixtures/*.json` are the
@@ -56,6 +56,14 @@ function maxError(f: Fixture): number {
   }
   return err;
 }
+
+/** Stages that roll non-leaf bones, with the Python helpers' joint positions (`_selftest.py --write`). */
+const rolledFk = Object.values(
+  import.meta.glob<{ case: string; pose: RigStagePose; joints: Record<string, Vec3> }[]>('./clearance-fixtures/rolled-fk-from-python.json', {
+    eager: true,
+    import: 'default',
+  }),
+)[0];
 
 // computed up front so each test's NAME reports the measured error
 const results = fixtures.map((f) => ({ f, err: maxError(f) })).sort((a, b) => a.f.case.localeCompare(b.f.case));
@@ -135,6 +143,24 @@ describe('posing details', () => {
     const q = rotationDifference([0, 0, -1], [0, 0, 1]);
     expect(q[1]).toBeCloseTo(-Math.SQRT1_2, 9);
     expect(q[2]).toBeCloseTo(-Math.SQRT1_2, 9);
+  });
+
+  it('rolls a trunk as the library’s Python helpers do: omitted children ride, within 1e-4 (the rolled-FK fixture)', () => {
+    // `_selftest.py --write` writes `_lib.fk` for stages that roll non-leaf bones
+    expect(rolledFk.length).toBeGreaterThanOrEqual(5);
+    for (const f of rolledFk) {
+      const s = solve(applyStage(f.pose));
+      let err = 0;
+      for (const [name, h, t] of BONES) {
+        for (const [joint, got] of [[h, s[name].head], [t, s[name].tail]] as const) {
+          const want = f.joints[joint];
+          for (let i = 0; i < 3; i++) err = Math.max(err, Math.abs(got[i] - want[i]));
+        }
+      }
+      expect(err, f.case).toBeLessThan(1e-4);
+    }
+    // the fixture exercises riding: at least one case rolls a bone whose child it omits
+    expect(rolledFk.some((f) => Object.entries(f.pose).some(([b, e]) => !Array.isArray(e) && typeof e === 'object' && e.roll && BONES.some(([c, , , parent]) => parent === b && !(c in f.pose))))).toBe(true);
   });
 
   it('keeps the bone lengths in every pose', () => {

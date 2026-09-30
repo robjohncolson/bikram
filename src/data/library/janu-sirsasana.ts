@@ -9,7 +9,7 @@ export const januSirsasana: LibraryAsana = {
   steps: [
     { text: 'Sit with both legs stretched straight in front of you.', stage: 0 },
     { text: 'Bend the left knee out to the side, the outer thigh and calf resting on the mat, and bring the left heel in against the inner left thigh near the perineum, the big toe touching the inner right thigh. Ease the knee back so the legs open wider than a right angle.', stage: 1 },
-    { text: 'Reach forward and hold the right foot: the toes at first, then the sole, then the heel; in time the arms go past it and one hand takes the other wrist beyond the foot. Keep the right knee straight and the back of it on the mat.', stage: 2 },
+    { text: 'Reach forward and hold the right foot: the toes at first, then the sole, then the heel; in time the arms go past it and one hand takes the other wrist beyond the foot (the figure holds the foot: its arms do not reach round it). Keep the right knee straight and the back of it on the mat.', stage: 2 },
     { text: 'Breathing out, bend the elbows out wide and carry the trunk forward along the right leg, the chest against the thigh; rest the forehead, then the nose, the lips and at last the chin beyond the right knee. Do not let the right leg roll outward.', stage: 3 },
     { text: 'Stay, breathing deeply.', stage: 3 },
     { text: 'Breathing in, lift the head and trunk; let go of the foot and sit up, the left heel still in.', stage: 4 },
@@ -26,7 +26,7 @@ export const januSirsasana: LibraryAsana = {
     FOLD_MENSTRUATION,
     ...EVERY_FOLD,
   ],
-  prepares: ['maha-mudra'],
+  prepares: ['dandasana', 'maha-mudra'],
   counter: ['savasana'],
   related: ['head-to-knee-stretching'],
   sutras: [...SUTRAS],

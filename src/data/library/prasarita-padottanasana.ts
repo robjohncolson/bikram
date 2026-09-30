@@ -21,7 +21,7 @@ export const prasaritaPadottanasana: LibraryAsana = {
     { text: 'Keep the feet, the palms and the head in one straight line.', page: 49 },
     ...EVERY_STANDING,
   ],
-  prepares: ['utthita-trikonasana'],
+  prepares: ['tadasana', 'parsvottanasana'],
   counter: ['tadasana'],
   related: ['standing-separate-leg-stretching'],
   sutras: [...SUTRAS],

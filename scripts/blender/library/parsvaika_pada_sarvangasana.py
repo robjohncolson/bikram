@@ -32,6 +32,7 @@ LEFT = to_side('L')
 # the common mistake: the hips follow the leg sideways, so the upright leg
 # tips toward it and the trunk leans off the shoulders
 _LEAN = L.on_shoulders(up=(-0.2, 0.05, 1))
+L.square(_LEAN, 'pelvis')   # tipped sideways upside down: keep the hips' width across (the trunk-across rule)
 L.hands_on_back(_LEAN)
 L.legs_vertical(_LEAN, lean=(-0.2, -0.03, 1))   # (at -0.3 the leg crossed through the other hip)
 L.one_leg_down(_LEAN, 'R', (-1, 0, 0))

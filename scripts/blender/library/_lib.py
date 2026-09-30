@@ -29,11 +29,18 @@ more than 1 cm print a `clearance warning`. A stage whose fingers lace says
 `'hands': 'laced'`; only then are the two hands' finger regions exempt. `library.test.ts` checks the same on the
 real hull, over the in-betweens too.
 
-Poses are world-space bone directions. A LEAF bone (head, hand, foot) may
-take `{'dir': ..., 'roll': degrees}`: a roll turns the bone about its own
-axis, which never moves a joint (a leaf has no children to carry), so the
-direction chain below stays exactly the renderer's forward kinematics.
-Rolls anywhere else are refused.
+Poses are world-space bone directions. Any bone may take `{'dir': ...,
+'roll': degrees}`: aimed at `dir`, then turned about it. A roll on a LEAF
+(head, hand, foot) moves no joint. A roll on any other bone follows the
+renderer's RIDING-CHILDREN rule (`src/rig/pose.ts`): a child the stage
+lists is aimed in world space as always, but a child it OMITS keeps its
+pose relative to the rolled parent (and so do its own omitted children)
+instead of snapping back to its rest direction. `fk` and `direction`
+follow the rule (the hull port's roll-aware `_hull.solve`), so a rolled
+trunk — a twist's spine, a hip line turned onto its side — solves exactly
+as the live figure draws it; `pose.test.ts` holds a fixture of rolled
+stages from this file to the TypeScript within 1e-4 (`_selftest.py
+--write`). Use `roll` to roll a bone in place, `twist` for a turned trunk.
 """
 import importlib.util
 import math
@@ -130,22 +137,39 @@ CONTACT = 0.02          # a supporting palm's skin within 2 cm of the back's
 TRUNK = ('pelvis', 'waist', 'chest', 'neck')
 
 
+def rolls_children(pose):
+    """True when the pose rolls a bone that has children (not a leaf): its
+    omitted children then ride the roll, and only the roll-aware solve says
+    where they point."""
+    return any(isinstance(v, dict) and v.get('roll') and k not in H.LEAVES for k, v in pose.items())
+
+
 def direction(pose, bone):
+    """A bone's world direction in the solved pose: as listed, or — omitted —
+    its rest direction, unless it rides a rolled parent (then the parent's
+    rotation carries it)."""
     e = pose.get(bone)
     if e is None:
+        if rolls_children(pose):
+            q, _ = H.apply_stage(pose)
+            return n(H.q_rot(q[bone], REST[bone]))
         return REST[bone]
     if isinstance(e, dict):
-        if bone not in H.LEAVES:
-            raise ValueError(f'{_who[0]}: {bone} has a roll; only leaf bones {H.LEAVES} may roll')
         return n(e['dir'])
     return n(e)
 
 
 def fk(pose):
     """Every joint's world position (the renderer's own forward kinematics:
-    an omitted bone points along its rest direction, and a roll — leaf
-    bones only — moves no joint)."""
+    each bone's head is its parent's joint and its tail lies a bone length
+    along its solved direction; without a non-leaf roll that is just the
+    listed or rest direction, with one the riding children follow it)."""
     at = {'pelvis': add(J['pelvis'], pose.get('pelvis.location', (0, 0, 0)))}
+    if rolls_children(pose):
+        s = H.solve(pose)
+        for bone, head, tail in BONES:
+            at[tail] = s[bone][1]
+        return at
     for bone, head, tail in BONES:
         at[tail] = add(at[head], direction(pose, bone), LENGTH[bone])
     return at
@@ -239,19 +263,106 @@ def clearance_check(pose, where, laced=False):
               f'interpenetrate by {d * 100:.1f} cm', file=sys.stderr)
 
 
+def hull_low(pose):
+    """The rendered hull's lowest point (every tube and joint sample of the
+    hull port): `library.test.ts` wants it no more than 1 cm under the mat."""
+    s = H.solve(pose)
+    low = math.inf
+    for p in H.PIECES:
+        for w in H._samples(p, H._place(s, p)):
+            low = min(low, w[2])
+    return low
+
+
+def hull_floor_check(pose, where):
+    """Warn (stderr) when the rendered hull reaches more than 1 cm into the mat."""
+    low = hull_low(pose)
+    if low < -0.01:
+        print(f'floor warning [library/{_who[0]}]: {where} the hull reaches '
+              f'{-low * 100:.1f} cm into the mat', file=sys.stderr)
+
+
+# THE TRUNK ACROSS THE BODY (library.test.ts): a trunk bone aimed EXACTLY
+# opposite where its parent left it — or nearly so and off to the side —
+# turns by the shortest arc about a diagonal, and the trunk's width swings
+# front to back. The width a bone's aim implies is LEVEL: its parent's
+# width carried square to the new direction. A drawn width passes when it
+# is that level width turned by the stage's own roll (a clean aim, the roll
+# asked for: a twist, a hip line turned onto its side) or the level width
+# itself (a roll that squares an ill-turned aim: `square`). More than
+# ACROSS_DEG off both is the unasked turn.
+ACROSS_DEG = 25.0
+TRUNK_BONES = (('pelvis', None), ('spine.lower', 'pelvis'), ('spine.upper', 'spine.lower'))
+
+
+def _angle(a, b):
+    return math.degrees(math.acos(max(-1.0, min(1.0, dot(a, b)))))
+
+
+LEVEL_EPS = 1e-3   # below this the aim runs along the parent's width: no projection to take
+
+
+def level_width(q, bone, parent, d):
+    """The width an aim `d` implies for `bone` (`q` = the solved world
+    rotations): the parent's width made square to `d`; when `d` runs along
+    that width itself (an exact sideways aim, where the projection
+    vanishes), the parent's width TRANSPORTED through the authored bend —
+    turned by the shortest arc from where the parent left the bone to `d`.
+    The same rule as `library.test.ts`'s `levelWidth`."""
+    w0 = H.q_rot(q[parent], (1, 0, 0)) if parent else (1.0, 0.0, 0.0)
+    v = add(w0, d, -dot(w0, d))
+    if math.sqrt(dot(v, v)) > LEVEL_EPS:
+        return n(v)
+    start = n(H.q_rot(q[parent], REST[bone])) if parent else REST[bone]
+    return n(H.q_rot(H.rotation_difference(start, d), w0))
+
+
+def trunk_width_deviation(pose):
+    """{trunk bone: degrees its width strays from the width its authored aim
+    and roll imply} — ~0 for a well-posed aim, ~90 for a reversed one."""
+    q, _ = H.apply_stage(pose)
+    out = {}
+    for b, parent in TRUNK_BONES:
+        e = pose.get(b)
+        if e is None:
+            d, r = n(H.q_rot(q[b], REST[b])), 0.0
+        elif isinstance(e, dict):
+            d, r = n(e['dir']), e.get('roll', 0.0) or 0.0
+        else:
+            d, r = n(e), 0.0
+        level = level_width(q, b, parent, d)
+        rolled = H.q_rot(H.axis_angle(d, math.radians(r)), level) if r else level
+        got = H.q_rot(q[b], (1, 0, 0))
+        out[b] = min(_angle(rolled, got), _angle(level, got))
+    return out
+
+
+def across_check(pose, where):
+    """Warn (stderr) when a trunk bone's width turns about an unasked
+    diagonal (the library test's rule), so the sheet fails here first."""
+    for b, dev in trunk_width_deviation(pose).items():
+        if dev > ACROSS_DEG:
+            print(f'across warning [library/{_who[0]}]: {where} {b} turns its width {dev:.0f} degrees '
+                  f'off its authored aim and roll (limit {ACROSS_DEG:.0f})', file=sys.stderr)
+
+
 def check(posture):
-    """Floor- and clearance-check every stage and ghost; refuse an unknown
-    `notice` term."""
+    """Every stage and ghost: the joints and the rendered hull clear of the
+    floor, the hull's pieces clear of each other, the trunk across the
+    body; palms on the back where a stage says so; refuse an unknown
+    `notice` term. Rolled trunks included (the roll-aware `fk`)."""
     for i, st in enumerate(posture['stages']):
         where = f"#{i} {st['label']!r}"
         laced = st.get('hands') == 'laced'
         if st.get('hands') not in (None, 'laced'):
             raise ValueError(f"{posture['id']} {where}: hands {st['hands']!r} is not 'laced'")
-        floor_check(st['pose'], where)
-        clearance_check(st['pose'], where, laced)
-        if st.get('ghost'):
-            floor_check({**st['pose'], **st['ghost']}, f'{where} ghost')
-            clearance_check({**st['pose'], **st['ghost']}, f'{where} ghost', laced)
+        for what, pose in (('', st['pose']), (' ghost', st.get('ghost') and {**st['pose'], **st['ghost']})):
+            if not pose:
+                continue
+            floor_check(pose, where + what)
+            hull_floor_check(pose, where + what)
+            clearance_check(pose, where + what, laced)
+            across_check(pose, where + what)
         for term in st.get('notice', ()):
             if term not in NOTICE:
                 raise ValueError(f"{posture['id']} {where}: notice {term!r} is not one of {NOTICE}")
@@ -319,6 +430,176 @@ def diff(pose, base):
     return {k: v for k, v in pose.items() if base.get(k) != v}
 
 
+# --- rolled trunks (group E's twist helpers, shared) ------------------------------
+def _dir(v):
+    return tuple(v['dir']) if isinstance(v, dict) else tuple(v)
+
+
+def roll(pose, rolls):
+    """Roll bones about their own axes ({bone: degrees}, right-handed about
+    the bone's direction), keeping each bone's direction. Children the pose
+    lists stay where they are aimed; children it omits ride the roll (the
+    riding-children rule — `fk` follows it)."""
+    for bone, r in rolls.items():
+        if not r:
+            continue
+        pose[bone] = {'dir': _dir(pose.get(bone, direction(pose, bone))), 'roll': round(r, 3)}
+    return pose
+
+
+def square(pose, bone):
+    """Roll `bone` so its width is the one its aim implies (its parent's
+    width carried square to its direction): the fix for a trunk bone aimed
+    nearly opposite where its parent left it and off to the side (an
+    inverted trunk tipped sideways), whose shortest arc turns about a
+    diagonal and swings the width front to back (`across_check`)."""
+    e = pose.get(bone)
+    d = n(_dir(e)) if e is not None else direction(pose, bone)
+    pose[bone] = d
+    q, _ = H.apply_stage(pose)
+    parent = H.BONE[bone][3]
+    want = level_width(q, bone, parent, d)
+    got = H.q_rot(q[bone], (1, 0, 0))
+    got = n(add(got, d, -dot(got, d)))
+    r = math.degrees(math.atan2(dot(cross(got, want), d), dot(got, want)))
+    if abs(r) > 1e-3:
+        pose[bone] = {'dir': d, 'roll': round(r, 3)}
+    return pose
+
+
+def plain(pose):
+    """The pose with every non-leaf roll dropped (directions kept, listed
+    children unmoved; omitted riding children then snap to rest)."""
+    return {k: (tuple(v['dir']) if isinstance(v, dict) and k not in H.LEAVES else v) for k, v in pose.items()}
+
+
+def turn_about(v, axis, deg):
+    """`v` turned `deg` degrees (right-handed) about `axis`."""
+    return H.q_rot(H.axis_angle(axis, math.radians(deg)), v)
+
+
+def shoulders(pose, deg):
+    """Aim both clavicles `deg` degrees round the upper spine's axis from
+    where they would sit on the unturned trunk (positive turns the chest
+    toward the mannequin's left, as a roll does)."""
+    q, _ = H.apply_stage(plain({k: v for k, v in pose.items() if not k.startswith('clavicle')}))
+    axis = direction(plain(pose), 'spine.upper')
+    for side in 'LR':
+        rest = H.q_rot(q[f'clavicle.{side}'], H.REST[f'clavicle.{side}'])
+        pose[f'clavicle.{side}'] = n(turn_about(rest, axis, deg))
+    return pose
+
+
+# how a `twist` shares its turn by default: the two spine bones carry up to
+# this many degrees between them (40/60), the neck the rest
+SPINE_ROLL_CAP = 24.0
+
+
+def twist(pose, deg, spine=None, gaze=0.0):
+    """Roll the trunk's frame `deg` degrees in total at the shoulders: the
+    two spine bones share `spine` (default: up to SPINE_ROLL_CAP, split
+    40/60), the neck carries the rest, and the head turns `gaze` degrees
+    further (a leaf roll). Call it LAST, on a pose whose clavicles already
+    stand at `deg` (`shoulders`) and whose neck and head are listed."""
+    total = spine if spine is not None else math.copysign(min(abs(deg), SPINE_ROLL_CAP), deg)
+    roll(pose, {'spine.lower': 0.4 * total, 'spine.upper': 0.6 * total, 'neck': deg - total})
+    if gaze:
+        pose['head'] = {'dir': _dir(pose.get('head', H.REST['head'])), 'roll': round(gaze, 3)}
+    return pose
+
+
+def mirror(pose):
+    """The same shape on the other side: swap L/R, flip X, flip roll signs."""
+    out = {}
+    for k, v in pose.items():
+        if k == 'pelvis.location':
+            out[k] = (-v[0], v[1], v[2])
+            continue
+        name = k[:-2] + ('.R' if k.endswith('.L') else '.L') if k[-2:] in ('.L', '.R') else k
+        if isinstance(v, dict):
+            d = v['dir']
+            out[name] = {'dir': (-d[0], d[1], d[2]), 'roll': -v['roll']}
+        else:
+            out[name] = (-v[0], v[1], v[2])
+    return out
+
+
+def reach_short(pose, side, target):
+    """How far (m) the fingertips of `side` fall short of `target` from the
+    shoulder (negative = within reach): the report's arm-reach number."""
+    sh = fk(pose)[f'shoulder.{side}']
+    return dist(sh, target) - (UPPER + FORE + HAND)
+
+
+def turn(pose, deg):
+    """The whole figure turned `deg` degrees about the vertical through the
+    origin (positive: counter-clockwise seen from above, so a figure facing
+    -Y at 90 faces +X). Every bone is listed at its turned direction and the
+    pelvis takes `deg` more roll: a roll about the (near-upright) pelvis is a
+    turn of the hips about the vertical, and each child aimed from the
+    turned parent comes out turned by exactly the same rotation, rolls
+    included, so the solved figure is the old one rigidly turned."""
+    R = H.axis_angle((0, 0, 1), math.radians(deg))
+    q, _ = H.apply_stage(pose)
+    out = {}
+    for bone, _h, _t in BONES:
+        e = pose.get(bone)
+        d = n(H.q_rot(R, n(H.q_rot(q[bone], REST[bone]))))
+        r = (e.get('roll', 0.0) or 0.0) if isinstance(e, dict) else 0.0
+        if bone == 'pelvis':
+            r += deg
+        out[bone] = {'dir': d, 'roll': round(r, 3)} if abs(r) > 1e-9 else d
+    p0 = add(J['pelvis'], pose.get('pelvis.location', (0, 0, 0)))
+    out['pelvis.location'] = sub(H.q_rot(R, p0), J['pelvis'])
+    return out
+
+
+# --- the shoulders ride the chest --------------------------------------------------
+def clavicles_follow(pose, lift=0.0):
+    """Both clavicles carried by the upper spine's rotation from their rest
+    line (the shoulders ride the chest), tipped `lift` further toward the
+    head. An omitted clavicle points along its WORLD rest line whatever the
+    chest does: in a deep fold (the chest aimed at the floor) that leaves
+    the shoulders hunched up toward the hips."""
+    q, _ = H.apply_stage(pose)
+    up = direction(pose, 'spine.upper')
+    for s in 'LR':
+        c = n(H.q_rot(q['spine.upper'], REST[f'clavicle.{s}']))
+        pose[f'clavicle.{s}'] = n(add(c, up, lift)) if lift else c
+    return pose
+
+
+# --- planted hands and feet (the live figure's shared contacts) ---------------------
+# Between two stages the library's figure carries a joint straight from one
+# place to the other — instead of swinging it on the pelvis-rooted blend —
+# only when that joint rests within PLANT_Z of the floor in BOTH stages and
+# moves less than PLANT_XY across (`anchorToContacts`, src/rig/sheet.ts). A
+# palm or a foot meant to stay put must bring a joint that low: a flat
+# palm's wrist sits at ~4.5 cm, so its fingertips must come down to
+# FINGER_Z (`flat_hand`); a flat foot's toes already rest at ~2 cm.
+PLANT_Z = 0.03
+PLANT_XY = 0.03
+WRIST_Z = 0.045          # a palm flat on the mat: the wrist joint this high
+FINGER_Z = 0.025         # its fingertips, under PLANT_Z: a planted contact
+
+
+def flat_hand(f):
+    """A palm flat on the mat with the fingers along `f` (horizontal), tipped
+    down just enough that the fingertips rest at FINGER_Z (a planted contact)."""
+    h = n((f[0], f[1], 0))
+    drop = (WRIST_Z - FINGER_Z) / HAND
+    return n(add(scale(h, math.sqrt(1 - drop * drop)), (0, 0, -drop)))
+
+
+def planted(a, b):
+    """The joints two stages share as floor contacts (the ones the figure
+    holds in place between them): within PLANT_Z of the floor in both and
+    within PLANT_XY of each other across."""
+    fa, fb = fk(a), fk(b)
+    return sorted(j for j in fa if fa[j][2] < PLANT_Z and fb[j][2] < PLANT_Z
+                  and math.hypot(fa[j][0] - fb[j][0], fa[j][1] - fb[j][1]) < PLANT_XY)
+
+
 # --- lying on the back ------------------------------------------------------------
 # The canonical supine pose (wind_removing.FLAT), moved along the mat so the
 # inversions over the head stay inside the square frame: the camera pivots
@@ -345,6 +626,33 @@ ARMS_FLAT = {  # arms long on the mat beside the body, palms down
     'forearm.L': (0.08, 1, 0), 'forearm.R': (-0.08, 1, 0),
     'hand.L': (0.08, 1, -0.04), 'hand.R': (-0.08, 1, -0.04),
 }
+
+
+# LYING BACK, THE HEAD TOWARD +Y: the seated body laid straight back about X
+# (matsyasana lies back from the lotus): the chest to the ceiling, the left
+# still +X. Not LIE, whose mirror-labelled body has its head toward -Y.
+BACK_CLAVICLE = {'clavicle.L': (1, 0.2, 0), 'clavicle.R': (-1, 0.2, 0)}   # the rest shoulder line, laid back
+BACK_HIPBONE = {'hipbone.L': (1, -0.2, 0), 'hipbone.R': (-1, -0.2, 0)}
+
+
+def back(deg):
+    """A trunk direction for the body lying back (head toward +Y), lifted
+    `deg` degrees off the mat; negative dips it toward the floor (the neck
+    and head of an arch). 90 is sitting upright."""
+    a = math.radians(deg)
+    return (0, math.cos(a), math.sin(a))
+
+
+def lying_back(arch=(0, 0, 0, 0, 0), at=None):
+    """The trunk lying back, head toward +Y: `arch` = degrees off the mat of
+    the pelvis, spine.lower, spine.upper, neck and head; the pelvis joint at
+    `at` (default: LIE's lying height on the Y axis). Limbs left for the
+    caller."""
+    at = at or (0, 0, LIE_AT['pelvis'][2])
+    tp, tl, tu, tn, th = arch
+    return {'pelvis.location': sub(at, J['pelvis']),
+            'pelvis': back(tp), 'spine.lower': back(tl), 'spine.upper': back(tu), 'neck': back(tn), 'head': back(th),
+            **BACK_CLAVICLE, **BACK_HIPBONE}
 
 
 def legs_up():

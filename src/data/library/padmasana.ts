@@ -20,8 +20,8 @@ export const padmasana: LibraryAsana = {
   ],
   hold: 'The book gives no clock: once the knees have eased, as long as you can sit at rest in it (p. 67).',
   cautions: LOTUS_LINEAGE,
-  prepares: ['siddhasana'],
-  counter: ['savasana'],
+  prepares: ['dandasana', 'siddhasana'],
+  counter: ['parvatasana', 'savasana'],
   related: ['fixed-firm'],
   sutras: [...SUTRAS, SUTRA_48],
 };

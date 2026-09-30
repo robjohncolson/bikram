@@ -10,8 +10,8 @@ export const baddhaPadmasana: LibraryAsana = {
   steps: [
     { text: 'Sit in the lotus, the right foot placed first and the left foot on top.', stage: 0 },
     { text: 'Breathing out, swing the arms back from the shoulders.', stage: 1 },
-    { text: 'Take the left arm round behind the back toward the right hip and catch the left big toe. Hold it and breathe in.', stage: 2 },
-    { text: 'On the next exhalation bring the right arm round toward the left hip and catch the right big toe, the arms crossed behind the back.', stage: 3 },
+    { text: 'Take the left arm round behind the back toward the right hip and catch the left big toe. Hold it and breathe in. (The figure’s arms are shorter than the book asks: its hand stops by the far hip, well short of the toe.)', stage: 2 },
+    { text: 'On the next exhalation bring the right arm round toward the left hip and catch the right big toe, the arms crossed behind the back (the figure’s right hand, too, stops by the far hip).', stage: 3 },
     { text: 'Throw the head back as far as it will go and take a few deep breaths.', stage: 4 },
     { text: 'Let go with the right hand,', stage: 5 },
     { text: 'then with the left, and bring the hands back to the knees.', stage: 6 },
@@ -20,7 +20,7 @@ export const baddhaPadmasana: LibraryAsana = {
   ],
   hold: 'A few deep breaths with the head thrown back (p. 70); the book gives no longer clock.',
   cautions: [...BIND_LINEAGE, ...LOTUS_LINEAGE],
-  prepares: ['padmasana'],
+  prepares: ['padmasana', 'parvatasana'],
   counter: ['savasana'],
   sutras: SUTRAS,
 };

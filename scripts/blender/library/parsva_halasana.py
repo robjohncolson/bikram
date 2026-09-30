@@ -31,6 +31,7 @@ RIGHT = L.plough(arms='back', side=-SWING, spread=APART, hip_turn=-TURN)
 # the common mistake: the trunk drops toward the legs' side and the hips sink,
 # instead of the trunk staying tall while only the legs travel
 _TIP = L.on_shoulders(up=(0.2, 0.1, 0.97))
+L.square(_TIP, 'pelvis')   # tipped sideways upside down: keep the hips' width across (the trunk-across rule)
 L.turn_hips(_TIP, TURN)
 L.hands_on_back(_TIP)
 L.plough_legs(_TIP, side=SWING - 0.08, spread=APART)

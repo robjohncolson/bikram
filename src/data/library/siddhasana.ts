@@ -25,7 +25,7 @@ export const siddhasana: LibraryAsana = {
     { text: 'Change the legs and sit for the same length of time the other way.', page: 61 },
     ...EVERY_SEAT,
   ],
-  prepares: ['fixed-firm'],
+  prepares: ['dandasana', 'fixed-firm'],
   counter: ['savasana'],
   related: ['fixed-firm'],
   sutras: [...SUTRAS, SUTRA_48],

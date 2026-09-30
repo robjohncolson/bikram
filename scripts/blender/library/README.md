@@ -12,8 +12,9 @@ inverted) and `salamba_sirsasana_i.py` (the headstand) are the references.
 - `_lib.py` — the shared solvers and checks. NOT edited in the fan-out.
 - `_hull.py` — the rendered hull in Python (a port of `src/rig/`). NOT edited.
 - `_<family>.py` — a family's own helpers (`_standing.py`, `_backbend.py`,
-  `_seated.py`, `_twist.py`…), loaded like `_lib.py` and importing it. One
-  agent per family file.
+  `_seated.py`, `_folds.py`, `_lotus.py`…), loaded like `_lib.py` and
+  importing it. One agent per family file. (`_twist.py` only hands on
+  `_lib`'s rolled-trunk helpers, which began there.)
 - Content: `src/data/library/<id>.ts` (one `LibraryAsana` export, found by
   the index on its own), shared lineage notes in `common.ts` (read-only in
   the fan-out) or the family's `common-<family>.ts`.
@@ -44,7 +45,14 @@ the back; contact-checked).
 `L.check` runs over every stage AND ghost; a clean module prints nothing
 (`python <module>.py`, `npm run rig:export`, the preview):
 
-- `floor warning` — a joint (tips included) below z = −0.005.
+- `floor warning` — a joint (tips included) below z = −0.005, or the
+  rendered hull more than 1 cm into the mat.
+- `across warning` — a trunk bone (pelvis, spine) whose width turns about
+  an UNASKED diagonal: aimed exactly (or nearly, and off to the side)
+  opposite where its parent left it, the shortest arc swings its width
+  front to back. A width that is the aim's level width (the parent's
+  carried square to the new direction) turned by the stage's own roll
+  passes, and so does one a roll squares back to level (`square`).
 - `reach warning` — a solver's target is out of reach (the limb falls short).
 - `contact warning` — a `palms: 'back'` palm more than 2 cm off the back.
 - `clearance warning` — two pieces of the RENDERED hull pass more than 1 cm
@@ -86,9 +94,33 @@ first), never by loosening a check.
   limb's hull), `knee_out`, `carry_foot` / `lift_shin` (the lifted midpoints).
 - Feet: `foot_sole(pose, side, facing, dir)` aims a foot and ROLLS it so the
   sole (the heel/ball side) faces `facing`; `sole_facing` reads it back.
-  Rolls are allowed on LEAF bones only (head, hands, feet): they move no
-  joint, so the Python FK stays exact.
-- Lying and inverted: `LIE`, `on_shoulders`, `palms_to_back`, `hands_on_back`,
+- Rolls, on ANY bone (`{'dir': d, 'roll': deg}`): a leaf's roll moves no
+  joint; a non-leaf's roll follows the renderer's RIDING-CHILDREN rule — a
+  child the stage lists is aimed in world space, a child it omits keeps its
+  pose relative to the rolled parent (and so on down). `fk`/`direction`
+  follow it (the roll-aware `_hull.solve`), and `_selftest.py --write`
+  keeps a fixture that `pose.test.ts` holds the TypeScript to. `roll(pose,
+  {bone: deg})` rolls in place; `twist(pose, deg)` + `shoulders(pose, deg)`
+  turn the chest over square hips; `turn(pose, deg)` turns the whole figure
+  about the vertical (a pelvis roll: a stance built facing -Y, then turned
+  to face the mat's front); `square(pose, bone)` rolls an ill-turned trunk
+  bone back to level; `mirror`, `plain`, `reach_short`.
+- The shoulders ride the chest: `clavicles_follow(pose)` carries both
+  clavicles by the upper spine's rotation (an omitted clavicle keeps its
+  WORLD rest line, which in a deep fold hunches the shoulders toward the
+  hips).
+- Planted hands and feet: between two stages the live figure carries a
+  joint straight from one place to the other (instead of swinging it on the
+  pelvis-rooted blend) only when it rests within `PLANT_Z` (3 cm) of the
+  floor in both stages and moves less than `PLANT_XY` (3 cm) across
+  (`anchorToContacts`). A flat palm's wrist sits at 4.5 cm, so a palm meant
+  to stay put tips its fingertips to `FINGER_Z` (`flat_hand(f)`); a flat
+  foot's toes already rest at 2 cm. `planted(a, b)` lists the joints two
+  stages share. A stance whose feet turn while the hips turn has no planted
+  joint: turn the feet in a stage of their own (warrior I).
+- Lying and inverted: `LIE` (head toward -Y, mirror-labelled), `lying_back(arch,
+  at)` + `back(deg)` (lying back from sitting, head toward +Y, the left still
+  +X: matsyasana), `on_shoulders`, `palms_to_back`, `hands_on_back`,
   `arms_long`, `plough`, `plough_legs`, `legs_vertical`, `shoulderstand`,
   `rolling_up/down`, `kneel`, `headstand`, `forearm_tripod`, …
 
