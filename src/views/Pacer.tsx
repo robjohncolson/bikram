@@ -70,6 +70,7 @@ import { preloadRig } from '../components/rigPreload';
 import { PacerClassMode } from './PacerClassMode';
 import { CoachDebrief } from './CoachDebrief';
 import { COACH_PROGRAM_ID, loadCoachProgram, saveCoachProgram, validateProposal } from '../coach';
+import { stopClassPlayback, segmentSettings, rehearsalDelay, eligibleHandoff, practicedSpan, guardClassUnload, shouldReorient, practiceSaveMessage } from './pacerLifecycle';
 import './Pacer.css';
 
 const STORAGE_KEY = 'yoga-pacer-v1';
@@ -87,52 +88,7 @@ type ClassRun =
       revealed: boolean;
     }
   | { phase: 'closing'; left: number; budget: number }
-  | { phase: 'done'; pacedSeconds: number; handoffs: Pose[] };
-
-export function stopClassPlayback(
-  metronome: Pick<Metronome, 'cue' | 'stop' | 'setQuiet'> | null,
-  lock: Pick<WakeLock, 'release'> | null,
-  clearPending: () => void,
-  bell: boolean,
-): void {
-  silenceVoice();
-  if (bell) metronome?.cue('end');
-  metronome?.stop();
-  lock?.release();
-  metronome?.setQuiet(false);
-  clearPending();
-}
-
-export function segmentSettings(settings: PacerSettings, override?: number): PacerSettings {
-  return { ...settings, beatsPerBar: override ?? settings.beatsPerBar };
-}
-
-export function rehearsalDelay(rehearse: boolean, idx: number, from: number): number {
-  return rehearse && idx !== from ? REHEARSAL_DELAY_BEATS : 0;
-}
-
-export function eligibleHandoff(track: PoseTrack, beat: number, previousOrder?: number): boolean {
-  const announce = track.events.find((event) => event.kind === 'announce')?.atBeat ?? 0;
-  return announce > 0 && beat > announce && previousOrder === track.pose.order - 1;
-}
-
-export function practicedSpan(orders: Set<number>): { fromOrder: number; toOrder: number } | null {
-  return orders.size ? { fromOrder: Math.min(...orders), toOrder: Math.max(...orders) } : null;
-}
-
-export function guardClassUnload(target: EventTarget, onLeave: () => void): () => void {
-  const beforeUnload = (event: Event) => {
-    event.preventDefault();
-    (event as BeforeUnloadEvent).returnValue = '';
-  };
-  // pagehide runs only after a confirmed departure, never on cancel.
-  target.addEventListener('beforeunload', beforeUnload);
-  target.addEventListener('pagehide', onLeave);
-  return () => {
-    target.removeEventListener('beforeunload', beforeUnload);
-    target.removeEventListener('pagehide', onLeave);
-  };
-}
+  | { phase: 'done'; saved: boolean; pacedSeconds: number; handoffs: Pose[] };
 
 function ClassNavigationGuard({ active, onLeave }: { active: boolean; onLeave: () => void }) {
   const blocker = useBlocker(active);
@@ -146,7 +102,7 @@ function ClassNavigationGuard({ active, onLeave }: { active: boolean; onLeave: (
       onKeyDown={(event) => event.stopPropagation()}
       onCancel={(event) => { event.preventDefault(); blocker.reset?.(); }}>
       <h2 id="pc-leave-title">End the class?</h2>
-      <p>Your practice will be saved. You can stay to continue or finish and leave.</p>
+      <p>You can stay to continue or finish and leave.</p>
       <div className="pc-class-controls">
         <button type="button" className="pc-btn" autoFocus onClick={() => blocker.reset?.()}>Stay in class</button>
         <button type="button" className="pc-btn" onClick={() => { onLeave(); blocker.proceed?.(); }}>End class and leave</button>
@@ -195,9 +151,6 @@ function classClock(list: Pose[], beatsPerBar: number): { offsets: number[]; tot
 
 /** The posture whose figure and name stand for the final savasana. */
 const SAVASANA_IDX = poses.findIndex((p) => p.id === 'savasana');
-
-/** Rehearsal: beats between the hand-off chime and the announce. */
-const REHEARSAL_DELAY_BEATS = 4;
 
 /** Local day index — rotates the coaching material once a day. */
 function dayIndex(): number {
@@ -485,13 +438,13 @@ export function Pacer() {
       rehearsed: cuesRef.current.rehearse,
       program: programRef.current.id,
     });
-    if (span) saveJournal(journal);
-    else {
+    if (!span) {
       commitClass({ phase: 'idle' });
       return;
     }
     commitClass({
       phase: 'done',
+      saved: saveJournal(journal),
       pacedSeconds: pacedRef.current,
       handoffs: posesRef.current.filter((pose) => handoffsRef.current.has(pose.order)),
     });
@@ -534,8 +487,8 @@ export function Pacer() {
       } else {
         if (stalledRef.current) {
           stalledRef.current = false;
-          // a live beat 0 speaks its own announce; otherwise re-orient once
-          if (stallHandoffRef.current && beatIdx >= announceAt) {
+          // the announce beat speaks for itself; otherwise re-orient once
+          if (shouldReorient(stallHandoffRef.current, beatIdx, announceAt)) {
             metRef.current?.chime();
             sayCue(announceText(posesRef.current[c.idx], cuesRef.current.sanskrit), true);
           }
@@ -995,7 +948,7 @@ export function Pacer() {
   } else if (classRun.phase === 'done') {
     classBody = (
       <div className="pc-class-done">
-        <h3 className="pc-class-done-title">Practice saved. Rest in savasana.</h3>
+        <h3 className="pc-class-done-title">{practiceSaveMessage(classRun.saved)} Rest in savasana.</h3>
         <p className="text-soft">
           ≈ {Math.max(1, Math.round(classRun.pacedSeconds / 60))} minutes of paced breathing.
         </p>
@@ -1481,7 +1434,7 @@ export function Pacer() {
  */
 export function RehearsalDebrief({ handoffs }: { handoffs: Pose[] }) {
   const [answers, setAnswers] = useState<Record<string, boolean | undefined>>({});
-  const [saved, setSaved] = useState<number | null>(null);
+  const [saved, setSaved] = useState<{ recalled: number; complete: boolean } | null>(null);
 
   const toggle = (id: string) => setAnswers((current) => ({
     ...current, [id]: current[id] === undefined ? true : current[id] ? false : undefined,
@@ -1495,10 +1448,10 @@ export function RehearsalDebrief({ handoffs }: { handoffs: Pose[] }) {
     for (const p of answered) {
       applyEvidence(store, `tr:${p.order - 1}`, 'recall', answers[p.id] === true, now);
     }
-    saveStore(store);
+    const storeSaved = saveStore(store);
     const journal = loadJournal();
-    if (amendLastClass(journal, { handoffs: answered.length, recalled })) saveJournal(journal);
-    setSaved(recalled);
+    const journalSaved = amendLastClass(journal, { handoffs: answered.length, recalled }) && saveJournal(journal);
+    setSaved({ recalled, complete: storeSaved && journalSaved });
   };
 
   if (handoffs.length === 0) return null;
@@ -1537,7 +1490,7 @@ export function RehearsalDebrief({ handoffs }: { handoffs: Pose[] }) {
         </>
       ) : (
         <p className="text-soft">
-          Saved — <strong>{saved}</strong> of {answered.length} answered hand-offs recalled in class.
+          {saved.complete ? 'Saved' : 'Your debrief could not be fully saved on this device'} — <strong>{saved.recalled}</strong> of {answered.length} answered hand-offs recalled in class.
         </p>
       )}
     </div>

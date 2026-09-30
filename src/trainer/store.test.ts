@@ -104,3 +104,16 @@ describe('store migration', () => {
     expect(store.kcs['id:bow'].spaced).toBe(2); // never above correct
   });
 });
+
+it('replaces malformed JSON with a valid practice save', () => {
+  window.localStorage.setItem(STORAGE_KEY, '{broken');
+  const recovered = loadStore(NOW);
+  expect(saveStore(recovered)).toBe(true);
+  expect(JSON.parse(window.localStorage.getItem(STORAGE_KEY)!)).toEqual(recovered);
+});
+
+it('reports a failed storage write', () => {
+  const recovered = loadStore(NOW);
+  window.localStorage.setItem = () => { throw new Error('quota'); };
+  expect(saveStore(recovered)).toBe(false);
+});

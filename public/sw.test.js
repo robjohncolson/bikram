@@ -3,7 +3,7 @@ import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import './sw-lib.js';
 
-const { shellAssets, bundledAssets, staleUrls, oldCaches, rangeResponse } = globalThis.swLib;
+const { shellAssets, bundledAssets, staleUrls, canPrune, oldCaches, rangeResponse } = globalThis.swLib;
 const origin = 'https://yoga.test';
 const html = '<script type="module" src="/assets/app-abc.js"></script><link href="/assets/app-abc.css" rel="stylesheet">';
 const shell = () => new Response(html, { headers: { 'content-type': 'text/html' } });
@@ -40,7 +40,7 @@ function worker() {
       };
     },
   };
-  const self = { addEventListener: (type, handler) => { handlers[type] = handler; }, skipWaiting: vi.fn(), clients: { claim: vi.fn() } };
+  const self = { addEventListener: (type, handler) => { handlers[type] = handler; }, skipWaiting: vi.fn(), clients: { claim: vi.fn(), matchAll: vi.fn(async () => [{ id: 'page' }]) } };
   runInNewContext(readFileSync(new URL('./sw.js', import.meta.url), 'utf8'), {
     self, caches, fetch, location: { origin }, URL, Response, AbortController,
     setTimeout, clearTimeout, importScripts: () => {}, swLib: globalThis.swLib,
@@ -48,7 +48,7 @@ function worker() {
   function dispatch(type, props = {}) {
     const pending = [];
     let response;
-    handlers[type]({ ...props, waitUntil: (promise) => pending.push(promise), respondWith: (promise) => { response = promise; } });
+    handlers[type]({ source: { id: 'page' }, ...props, waitUntil: (promise) => pending.push(promise), respondWith: (promise) => { response = promise; } });
     return { response, done: Promise.all(pending) };
   }
   const request = (path, options = {}) => ({ method: 'GET', url: origin + path, headers: new Headers(), ...options });
@@ -153,6 +153,7 @@ describe('worker lifecycle', () => {
     const nav = w.dispatch('fetch', { request: w.request('/train', { mode: 'navigate' }) });
     await vi.advanceTimersByTimeAsync(3000);
     expect(await (await nav.response).text()).toBe(html);
+    await vi.advanceTimersByTimeAsync(27000);
     await nav.done;
   });
 
@@ -229,5 +230,71 @@ describe('worker lifecycle', () => {
     await w.dispatch('install').done;
     expect(await cache.match('/assets/old.js')).toBeUndefined();
     expect(await cache.match('/assets/app-abc.js')).toBeTruthy();
+  });
+});
+
+describe('live client retention and slow shell refresh', () => {
+  it('allows pruning only for the sole posting window', () => {
+    const clients = [{ id: 'old' }, { id: 'new' }];
+    expect(canPrune(clients, 'old')).toBe(false);
+    expect(canPrune(clients, 'new')).toBe(false);
+    expect(canPrune([clients[0]], 'new')).toBe(false);
+    expect(canPrune([clients[0]], 'old')).toBe(true);
+    expect(canPrune([], 'old')).toBe(false);
+    expect(canPrune(clients)).toBe(false);
+  });
+
+  it('retains both windows media and lazy assets until a single-client visit', async () => {
+    const w = worker();
+    w.self.clients.matchAll.mockResolvedValue([{ id: 'old' }, { id: 'page' }]);
+    const voice = await w.caches.open('yoga-voice-v1');
+    const motion = await w.caches.open('yoga-motion-v1');
+    const cache = await w.caches.open('yoga-26and2-v2');
+    await voice.put('/voice/old.ogg', audio());
+    await voice.put('/voice/new.ogg', audio());
+    await motion.put('/motion/old.png', new Response('old'));
+    await motion.put('/motion/new.png', new Response('new'));
+    await cache.put('/assets/old-lazy.js', new Response('old'));
+    await w.caches.open('yoga-26and2-v1');
+    await w.dispatch('install').done;
+    await w.dispatch('activate').done;
+    expect(await w.caches.keys()).toContain('yoga-26and2-v1');
+    expect(await cache.match('/assets/old-lazy.js')).toBeTruthy();
+    for (const [id, version] of [['page', 'new'], ['old', 'old']]) {
+      await w.dispatch('message', { source: { id }, data: { type: 'precache', urls: [`/voice/${version}.ogg`, `/motion/${version}.png`] } }).done;
+    }
+    for (const version of ['old', 'new']) {
+      expect(await voice.match(`/voice/${version}.ogg`)).toBeTruthy();
+      expect(await motion.match(`/motion/${version}.png`)).toBeTruthy();
+    }
+    w.self.clients.matchAll.mockResolvedValue([{ id: 'page' }]);
+    await w.dispatch('message', { data: { type: 'precache', urls: ['/voice/new.ogg', '/motion/new.png'] } }).done;
+    expect(await voice.match('/voice/old.ogg')).toBeUndefined();
+    expect(await motion.match('/motion/old.png')).toBeUndefined();
+    const nav = w.dispatch('fetch', { request: w.request('/index.html', { mode: 'navigate' }) });
+    await nav.done;
+    expect(await cache.match('/assets/old-lazy.js')).toBeUndefined();
+  });
+
+  it('serves the cached shell at three seconds and saves the eventual network shell', async () => {
+    vi.useFakeTimers();
+    const w = worker();
+    const cache = await w.caches.open('yoga-26and2-v2');
+    await cache.put('/index.html', shell());
+    let finish;
+    let signal;
+    w.fetch.mockImplementationOnce((_, options) => {
+      signal = options.signal;
+      return new Promise((resolve) => { finish = resolve; });
+    });
+    const nav = w.dispatch('fetch', { request: w.request('/train', { mode: 'navigate' }) });
+    await vi.advanceTimersByTimeAsync(3000);
+    expect(await (await nav.response).text()).toBe(html);
+    expect(signal.aborted).toBe(false);
+    const updated = html + '<!-- new deployment -->';
+    finish(new Response(updated, { headers: { 'content-type': 'text/html' } }));
+    await nav.done;
+    expect(await (await cache.match('/index.html')).text()).toBe(updated);
+    expect(vi.getTimerCount()).toBe(0);
   });
 });

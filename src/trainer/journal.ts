@@ -107,7 +107,13 @@ export function loadJournal(): Journal {
 export function saveJournal(j: Journal): boolean {
   try {
     const raw = window.localStorage.getItem(JOURNAL_KEY);
-    if (raw && newerJournal(JSON.parse(raw))) {
+    let existing: unknown;
+    try {
+      existing = raw ? JSON.parse(raw) : undefined;
+    } catch {
+      /* malformed data can be replaced by a valid save */
+    }
+    if (newerJournal(existing)) {
       console.warn('Journal data was saved by a newer app. Saving is disabled until the app is updated.');
       return false;
     }

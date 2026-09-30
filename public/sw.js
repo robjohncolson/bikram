@@ -1,6 +1,6 @@
 /* Network-first shell, immutable assets, and revalidated manifest/icons. */
 importScripts('/sw-lib.js');
-const { shellAssets, bundledAssets, staleUrls, oldCaches, rangeResponse } = globalThis.swLib;
+const { shellAssets, bundledAssets, staleUrls, canPrune, oldCaches, rangeResponse } = globalThis.swLib;
 const CACHE = 'yoga-26and2-v2';
 const VOICE_CACHE = 'yoga-voice-v1';
 const MOTION_CACHE = 'yoga-motion-v1';
@@ -47,11 +47,13 @@ async function saveShell(res) {
     await cache.put(url, asset);
   }
   await cache.put('/index.html', res);
-  const cached = (await cache.keys()).map((req) => req.url).filter((url) => new URL(url).pathname.startsWith('/assets/'));
-  await Promise.all(staleUrls(cached, [...wanted], location.origin).map((url) => cache.delete(url)));
+  if (canPrune(await self.clients.matchAll({ type: 'window', includeUncontrolled: true }))) {
+    const cached = (await cache.keys()).map((req) => req.url).filter((url) => new URL(url).pathname.startsWith('/assets/'));
+    await Promise.all(staleUrls(cached, [...wanted], location.origin).map((url) => cache.delete(url)));
+  }
 }
 
-async function precache(urls, voiceOnly) {
+async function precache(urls, voiceOnly, postingClientId) {
   const wanted = urls.filter((url) => typeof url === 'string' && url.startsWith('/') &&
     new URL(url, location.origin).origin === location.origin && storeFor(url));
   for (const [prefix, [name, guard]] of Object.entries(STORES)) {
@@ -59,7 +61,9 @@ async function precache(urls, voiceOnly) {
     const cache = await caches.open(name);
     const list = wanted.filter((url) => url.startsWith(prefix));
     const cached = (await cache.keys()).map((req) => req.url);
-    await Promise.all(staleUrls(cached, list, location.origin).map((url) => cache.delete(url)));
+    if (canPrune(await self.clients.matchAll({ type: 'window', includeUncontrolled: true }), postingClientId)) {
+      await Promise.all(staleUrls(cached, list, location.origin).map((url) => cache.delete(url)));
+    }
     for (let i = 0; i < list.length; i += BATCH) {
       await Promise.all(list.slice(i, i + BATCH).map(async (url) => {
         try {
@@ -79,7 +83,7 @@ self.addEventListener('message', (event) => {
   const data = event.data;
   if (!data || !Array.isArray(data.urls)) return;
   if (data.type !== 'precache-voice' && data.type !== 'precache') return;
-  filling = filling.catch(() => {}).then(() => precache(data.urls, data.type === 'precache-voice'));
+  filling = filling.catch(() => {}).then(() => precache(data.urls, data.type === 'precache-voice', event.source?.id ?? null));
   event.waitUntil(filling);
 });
 
@@ -94,7 +98,9 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
-    await Promise.all(oldCaches(await caches.keys(), CACHE).map((name) => caches.delete(name)));
+    if (canPrune(await self.clients.matchAll({ type: 'window', includeUncontrolled: true }))) {
+      await Promise.all(oldCaches(await caches.keys(), CACHE).map((name) => caches.delete(name)));
+    }
     await self.clients.claim();
   })());
 });
@@ -106,21 +112,28 @@ self.addEventListener('fetch', (event) => {
 
   if (req.mode === 'navigate') {
     const controller = new AbortController();
-    let timer;
+    let refreshTimer;
     const network = Promise.race([
       fetch(req, { signal: controller.signal }).then((res) => {
         if (!isShell(res)) throw new Error('Invalid app shell');
         return res;
       }),
       new Promise((_, reject) => {
-        timer = setTimeout(() => {
+        refreshTimer = setTimeout(() => {
           controller.abort();
-          reject(new Error('Navigation timed out'));
-        }, 3000);
+          reject(new Error('Shell refresh timed out'));
+        }, 30000);
       }),
-    ]).finally(() => clearTimeout(timer));
+    ]).finally(() => clearTimeout(refreshTimer));
     event.waitUntil(network.then((res) => saveShell(res.clone())).catch(() => {}));
-    event.respondWith(network.catch(async () =>
+    let fallbackTimer;
+    const foreground = Promise.race([
+      network,
+      new Promise((_, reject) => {
+        fallbackTimer = setTimeout(() => reject(new Error('Navigation timed out')), 3000);
+      }),
+    ]).finally(() => clearTimeout(fallbackTimer));
+    event.respondWith(foreground.catch(async () =>
       (await (await caches.open(CACHE)).match('/index.html')) || Response.error(),
     ));
     return;

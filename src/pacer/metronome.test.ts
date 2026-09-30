@@ -19,7 +19,7 @@ afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
 function setup() {
   vi.useFakeTimers();
   const ctx = new Context();
-  vi.stubGlobal('AudioContext', class { constructor() { return ctx; } });
+  vi.stubGlobal('AudioContext', function () { return ctx; });
   let wall = 0;
   const beats: BeatEvent[] = [];
   const metro = createMetronome((beat) => beats.push(beat), () => wall);

@@ -364,9 +364,9 @@ describe('hand-off bridges', () => {
     expect(release.length).toBeGreaterThan(0);
     expect(steps.slice(0, release.length).every((s) => s.motion === m)).toBe(true);
     // then every bridge frame at the bridge's fps
-    const bridge = steps.slice(release.length, release.length + b.frames);
-    bridge.forEach((s, f) => expect(s).toMatchObject({ motion: b, frame: f }));
-    const start = bridge[bridge.length - 1].until;
+    const releaseBridgeFrames = steps.slice(release.length, release.length + b.frames);
+    releaseBridgeFrames.forEach((s, f) => expect(s).toMatchObject({ motion: b, frame: f }));
+    const start = releaseBridgeFrames[releaseBridgeFrames.length - 1].until;
     expect(figureFrameAt(rest, { seconds: start - 0.01, total: 20, beatProgress: 0 }, steps).motion).toBe(b);
     expect(figureFrameAt(rest, { seconds: start, total: 20, beatProgress: 0 }, steps).motion).toBe(rest.motion);
     expect(steps[steps.length - 1].until).toBe(20);

@@ -120,7 +120,13 @@ export function loadStore(now: number): TrainerStore {
 export function saveStore(store: TrainerStore): boolean {
   try {
     const raw = window.localStorage.getItem(STORAGE_KEY);
-    if (raw && newerStore(JSON.parse(raw))) {
+    let existing: unknown;
+    try {
+      existing = raw ? JSON.parse(raw) : undefined;
+    } catch {
+      /* malformed data can be replaced by a valid save */
+    }
+    if (newerStore(existing)) {
       console.warn('Trainer data was saved by a newer app. Saving is disabled until the app is updated.');
       return false;
     }

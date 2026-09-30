@@ -4,7 +4,8 @@ import { MemoryRouter } from 'react-router-dom';
 import { poses } from '../data';
 import { buildPoseTrack, PACER_DEFAULTS } from '../pacer';
 import { dayKey, emptyJournal, recordClass } from '../trainer';
-import { eligibleHandoff, guardClassUnload, practicedSpan, rehearsalDelay, RehearsalDebrief, segmentSettings, stopClassPlayback } from './Pacer';
+import { eligibleHandoff, guardClassUnload, practicedSpan, rehearsalDelay, shouldReorient, practiceSaveMessage, segmentSettings, stopClassPlayback } from './pacerLifecycle';
+import { RehearsalDebrief } from './Pacer';
 import { PacerClassMode } from './PacerClassMode';
 
 describe('pacer lifecycle', () => {
@@ -104,4 +105,16 @@ describe('pacer lifecycle', () => {
     expect(html).not.toContain(poses[25].englishName);
     expect(html).toContain('What comes next?');
   });
+});
+
+it.each([0, 4])('leaves the announce beat %i to fireCues after a stall', (announceAt) => {
+  expect(shouldReorient(true, announceAt - 1, announceAt)).toBe(false);
+  expect(shouldReorient(true, announceAt, announceAt)).toBe(false);
+  expect(shouldReorient(true, announceAt + 1, announceAt)).toBe(true);
+  expect(shouldReorient(false, announceAt + 1, announceAt)).toBe(false);
+});
+
+it('reports persistence failure without claiming the practice was saved', () => {
+  expect(practiceSaveMessage(false)).toBe('Your practice could not be saved on this device.');
+  expect(practiceSaveMessage(true)).toBe('Practice saved.');
 });

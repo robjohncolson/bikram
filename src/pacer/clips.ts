@@ -111,9 +111,9 @@ export function createClipPlayer(makeAudio: () => ClipAudio | null) {
     el.src = item.url;
     let watchdog: ReturnType<typeof setTimeout>;
     const detach = () => {
-      for (const event of ['error', 'pause', 'stalled', 'abort']) el.removeEventListener(event, onError);
+      for (const event of ['error', 'abort']) el.removeEventListener(event, onError);
       el.removeEventListener('ended', onEnded);
-      el.removeEventListener('loadedmetadata', armWatchdog);
+      for (const event of ['loadedmetadata', 'timeupdate', 'playing', 'progress']) el.removeEventListener(event, armWatchdog);
       clearTimeout(watchdog);
       if (cleanup === detach) cleanup = null;
     };
@@ -136,7 +136,8 @@ export function createClipPlayer(makeAudio: () => ClipAudio | null) {
       watchdog = setTimeout(() => finish(true), (seconds + 5) * 1000);
     };
     cleanup = detach;
-    el.addEventListener('loadedmetadata', armWatchdog);
+    // Stalls and interruption pauses may recover; only lack of progress expires.
+    for (const event of ['loadedmetadata', 'timeupdate', 'playing', 'progress']) el.addEventListener(event, armWatchdog);
     armWatchdog();
     try {
       // Wait out events queued by replacing the previous resource. A play
@@ -144,7 +145,7 @@ export function createClipPlayer(makeAudio: () => ClipAudio | null) {
       void el.play().then(() => {
         if (token !== seq) return;
         el.addEventListener('ended', onEnded);
-        for (const event of ['error', 'pause', 'stalled', 'abort']) el.addEventListener(event, onError);
+        for (const event of ['error', 'abort']) el.addEventListener(event, onError);
       }).catch(() => finish(true));
     } catch {
       finish(true);

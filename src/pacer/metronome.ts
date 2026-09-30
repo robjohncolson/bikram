@@ -149,6 +149,8 @@ export function createMetronome(
       nextTime -= frozen;
       clockOffset = offset;
     }
+    // onBeat may stop the metronome, so `running` can change inside the loop.
+    // oxlint-disable-next-line no-unmodified-loop-condition
     while (running && nextTime < now + LOOKAHEAD_S) {
       const late = now - nextTime > LATE_S || (resumed && nextTime < now);
       const ph = phaseSource?.(serial) ?? null;

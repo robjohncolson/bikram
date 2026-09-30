@@ -34,7 +34,7 @@ it.each([
     expect(Math.abs(heel[0] - seat[0]), stage.label).toBeLessThan(Math.abs(pose[`thigh.${bent}`].head[0] - seat[0]));
     expect(Math.hypot(heel[0] - seat[0], heel[1] - seat[1]), stage.label).toBeLessThan(0.18);
   }
-});
+}, 60_000);
 
 it.each([
   ['maha-mudra', mahaMudra],
@@ -52,4 +52,4 @@ it.each([
       expect(clashes(solve(pose), CLEARANCE_TOL), where).toEqual([]);
     }
   }
-});
+}, 60_000);

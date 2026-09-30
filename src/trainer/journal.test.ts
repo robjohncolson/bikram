@@ -144,4 +144,17 @@ describe('practice journal', () => {
     );
     expect(loadJournal().classes[0].program).toBeUndefined();
   });
+
+  it('replaces malformed JSON with a valid practice save', () => {
+    window.localStorage.setItem(JOURNAL_KEY, '{broken');
+    const recovered = loadJournal();
+    expect(saveJournal(recovered)).toBe(true);
+    expect(JSON.parse(window.localStorage.getItem(JOURNAL_KEY)!)).toEqual(recovered);
+  });
+
+  it('reports a failed storage write', () => {
+    const recovered = loadJournal();
+    window.localStorage.setItem = () => { throw new Error('quota'); };
+    expect(saveJournal(recovered)).toBe(false);
+  });
 });

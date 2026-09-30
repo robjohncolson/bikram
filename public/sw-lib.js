@@ -16,6 +16,12 @@
     return cached.filter((url) => !keep.has(new URL(url, base).href));
   }
 
+  function canPrune(clients, postingClientId) {
+    return postingClientId === undefined
+      ? clients.length <= 1
+      : clients.length === 1 && clients[0].id === postingClientId;
+  }
+
   function bundledAssets(source, base) {
     const urls = new Set();
     for (const match of source.matchAll(/["']((?:\.\/|\/)?assets\/[^"']+\.(?:js|css)|\.\/[^"']+\.(?:js|css))["']/g)) {
@@ -56,5 +62,5 @@
     return new Response(body.slice(start, end + 1), { status: 206, headers });
   }
 
-  globalThis.swLib = { shellAssets, bundledAssets, staleUrls, oldCaches, rangeResponse };
+  globalThis.swLib = { shellAssets, bundledAssets, staleUrls, canPrune, oldCaches, rangeResponse };
 })();

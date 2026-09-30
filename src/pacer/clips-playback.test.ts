@@ -18,7 +18,7 @@ class AudioFake extends EventTarget implements ClipAudio {
 
 afterEach(() => { vi.useRealTimers(); vi.unstubAllGlobals(); });
 describe('clip playback lifecycle', () => {
-  it.each(['pause', 'stalled', 'abort', 'error'])('falls back and drains on %s', async (event) => {
+  it.each(['abort', 'error'])('falls back and drains on %s', async (event) => {
     vi.useFakeTimers();
     const audio = new AudioFake();
     const player = createClipPlayer(() => audio);
@@ -33,6 +33,45 @@ describe('clip playback lifecycle', () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 
+  it.each(['stalled', 'pause'])('allows a recovered %s to finish without fallback', async (event) => {
+    vi.useFakeTimers();
+    const audio = new AudioFake();
+    const player = createClipPlayer(() => audio);
+    const fallback = vi.fn();
+    player.playClip('a', { fallback });
+    player.playClip('b');
+    await Promise.resolve();
+    audio.dispatchEvent(new Event(event));
+    expect(fallback).not.toHaveBeenCalled();
+    expect(audio.src).toBe('a');
+    for (const progress of ['progress', 'playing', 'timeupdate']) {
+      vi.advanceTimersByTime(40000);
+      audio.dispatchEvent(new Event(progress));
+    }
+    vi.advanceTimersByTime(10000);
+    audio.dispatchEvent(new Event('ended'));
+    expect(fallback).not.toHaveBeenCalled();
+    expect(audio.src).toBe('b');
+    player.stopClips();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it.each(['stalled', 'pause'])('unwedges an unrecovered %s after no progress', async (event) => {
+    vi.useFakeTimers();
+    const audio = new AudioFake();
+    const player = createClipPlayer(() => audio);
+    const fallback = vi.fn();
+    player.playClip('a', { fallback });
+    player.playClip('b');
+    await Promise.resolve();
+    audio.dispatchEvent(new Event(event));
+    expect(fallback).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(45000);
+    expect(fallback).toHaveBeenCalledOnce();
+    expect(audio.src).toBe('b');
+    player.stopClips();
+  });
+
   it('detaches superseded listeners and clears the finished resource', async () => {
     vi.useFakeTimers();
     const audio = new AudioFake();
@@ -43,7 +82,7 @@ describe('clip playback lifecycle', () => {
     await Promise.resolve();
     player.playClip('b', { interrupt: true });
     expect(remove).toHaveBeenCalledWith('ended', expect.any(Function));
-    expect(remove).toHaveBeenCalledWith('pause', expect.any(Function));
+    expect(remove).toHaveBeenCalledWith('progress', expect.any(Function));
     await Promise.resolve();
     audio.dispatchEvent(new Event('ended'));
     expect(fallback).not.toHaveBeenCalled();

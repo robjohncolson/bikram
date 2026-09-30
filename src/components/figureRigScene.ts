@@ -456,6 +456,7 @@ export class RigScene {
     }
     // measurement only: a 1-pixel read waits for the GPU, so the time
     // includes the edge passes themselves, not just their submission
+    // oxlint-disable-next-line no-underscore-dangle -- deliberate external timing debug hook
     if ((globalThis as { __rigSyncTiming?: boolean }).__rigSyncTiming) {
       const gl = r.getContext();
       gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, new Uint8Array(4));
