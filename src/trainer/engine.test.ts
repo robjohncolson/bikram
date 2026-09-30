@@ -357,7 +357,7 @@ describe('interleaving', () => {
         card: { poseId: `p${Math.floor(rnd() * kinds)}`, id: `c${i}` },
       }));
       const counts = new Map<string, number>();
-      for (const it of items) counts.set(it.card.poseId, (counts.get(it.card.poseId) ?? 0) + 1);
+      for (const item of items) counts.set(item.card.poseId, (counts.get(item.card.poseId) ?? 0) + 1);
       const maxCount = Math.max(...counts.values());
       const out = interleave(items as never[]) as Lite[];
       expect(out).toHaveLength(n);
