@@ -19,7 +19,7 @@ _spec = importlib.util.spec_from_file_location('_library_standing', Path(__file_
 S = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(S)
 L = S.L
-L.begin('utthita_parsvakonasana')
+L.begin('utthita_parsvakonasana', skeleton='library')
 
 HALF = 0.62          # the ankles either side of the midline (a wider stance than the triangle's)
 TILT = 74.0          # the trunk over the bent thigh, degrees from upright
@@ -75,8 +75,8 @@ def side_angle(sd, tilt=TILT, ptilt=None, back=None, bad=False):
     lunge(pose, sd)
     at = L.fk(pose)
     # the lower palm on the mat beside the foot, on its outer (back) side
-    palm = (at[f'ankle.{sd}'][0] + s * 0.07, 0.11, L.PALM_R + 0.005)
-    hand = (s * 0.8, 0.2, -0.35)
+    palm = (at[f'ankle.{sd}'][0] + s * 0.07, 0.11, L.WRIST_Z + L.flat_hand((s * 0.8, 0.2, 0))[2] * L.PALM_AT)
+    hand = L.flat_hand((s * 0.8, 0.2, 0))
     wrist = L.add(palm, L.n(hand), -L.PALM_AT)
     L.arm(pose, sd, wrist, (-s, 0.3, 0.2), hand)
     # the upper arm over the ear, in line with the trunk
@@ -109,7 +109,7 @@ def guides(sd):
     ]
 
 
-FRAME = {'center_z': 0.9, 'scale': 2.35}
+FRAME = {'center_z': 0.9, 'scale': 2.5}
 
 POSTURE = L.check({
     'id': 'library:utthita-parsvakonasana',

@@ -16,7 +16,7 @@ _spec = importlib.util.spec_from_file_location('_library_standing', Path(__file_
 S = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(S)
 L = S.L
-L.begin('virabhadrasana_ii')
+L.begin('virabhadrasana_ii', skeleton='library')
 
 HALF = 0.62          # the lunge's ankles either side of the midline
 APART = HALF - 0.04  # the straight-legged stance, a touch narrower (the drawn jump never dips through the mat)

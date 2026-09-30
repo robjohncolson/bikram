@@ -7,12 +7,10 @@ big toes; then the elbows open and the trunk folds down toward the legs;
 back to the concave back, and up to Tadasana. Seen from the side. Shape
 from the book's photographs; the stages are ours.
 
-TWO RIG LIMITS, drawn as far as they go and reported: the hull cannot lay
-the trunk on the thighs (thick tubes, no soft tissue), so the fold stops
-where the clearance check allows — the head before the knees, not between
-them — and from there the arms end short of the big toes: the hands reach
-toward the feet (the wrists stop 3 cm short of the toe hold in the fold,
-13 cm in the concave back; `python padangusthasana.py --report`).
+The library arms take the toes in both folds. The rigid trunk still stops
+before the thighs, leaving the head ahead of the knees. Run with --report
+for the wrist-target residuals; the fingertip target rests above the toe
+surface, rather than putting the two joint centres in the same place.
 """
 import importlib.util
 import sys
@@ -22,7 +20,7 @@ _spec = importlib.util.spec_from_file_location('_library_standing', Path(__file_
 S = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(S)
 L = S.L
-L.begin('padangusthasana')
+L.begin('padangusthasana', skeleton='library')
 
 HALF = 0.15          # the ankles a foot apart, centre to centre
 GRIP = L.n((0, -0.2, -1))   # the hand down toward the big toe, fingers wrapping it
@@ -42,11 +40,14 @@ def toe_wrist(at, s):
     """Where the wrist would go for the hand to take the big toe of foot `s`:
     over the toe's inner edge, the fingers reaching down round it."""
     sx = 1 if s == 'L' else -1
-    tip = L.add(at[f'toes.{s}'], (sx * 0.01, -0.01, 0.065))
+    tip = L.add(at[f'toes.{s}'], (sx * 0.01, -0.01, 0.020))
     return L.add(tip, GRIP, -L.HAND)
 
 
 def to_toes(pose, hint):
+    L.clavicles_follow(pose)
+    for s in 'LR':
+        pose[f'clavicle.{s}'] = L.n(L.add(pose[f'clavicle.{s}'], (0, -0.2, -0.5)))
     at = L.fk(pose)
     for s, sx in (('L', 1), ('R', -1)):
         S.reach_toward(pose, s, toe_wrist(at, s), (sx * hint[0], hint[1], hint[2]), GRIP)
@@ -71,6 +72,11 @@ HALFWAY = to_toes(S.fold({b: (HOLLOW[b] + FOLD[b]) / 2 for b in FOLD}, HALF), (1
 _ROUND = to_toes(S.fold({'pelvis': 100.0, 'spine.lower': 132.0, 'spine.upper': 160.0, 'neck': 150.0, 'head': 150.0}, HALF),
                  (0.3, -1, 0.1))
 GHOST = L.diff(_ROUND, CONCAVE)
+RELEASE = {**CONCAVE}
+_at = L.fk(RELEASE)
+for _s, _sx in (('L', 1), ('R', -1)):
+    S.reach_toward(RELEASE, _s, L.add(_at[f'wrist.{_s}'], (_sx * 0.10, 0, 0)),
+                   (_sx, -0.3, 0), GRIP)
 _AT = L.fk(FOLDED)
 
 GUIDES = [
@@ -96,6 +102,7 @@ POSTURE = L.check({
          'notice': ['hamstrings', 'calves', 'breath']},
         {'label': 'Rising', 'pose': HALFWAY, 'hold': 2, 'frame': LOW, 'notice': ['lower-back']},
         {'label': 'Head up', 'pose': CONCAVE, 'hold': 3, 'frame': LOW, 'notice': ['lower-back']},
+        {'label': 'Release toes', 'pose': RELEASE, 'hold': 2, 'frame': LOW, 'notice': ['wrists']},
         {'label': 'Stand', 'pose': STAND, 'hold': 3, 'notice': ['feet']},
     ],
 })

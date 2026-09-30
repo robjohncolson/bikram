@@ -8,15 +8,14 @@ export const parsvottanasana: LibraryAsana = {
   english: 'Intense side stretch',
   steps: [
     { text: 'Stand in Tadasana and breathe in deeply, lengthening the body upward.', stage: 0 },
-    { text: 'Take both hands round behind the back.', stage: 1 },
-    { text: 'Join the palms, draw the shoulders and elbows back, and turn the wrists so the joined hands climb the middle of the back, fingers level with the shoulder blades — a greeting made behind you. Inhale and jump the feet about a metre apart to the sides, still facing the front, and breathe out.', stage: 2 },
-    { text: 'Inhale and turn to face the right: the right foot a quarter turn out, the left foot and leg turned in most of the way, the left knee tight, the hips square to the right leg. Take the head back.', stage: 3 },
-    { text: 'Exhale and fold the trunk down over the right leg.', stage: 4 },
-    { text: 'Stretch the back and lengthen the neck so the nose, then the lips, then the chin travel on past the knee. Keep both kneecaps drawn up.', stage: 5 },
-    // one side is shown; the book's swing round to the left side has no stage
-    { text: 'To change sides the book keeps you folded: swing the head and trunk round the hips toward the left knee while the feet turn, raise the trunk and head back in one inhalation without bending the front leg, then fold over the left knee for the same time.' },
-    { text: 'Inhale and bring the head and trunk back to the centre, facing the front; then turn the feet to point forward and raise the trunk.', stage: 6 },
-    { text: 'Exhale, jump the feet back together and release the hands.', stage: 7 },
+    { text: 'Take both hands round behind the back. The figure begins a small step apart as the hands travel behind the waist.', stage: 1 },
+    { text: 'Join the palms behind the back, fingers upward, and draw the shoulders and elbows back. Inhale and spread the feet about a metre apart. Turn the right foot out and the left well inward, bringing the hips round to face the right leg; keep both knees firm and lift the chest and head.', stage: 2 },
+    { text: 'Exhale and fold the trunk down over the right leg.', stage: 3 },
+    { text: 'Stretch the back and lengthen the neck so the nose, then the lips, then the chin travel on past the knee. Keep both kneecaps drawn up.', stage: 4 },
+    { text: 'Keep the trunk folded as you bring it round through the centre toward the left leg, turning the feet for that side.', stage: 6 },
+    { text: 'Inhale and lift the trunk and head without bending the front knee. Exhale and fold over the left leg, staying for the same time.', stage: 9 },
+    { text: 'Inhale and bring the head and trunk back to the centre, facing the front, then raise the trunk as the feet turn forward.', stage: 10 },
+    { text: 'Release the palms and step the feet inward, then bring them together and lower the arms into Tadasana.', stage: 11 },
   ],
   hold: 'Twenty seconds to half a minute on each side, breathing normally (p. 46).',
   cautions: [

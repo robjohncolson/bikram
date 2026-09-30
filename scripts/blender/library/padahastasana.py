@@ -7,12 +7,10 @@ back goes concave; then the elbows bend and the trunk is drawn down toward
 the legs; back to the concave back, and up to Tadasana. Seen from the side.
 Shape from the book's photographs; the stages are ours.
 
-RIG LIMITS, drawn as far as they go and reported (as in Padangusthasana):
-the hull cannot lay the trunk on the thighs, so the fold stops where the
-clearance check allows, the head before the knees; and the arms end short
-of the floor — the hands reach down to the front of the feet, turned palm
-up, but cannot slide under the soles (`python padahastasana.py --report`
-prints how far the wrists stop from the floor under the ball of the foot).
+The rigid trunk stops before the thighs. The longer arms approach above
+the feet with palms up; they cannot take the under-foot target. Keeping
+the hands above the foot hull leaves 17.0 cm of wrist-target shortfall in
+the concave back and 11.5 cm in the fold. Run with --report to measure it.
 """
 import importlib.util
 import sys
@@ -22,10 +20,10 @@ _spec = importlib.util.spec_from_file_location('_library_standing', Path(__file_
 S = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(S)
 L = S.L
-L.begin('padahastasana')
+L.begin('padahastasana', skeleton='library')
 
 HALF = 0.15          # the ankles a foot apart
-UNDER = L.n((0, 0.6, -0.8))  # the hand sliding in under the foot, fingers toward the heel
+UNDER = (0, 1, 0)  # the hand sliding in under the foot, fingers toward the heel
 # the deepest clearance-clean fold and the lowest clean concave back (searched with
 # Padangusthasana's stance; degrees from upright)
 FOLD = {'pelvis': 115.0, 'spine.lower': 140.0, 'spine.upper': 185.0, 'neck': 178.0, 'head': 184.0}
@@ -40,19 +38,26 @@ S.arms_by_thighs(APART)
 
 def under_wrist(at, s):
     """Where the wrist would go with the palm flat under the ball of foot `s`."""
-    return (at[f'toes.{s}'][0], at[f'toes.{s}'][1] - 0.04, L.PALM_R)
+    return (at[f'toes.{s}'][0], at[f'toes.{s}'][1] - L.PALM_AT, L.PALM_R)
 
 
 def to_soles(pose, hint):
+    L.clavicles_follow(pose)
     at = L.fk(pose)
     for s, sx in (('L', 1), ('R', -1)):
-        S.reach_toward(pose, s, under_wrist(at, s), (sx * hint[0], hint[1], hint[2]), UNDER)
+        # The soles cannot accept a palm through the mat; approach above
+        # the foot hull until the under-foot target is reachable.
+        wrist = under_wrist(at, s)
+        wrist = (wrist[0], wrist[1], max(wrist[2], 0.15))
+        S.reach_toward(pose, s, wrist, (sx * hint[0], hint[1], hint[2]), UNDER)
     return pose
 
 
 CONCAVE = to_soles(S.fold(HOLLOW, HALF), (1, -0.3, 0.0))
 # the elbows bend back and out, drawing the head down
 FOLDED = to_soles(S.fold(FOLD, HALF), (1, -0.3, 0.0))
+
+HALFWAY = to_soles(S.fold({b: (HOLLOW[b] + FOLD[b]) / 2 for b in FOLD}, HALF), (1, -0.3, 0.0))
 
 # the common mistake: rounding down from the shoulders instead of bending
 # forward from the pelvis — the hips barely fold and the upper back humps
@@ -79,8 +84,10 @@ POSTURE = L.check({
         {'label': 'Feet apart', 'pose': APART, 'hold': 3, 'notice': ['feet']},
         {'label': 'Concave back', 'pose': CONCAVE, 'hold': 5, 'frame': LOW, 'ghost': GHOST,
          'notice': ['hamstrings', 'wrists']},
+        {'label': 'Going down', 'pose': HALFWAY, 'hold': 2, 'frame': LOW, 'notice': ['hamstrings']},
         {'label': 'Head down', 'pose': FOLDED, 'hold': 10, 'frame': LOW, 'guides': GUIDES,
          'notice': ['hamstrings', 'calves', 'breath']},
+        {'label': 'Rising', 'pose': HALFWAY, 'hold': 2, 'frame': LOW, 'notice': ['lower-back']},
         {'label': 'Head up', 'pose': CONCAVE, 'hold': 3, 'frame': LOW, 'notice': ['lower-back']},
         {'label': 'Stand', 'pose': STAND, 'hold': 3, 'notice': ['feet']},
     ],

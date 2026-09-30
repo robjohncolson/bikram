@@ -3,7 +3,7 @@ The standing family's own helpers (a `_` file: loaded like `_lib.py`, never
 exported or previewed as a sheet). Group A of the library fan-out owns it.
 
 Every standing sheet stands on the mat with its ankle joints at the rest
-height (ANKLE_Z) and its feet flat (`flat_foot`: the rest pitch, any
+height (ankle_z()) and its feet flat (`flat_foot`: the rest pitch, any
 heading, the sole rolled to face the floor), so the heel, ball and toes
 rest on the mat whatever way a foot turns. Legs are either STRAIGHT (thigh
 and shin one line, from the hip down to an ankle on the mat) or BENT with
@@ -28,11 +28,13 @@ _spec.loader.exec_module(L)
 
 n, add, sub, dot, fk = L.n, L.add, L.sub, L.dot, L.fk
 
-ANKLE_Z = L.J['ankle.L'][2]          # the rest ankle height: the flat foot's hull on the mat
-LEG = L.THIGH + L.SHIN - 0.002       # a straight leg, a hair inside reach
-_REST_FOOT = L.REST['foot.L']
-FOOT_PITCH = _REST_FOOT[2]           # the flat foot's downward slope (heel up at the ankle, toes on the mat)
-FOOT_RUN = math.hypot(_REST_FOOT[0], _REST_FOOT[1])
+def ankle_z():
+    return L.J['ankle.L'][2]
+
+
+def leg_length():
+    return L.THIGH + L.SHIN - 0.002
+
 
 # the whole standing figure, arms overhead included; and the folds, closer
 STAND_FRAME = {'center_z': 1.06, 'scale': 2.45}
@@ -47,17 +49,19 @@ ANKLE_X = 0.05
 def flat_foot(pose, side, heading):
     """The foot flat on the mat (the rest pitch) pointing along the horizontal
     `heading`, the sole rolled to face the floor."""
+    rest = L.REST['foot.L']
+    foot_run = math.hypot(rest[0], rest[1])
     h = n((heading[0], heading[1], 0.0))
-    return L.foot_sole(pose, side, (0, 0, -1), (h[0] * FOOT_RUN, h[1] * FOOT_RUN, FOOT_PITCH))
+    return L.foot_sole(pose, side, (0, 0, -1), (h[0] * foot_run, h[1] * foot_run, rest[2]))
 
 
 def ground(pose, sides='LR'):
     """Shift the whole figure up or down so the lower of the standing ankles
-    (`sides`) sits at ANKLE_Z."""
+    (`sides`) sits at ankle_z()."""
     at = fk(pose)
     z = min(at[f'ankle.{s}'][2] for s in sides)
     loc = pose.get('pelvis.location', (0, 0, 0))
-    pose['pelvis.location'] = (loc[0], loc[1], loc[2] + ANKLE_Z - z)
+    pose['pelvis.location'] = (loc[0], loc[1], loc[2] + ankle_z() - z)
     return pose
 
 
@@ -66,7 +70,7 @@ def straight_leg(pose, side, ankle_xy, heading):
     height is whatever the leg's length leaves (call `hip_height_for` first
     to put the pelvis there); returns the ankle."""
     hip = fk(pose)[f'hip.{side}']
-    ankle = (ankle_xy[0], ankle_xy[1], ANKLE_Z)
+    ankle = (ankle_xy[0], ankle_xy[1], ankle_z())
     d = n(sub(ankle, hip))
     pose[f'thigh.{side}'] = d
     pose[f'shin.{side}'] = d
@@ -81,7 +85,7 @@ def set_pelvis(pose, xy, side, ankle_xy):
     pose['pelvis.location'] = (xy[0] - L.J['pelvis'][0], xy[1] - L.J['pelvis'][1], loc[2])
     hip = fk(pose)[f'hip.{side}']
     run = math.hypot(ankle_xy[0] - hip[0], ankle_xy[1] - hip[1])
-    want = ANKLE_Z + math.sqrt(max(LEG * LEG - run * run, 0.0))
+    want = ankle_z() + math.sqrt(max(leg_length() * leg_length() - run * run, 0.0))
     loc = pose['pelvis.location']
     pose['pelvis.location'] = (loc[0], loc[1], loc[2] + want - hip[2])
     return pose
@@ -90,7 +94,7 @@ def set_pelvis(pose, xy, side, ankle_xy):
 def bent_leg(pose, side, ankle_xy, heading, hint):
     """A leg reaching the ankle at (x, y) on the mat with the knee bent toward
     `hint` (two-bone)."""
-    ankle = (ankle_xy[0], ankle_xy[1], ANKLE_Z)
+    ankle = (ankle_xy[0], ankle_xy[1], ankle_z())
     L.leg(pose, side, ankle, hint, (0, -1, 0))
     flat_foot(pose, side, heading)
     return ankle
@@ -120,7 +124,7 @@ def straight_both(pose, ankles, feet, y=0.0):
     the pelvis (kept at `y`) is moved across and up until each hip is exactly
     a leg's length from its ankle (Newton on the pelvis's x and height; the
     hips go wherever the pose's hipbones put them)."""
-    fit_pelvis(pose, {f'hip.{s}': ((ankles[s][0], ankles[s][1], ANKLE_Z), LEG) for s in 'LR'}, y=y)
+    fit_pelvis(pose, {f'hip.{s}': ((ankles[s][0], ankles[s][1], ankle_z()), leg_length()) for s in 'LR'}, y=y)
     for s in 'LR':
         straight_leg(pose, s, ankles[s], feet[s])
     return pose
@@ -173,10 +177,10 @@ def lunge(pose, front, ankles, feet, free='x'):
     is ahead), the pose's trunk and hipbones deciding how, so the feet never
     move from stage to stage."""
     back = 'L' if front == 'R' else 'R'
-    fa = (ankles[front][0], ankles[front][1], ANKLE_Z)
-    knee = (fa[0], fa[1], ANKLE_Z + L.SHIN)
-    ba = (ankles[back][0], ankles[back][1], ANKLE_Z)
-    fit_pelvis(pose, {f'hip.{front}': (knee, L.THIGH), f'hip.{back}': (ba, LEG)}, free=free)
+    fa = (ankles[front][0], ankles[front][1], ankle_z())
+    knee = (fa[0], fa[1], ankle_z() + L.SHIN)
+    ba = (ankles[back][0], ankles[back][1], ankle_z())
+    fit_pelvis(pose, {f'hip.{front}': (knee, L.THIGH), f'hip.{back}': (ba, leg_length())}, free=free)
     hip = fk(pose)[f'hip.{front}']
     pose[f'thigh.{front}'] = n(sub(knee, hip))
     pose[f'shin.{front}'] = (0, 0, -1)
@@ -230,10 +234,10 @@ def arms_out(pose, up=0.0):
 
 
 def arms_by_thighs(pose):
-    """Arms hanging by the sides, the palms against the outer thighs."""
+    """Arms hanging beside the thighs, clear of the hip hull."""
     for s, sx in (('L', 1), ('R', -1)):
         pose[f'clavicle.{s}'] = (sx, 0, 0.12)
-        arm_line(pose, s, (sx * 0.06, 0, -1), (sx * 0.02, 0, -1))
+        arm_line(pose, s, (sx * 0.13, 0, -1), (sx * 0.04, 0, -1))
     return pose
 
 
@@ -297,18 +301,16 @@ def fold(angles, half=None):
     return wide(pose, half)
 
 
-def hands_low_back(pose, gap=0.16):
-    """The hands brought round behind the buttocks, fingers pointing across
-    toward each other (half the turn to joining up the back), a little
-    apart: the way the arms travel between hanging by the sides and joining
-    up the back (straight from one to the other they swing through the
-    trunk)."""
+def hands_low_back(pose, gap=0.22):
+    """Separate the hands behind the waist with fingers angled back and up.
+    This waypoint keeps the long fingertips outside the thighs on entry
+    and outside the trunk when releasing the reverse greeting."""
     at = fk(pose)
     side, up, front = L.trunk_frame(at)
     back = L.neg(front)
     for s, sx in (('L', 1), ('R', -1)):
         wrist = add(add(add(at['pelvis'], back, L.SKIN['pelvis'][1] + 0.10), side, sx * gap), up, 0.02)
-        L.arm(pose, s, wrist, add(L.scale(side, sx), back, 0.6), n(add(back, up, -0.4)))
+        L.arm(pose, s, wrist, add(L.scale(side, sx), back, 0.6), n(add(back, up, 0.7)))
     return pose
 
 

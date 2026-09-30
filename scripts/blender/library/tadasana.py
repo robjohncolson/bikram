@@ -15,7 +15,7 @@ _spec = importlib.util.spec_from_file_location('_library_standing', Path(__file_
 S = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(S)
 L = S.L
-L.begin('tadasana')
+L.begin('tadasana', skeleton='library')
 
 EASY = {}                       # the rig's rest: feet hip-width, arms down
 

@@ -18,7 +18,7 @@ _spec = importlib.util.spec_from_file_location('_library_standing', Path(__file_
 S = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(S)
 L = S.L
-L.begin('prasarita_padottanasana')
+L.begin('prasarita_padottanasana', skeleton='library')
 
 CROWN_Z = 0.008      # the crown's skin ends at its vertex: on the mat (as the headstand's)
 # the trunk hanging down between the legs, each bone's angle from upright
@@ -44,7 +44,7 @@ def hands_on_waist(pose):
     at = L.fk(pose)
     side, up, front = L.trunk_frame(at)
     for s, sx in (('L', 1), ('R', -1)):
-        palm = L.add(L.add(at['waist'], side, sx * (L.SKIN['waist'][0] + L.PALM_R + 0.012)), up, -0.05)
+        palm = L.add(L.add(at['waist'], side, sx * (L.SKIN['waist'][0] + L.PALM_R + 0.012)), up, -0.02)
         hand = L.n(L.add(L.add(front, up, -0.6), side, -sx * 0.2))
         wrist = L.add(palm, hand, -L.PALM_AT)
         L.arm(pose, s, wrist, L.add(L.scale(side, sx), front, -0.3), hand)
@@ -108,11 +108,11 @@ def concave(tilt, arms=True):
     return pose
 
 
-_FLAT = L.n((0, -1, -0.12))
+_FLAT = L.flat_hand((0, -1, 0))
 
 
 def _palm_wrist(sh):
-    palm = (sh[0], PALM_Y, L.PALM_R + 0.004)
+    palm = (sh[0], PALM_Y, L.WRIST_Z + _FLAT[2] * L.PALM_AT)
     return L.add(palm, _FLAT, -L.PALM_AT)
 
 
@@ -126,6 +126,13 @@ def lowest_concave():
 
 
 CONCAVE, CONCAVE_TILT = lowest_concave()
+# Reach toward the mat with the trunk halfway down, before planting the
+# palms. This keeps the longer hands above the floor on the way in.
+LOWER = S.fold({'pelvis': 70, 'spine.lower': 66, 'spine.upper': 62, 'neck': 20, 'head': 10}, HALF)
+_at = L.fk(LOWER)
+for _s, _sx in (('L', 1), ('R', -1)):
+    S.reach_toward(LOWER, _s, _palm_wrist(_at[f'shoulder.{_s}']), (_sx * 0.3, 1, 0.2), _FLAT)
+
 
 CROWN = crown_down(HALF)[0]
 palms_down(CROWN)
@@ -133,7 +140,7 @@ palms_down(CROWN)
 # the common mistake: the weight thrown forward onto the head ÃƒÆ’Ã†â€™Ãƒâ€ Ã¢â‚¬â„¢ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â‚¬Å¡Ã‚Â¬Ãƒâ€¦Ã‚Â¡ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã†â€™Ãƒâ€šÃ‚Â¢ÃƒÆ’Ã‚Â¢ÃƒÂ¢Ã¢â€šÂ¬Ã…Â¡Ãƒâ€šÃ‚Â¬ÃƒÆ’Ã¢â‚¬Å¡Ãƒâ€šÃ‚Â the hips
 # drift forward of the feet and the trunk slopes back from the crown
 _HEAVY = {'pelvis.location': (0, -0.10, 0), **{b: fwd(a + 12) for b, a in HANG.items()}}
-S.fit_pelvis(_HEAVY, {f'hip.{s}': ((sx * HALF, 0.0, S.ANKLE_Z), S.LEG) for s, sx in (('L', 1), ('R', -1))}, y=-0.10)
+S.fit_pelvis(_HEAVY, {f'hip.{s}': ((sx * HALF, 0.0, S.ankle_z()), S.leg_length()) for s, sx in (('L', 1), ('R', -1))}, y=-0.10)
 for _s, _sx in (('L', 1), ('R', -1)):
     S.straight_leg(_HEAVY, _s, (_sx * HALF, 0.0), (0, -1))
 palms_down(_HEAVY)
@@ -157,6 +164,8 @@ POSTURE = L.check({
         {'label': 'Stand', 'pose': STAND, 'hold': 3, 'notice': ['feet']},
         {'label': 'Step apart', 'pose': STEP, 'hold': 2, 'notice': ['feet']},
         {'label': 'Hands on waist', 'pose': WAIST, 'hold': 3, 'notice': ['feet', 'quads']},
+        {'label': 'Release waist', 'pose': WIDE, 'hold': 2, 'notice': ['shoulders']},
+        {'label': 'Reach down', 'pose': LOWER, 'hold': 2, 'notice': ['shoulders']},
         {'label': 'Palms down', 'pose': CONCAVE, 'hold': 4, 'frame': FOLD, 'notice': ['hamstrings', 'lower-back']},
         {'label': 'Crown down', 'pose': CROWN, 'hold': 10, 'frame': FOLD, 'guides': GUIDES, 'ghost': GHOST,
          'notice': ['hamstrings', 'neck', 'breath']},
