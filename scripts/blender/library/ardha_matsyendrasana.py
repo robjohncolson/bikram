@@ -1,27 +1,15 @@
 """
-Ardha Matsyendrasana (half lord of the fishes) — library sheet, live figure
-only.
+Ardha Matsyendrasana, with both sides on the library skeleton.
 
-From sitting with the legs straight, the left knee bends and the left leg
-folds in; the right foot steps over and stands outside the left thigh; the
-trunk turns a right angle to the right, the left arm reaching past the
-outside of the right knee and then wrapping it while the right arm swings
-behind the back to meet it; back out, the right leg straightening first.
-The book folds the left leg first; the sheet shows that side (the other is
-the mirror image; its step is unbound).
+The seat stays beside the folded foot, the book's alternative when sitting
+on it is not possible. Each knee-out stage carries the foot around the
+seat; the opposite foot crosses as the arm extends beyond its knee. The
+hands release to that extended position before the legs unfold. A shared
+neutral seat keeps the hands clear while the second side begins.
 
-What this hull allows, measured: sitting ON the left foot lifts the seat
-until the folded left knee hangs 30-40 cm off the mat (a search over seat
-height, foot place and knee), so the sheet takes the book's own way for
-those who cannot yet sit on the foot — the seat on the mat, the left foot
-beside the right hip. The right thigh drawn up across an upright trunk
-passes through the belly, so the trunk sits a little back and the right
-knee leans a little toward its own side. The turn is a rolled spine
-(`_twist.twist`). The left arm hooks round the outside of the right knee
-(the rig's arm cannot also reach the back of the waist) and the right hand
-reaches behind toward it without the clasp (the report records the gaps).
-Shape from the book's photographs; the stages are ours. Seen from the
-front, where the knee, the hooking arm and the turned shoulders read.
+The rear hand still reaches toward the hooked arm without a clasp. Direct
+clasp targets can be within joint reach yet collide with the trunk or the
+other forearm. The report records those probes and the remaining gap.
 """
 import importlib.util
 import math
@@ -31,7 +19,7 @@ _spec = importlib.util.spec_from_file_location('_library_twist', Path(__file__).
 T = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(T)
 L = T.L
-L.begin('ardha_matsyendrasana')
+L.begin('ardha_matsyendrasana', skeleton='library')
 
 TURN = -90.0      # a right angle, to the right
 LEAN = -0.3       # the trunk sits back this much (its forward lean, `L.sit`)
@@ -99,18 +87,18 @@ def seat(lean=LEAN, left=True, right=True):
     return pose
 
 
-def palm_out(pose, side, out=0.3, back=0.25):
-    """A palm on the mat out to the side and a little behind the hip."""
+def palm_out(pose, side, out=0.27, back=0.20):
+    """A raised hand beside and behind the hip, ready to travel around the back."""
     sx = 1 if side == 'L' else -1
     hip = L.fk(pose)[f'hip.{side}']
-    L.arm(pose, side, (hip[0] + sx * out, hip[1] + back, 0.12), (sx, 0.5, 0), L.n((sx * 0.2, 1, -0.45)))
+    L.arm(pose, side, (hip[0] + sx * out, hip[1] + back, 0.18), (sx, 0.5, 0), (0, -1, 0))
     return pose
 
 
 def hands(pose):
     """While the legs move: the left palm rides the left thigh (from the mat,
     the hand on its way round the right knee and back passes through the
-    left leg), the right palm on the mat out beside the right hip."""
+    left leg), the right hand raised beside the right hip."""
     L.hand_on_thigh(pose, 'L', t=0.55, gap=0.02)
     return palm_out(pose, 'R')
 
@@ -132,7 +120,7 @@ def turned(deg):
     return pose
 
 
-def behind(pose, deg, gap=0.035, up=0.08, across=0.1):
+def behind(pose, deg, gap=0.065, up=0.08, across=0.1):
     """The right hand behind the back at the waist, reaching toward the left."""
     at = L.fk(pose)
     front = T.turn_about((0, -1, 0), (0, 0, 1), deg)
@@ -181,8 +169,8 @@ def left_only(shin=LEFT_SHIN, knee=L.KNEE_FLOOR):
 # the knee-out midpoint reaches further to the side than the seat's frame
 WIDE = {'center_z': 0.42, 'scale': 1.5}
 
-SIT = staff()
-LEFT_OUT = left_only(-145.0, knee=0.26)
+SIT = T.open_hands(seat(0.0, left=False, right=False))
+LEFT_OUT = palm_out(T.open_hands(left_only(-145.0, knee=0.26)), 'R')
 LEFT_IN = left_only()
 LEGS = legs_set()
 REACH = reach_past()
@@ -192,16 +180,20 @@ POSTURE = T.check({
     'id': 'library:ardha-matsyendrasana',
     'position': {'start': 'seated', 'end': 'seated'},
     'view': 'front',
-    'frame': L.SEATED_FRAME,
+    'frame': {**L.SEATED_FRAME, 'scale': 1.7},
     'transition': 10,
     'stages': [
-        {'label': 'Sit', 'pose': SIT, 'hold': 3, 'notice': ['lower-back', 'breath']},
-        {'label': 'Left knee out', 'pose': LEFT_OUT, 'hold': 2, 'frame': WIDE, 'notice': ['hips']},
-        {'label': 'Left leg in', 'pose': LEFT_IN, 'hold': 3, 'notice': ['hips', 'quads']},
-        {'label': 'Right foot over', 'pose': LEGS, 'hold': 3, 'notice': ['hips']},
-        {'label': 'Arm past the knee', 'pose': REACH, 'hold': 3, 'notice': ['upper-back', 'shoulders']},
-        {'label': 'Wrap the knee', 'pose': WRAP, 'hold': 8, 'notice': ['upper-back', 'lower-back', 'shoulders', 'breath']},
-        {'label': 'Right foot back', 'pose': LEFT_IN, 'hold': 2, 'notice': ['breath']},
-        {'label': 'Left leg out', 'pose': LEFT_OUT, 'hold': 2, 'frame': WIDE, 'notice': ['breath']},
+        {'label': 'Sit', 'pose': SIT, 'hold': 3, 'notice': ['hips', 'breath']},
+        {'label': 'Left knee out', 'pose': LEFT_OUT, 'hold': 3, 'notice': ['hips', 'breath']},
+        {'label': 'Right foot over, arm forward', 'pose': REACH, 'hold': 3, 'notice': ['upper-back', 'shoulders', 'breath']},
+        {'label': 'Wrap right knee', 'pose': WRAP, 'hold': 8, 'notice': ['upper-back', 'lower-back', 'shoulders', 'breath']},
+        {'label': 'Release right hook', 'pose': REACH, 'hold': 3, 'notice': ['upper-back', 'shoulders', 'breath']},
+        {'label': 'Left leg out', 'pose': LEFT_OUT, 'hold': 3, 'notice': ['hips', 'breath']},
+        {'label': 'Legs long', 'pose': SIT, 'hold': 3, 'notice': ['hips', 'breath']},
+        {'label': 'Right knee out', 'pose': T.mirror(LEFT_OUT), 'hold': 3, 'notice': ['hips', 'breath']},
+        {'label': 'Left foot over, arm forward', 'pose': T.mirror(REACH), 'hold': 3, 'notice': ['upper-back', 'shoulders', 'breath']},
+        {'label': 'Wrap left knee', 'pose': T.mirror(WRAP), 'hold': 8, 'notice': ['upper-back', 'lower-back', 'shoulders', 'breath']},
+        {'label': 'Release left hook', 'pose': T.mirror(REACH), 'hold': 3, 'notice': ['upper-back', 'shoulders', 'breath']},
+        {'label': 'Right leg out', 'pose': T.mirror(LEFT_OUT), 'hold': 3, 'notice': ['hips', 'breath']},
     ],
 })

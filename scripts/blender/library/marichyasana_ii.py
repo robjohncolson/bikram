@@ -1,25 +1,14 @@
 """
-Marichyasana II (the seated twist the book numbers II; its later page calls
-it III) — library sheet, live figure only.
+Marichyasana II, the seated twist, with both sides on the library skeleton.
 
-From sitting with the legs straight, the left knee bends and the left foot
-stands flat near the seat, its inner edge by the straight right thigh;
-the spine turns leftward through roughly a right angle, and the right arm comes
-over the left thigh and stretches forward past the knee; then the right
-arm wraps round the knee toward the back of the waist and the left arm
-swings behind to meet it; back out the same way. The book works the left
-knee first; the sheet shows that side (the other is the mirror image; its
-step is unbound).
+One foot stands beside the long opposite leg. The trunk turns, the arm
+extends beyond the knee, then hooks around it. The rear hand reaches
+behind the waist without a clasp. Release the hook before turning forward;
+a neutral seat with hands clear of the thighs allows the other knee to rise.
 
-What this hull allows, measured: a thigh drawn up steeply in front of an
-upright trunk passes through the belly (thigh against waist, 3-7 cm), so
-the trunk sits a little back and the knee opens a little out to the left;
-the trunk's turn is a rolled spine (`_twist.twist`); and the rig's arms
-cannot wrap that knee and reach the back of the waist, nor clasp behind:
-the right hand hooks round the outside of the knee as far as it goes and
-the left hand reaches behind toward it (the report records the gaps).
-Shape from the book's photographs; the stages are ours. Seen from the
-quarter, so the turn of the shoulders over the square hips reads.
+The hook sits farther outside the knee so the longer fingers clear the
+thigh throughout its approach. Direct clasp probes are recorded in the
+family report; joint reach alone does not establish the behind-back bind.
 """
 import importlib.util
 import math
@@ -29,7 +18,7 @@ _spec = importlib.util.spec_from_file_location('_library_twist', Path(__file__).
 T = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(T)
 L = T.L
-L.begin('marichyasana_ii')
+L.begin('marichyasana_ii', skeleton='library')
 
 TURN = 90.0      # the book's turn of the spine, to the left
 LEAN = -0.3      # the trunk sits back this much (its forward lean, `L.sit`)
@@ -65,11 +54,11 @@ def seat(lean=LEAN, bent=True):
 
 
 def left_palm_out(pose):
-    """The left palm on the mat out to the side, a little behind the hip:
+    """The left hand raised out to the side, a little behind the hip:
     clear of the knee as it rises, and the way the arm goes behind the back
     (swung straight from the front, it passes through the trunk)."""
     hip = L.fk(pose)['hip.L']
-    L.arm(pose, 'L', (hip[0] + 0.3, hip[1] + 0.25, 0.12), (1, 0.5, 0), L.n((0.2, 1, -0.45)))
+    L.arm(pose, 'L', (hip[0] + 0.27, hip[1] + 0.20, 0.18), (1, 0.5, 0), (0, -1, 0))
     return pose
 
 
@@ -125,7 +114,7 @@ def wrap(deg=TURN):
     return T.twist(pose, deg, gaze=-(deg - 20))
 
 
-def behind(pose, deg, gap=0.035, up=0.08, across=0.1):
+def behind(pose, deg, gap=0.065, up=0.08, across=0.1):
     """The left hand behind the back at the waist, reaching toward the right."""
     at = L.fk(pose)
     front = T.turn_about((0, -1, 0), (0, 0, 1), deg)
@@ -140,9 +129,9 @@ def behind(pose, deg, gap=0.035, up=0.08, across=0.1):
 
 REACH_AT = (0.1, -0.25, -0.05)   # the right wrist from the knee: forward and outside it
 HOOK_ROUND = 150.0   # the right wrist round the knee: degrees from its front, toward its outside
-HOOK_R = 0.12        # ... this far from the knee joint
+HOOK_R = 0.14        # ... this far from the knee joint
 
-SIT = staff()
+SIT = T.open_hands(seat(0.0, bent=False))
 KNEE_UP = knee_up()
 REACH = reach_past()
 WRAP = wrap()
@@ -154,12 +143,17 @@ POSTURE = T.check({
     'frame': L.SEATED_FRAME,
     'transition': 10,
     'stages': [
-        {'label': 'Sit', 'pose': SIT, 'hold': 3, 'notice': ['lower-back', 'breath']},
-        {'label': 'Left knee up', 'pose': KNEE_UP, 'hold': 3, 'notice': ['hips']},
-        {'label': 'Arm past the knee', 'pose': REACH, 'hold': 3, 'notice': ['upper-back', 'shoulders']},
-        {'label': 'Wrap the knee', 'pose': WRAP, 'hold': 8, 'notice': ['upper-back', 'lower-back', 'shoulders', 'breath']},
-        {'label': 'Unwrap', 'pose': REACH, 'hold': 2, 'notice': ['breath']},
-        {'label': 'Face front', 'pose': KNEE_UP, 'hold': 3, 'notice': ['breath']},
-        {'label': 'Leg out', 'pose': SIT, 'hold': 3, 'notice': ['breath']},
+        {'label': 'Sit', 'pose': SIT, 'hold': 3, 'notice': ['hips', 'breath']},
+        {'label': 'Left knee up', 'pose': KNEE_UP, 'hold': 3, 'notice': ['hips', 'breath']},
+        {'label': 'Arm past left knee', 'pose': REACH, 'hold': 3, 'notice': ['upper-back', 'shoulders', 'breath']},
+        {'label': 'Wrap left knee', 'pose': WRAP, 'hold': 8, 'notice': ['upper-back', 'lower-back', 'shoulders', 'breath']},
+        {'label': 'Unwrap left knee', 'pose': REACH, 'hold': 3, 'notice': ['upper-back', 'shoulders', 'breath']},
+        {'label': 'Face front', 'pose': KNEE_UP, 'hold': 3, 'notice': ['hips', 'breath']},
+        {'label': 'Legs long', 'pose': SIT, 'hold': 3, 'notice': ['hips', 'breath']},
+        {'label': 'Right knee up', 'pose': T.mirror(KNEE_UP), 'hold': 3, 'notice': ['hips', 'breath']},
+        {'label': 'Arm past right knee', 'pose': T.mirror(REACH), 'hold': 3, 'notice': ['upper-back', 'shoulders', 'breath']},
+        {'label': 'Wrap right knee', 'pose': T.mirror(WRAP), 'hold': 8, 'notice': ['upper-back', 'lower-back', 'shoulders', 'breath']},
+        {'label': 'Unwrap right knee', 'pose': T.mirror(REACH), 'hold': 3, 'notice': ['upper-back', 'shoulders', 'breath']},
+        {'label': 'Face front again', 'pose': T.mirror(KNEE_UP), 'hold': 3, 'notice': ['hips', 'breath']},
     ],
 })

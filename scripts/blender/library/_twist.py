@@ -21,3 +21,12 @@ H = L.H
 roll, twist, shoulders, turn_about = L.roll, L.twist, L.shoulders, L.turn_about
 fk, plain, check, hull_low = L.fk, L.plain, L.check, L.hull_low
 mirror, reach_short, across_check = L.mirror, L.reach_short, L.across_check
+
+
+def open_hands(pose):
+    """Hands clear of the thighs while changing which knee folds."""
+    for side, sx in (('L', 1), ('R', -1)):
+        hip = L.fk(pose)[f'hip.{side}']
+        L.arm(pose, side, (hip[0] + sx * 0.28, hip[1] - 0.12, 0.42),
+              (sx, 0, -1), (0, -1, 0))
+    return pose

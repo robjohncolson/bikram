@@ -27,7 +27,7 @@ _spec = importlib.util.spec_from_file_location('_library_twist', Path(__file__).
 T = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(T)
 L = T.L
-L.begin('jatara_parivartanasana')
+L.begin('jatara_parivartanasana', skeleton='library')
 
 LIE = L.LIE
 LIE_AT = L.fk(LIE)

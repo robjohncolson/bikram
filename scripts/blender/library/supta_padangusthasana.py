@@ -1,23 +1,15 @@
 """
-Supta Padangusthasana (the reclining big-toe hold) — library sheet, live
-figure only.
+Supta Padangusthasana, with both legs on the library skeleton.
 
-Lying on the back, legs long, the right hand on the right thigh; the left
-leg raised to the vertical, the left hand taking hold of it; then the head
-and trunk lift and the straight leg is drawn down toward them until the
-chin comes to the knee, the right leg long on the mat throughout; back
-down, the leg to the vertical, and down beside the other. The book works
-the left leg first; the sheet shows that side (the other side is the same,
-mirrored, and its step is left unbound).
+Raise one straight leg, hold the shin, lift the head and trunk toward the
+knee, then lower the trunk and release the hand before lowering the leg.
+Repeat on the other side. Each release has its own stage, and the loop
+returns the right leg to the shared lying position.
 
-This rig's arms are short of its feet: lying flat, the hand takes the leg
-as high up the shin as it reaches (about halfway, the fingertips ~24 cm
-short of the toe; the step says so), and with the trunk lifted it holds
-the lower shin (~13 cm short). The leg tips a little past the vertical
-and out to its side, so the thigh folds beside the belly rather than
-through it, and the head bends straight at the knee. Shape from the
-book's photographs; the stages are ours. Seen from the side, where the
-fold reads.
+The longer fingers run beside the shin rather than into its hull. The
+remaining fingertip-to-toe gaps are about 28 cm lying down and 17 cm with
+the trunk lifted. The copy distinguishes the book's toe grip from the
+figure's shin hold; no toe contact is claimed.
 """
 import importlib.util
 import math
@@ -27,7 +19,7 @@ _spec = importlib.util.spec_from_file_location('_library_twist', Path(__file__).
 T = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(T)
 L = T.L
-L.begin('supta_padangusthasana')
+L.begin('supta_padangusthasana', skeleton='library')
 
 REST_ON = 0.003
 
@@ -68,7 +60,7 @@ def grip(pose, side='L'):
         if L.dist(sh, wrist) <= span:
             break
     leg = L.n(L.sub(ankle, knee))
-    L.arm(pose, side, wrist, (sx, 0.3, -0.5), L.n(L.add(leg, out, -0.3)))
+    L.arm(pose, side, wrist, (sx, 0.3, -0.5), L.n(L.add(leg, out, -0.05)))
     return pose, k / 50
 
 
@@ -128,11 +120,17 @@ POSTURE = T.check({
     'frame': {'center_z': 0.45, 'scale': 2.0},
     'transition': 10,
     'stages': [
-        {'label': 'Lie flat', 'pose': FLAT, 'hold': 3, 'notice': ['quads', 'breath']},
-        {'label': 'Left leg up', 'pose': UP, 'hold': 3, 'notice': ['hamstrings', 'quads']},
-        {'label': 'Take the leg', 'pose': CATCH, 'hold': 4, 'notice': ['hamstrings', 'breath']},
-        {'label': 'Chin to knee', 'pose': CHIN, 'hold': 8, 'notice': ['hamstrings', 'core', 'neck']},
-        {'label': 'Back down', 'pose': CATCH, 'hold': 3, 'notice': ['breath']},
-        {'label': 'Leg down', 'pose': FLAT, 'hold': 3, 'notice': ['breath']},
+        {'label': 'Lie flat', 'pose': FLAT, 'hold': 3, 'notice': ['hips', 'breath']},
+        {'label': 'Left leg up', 'pose': UP, 'hold': 3, 'notice': ['hamstrings', 'quads', 'breath']},
+        {'label': 'Take left leg', 'pose': CATCH, 'hold': 3, 'notice': ['hamstrings', 'quads', 'breath']},
+        {'label': 'Chin to left knee', 'pose': CHIN, 'hold': 8, 'notice': ['hamstrings', 'core', 'neck', 'breath']},
+        {'label': 'Back down', 'pose': CATCH, 'hold': 3, 'notice': ['hamstrings', 'quads', 'breath']},
+        {'label': 'Release left leg', 'pose': UP, 'hold': 3, 'notice': ['hamstrings', 'quads', 'breath']},
+        {'label': 'Legs down', 'pose': FLAT, 'hold': 3, 'notice': ['hips', 'breath']},
+        {'label': 'Right leg up', 'pose': T.mirror(UP), 'hold': 3, 'notice': ['hamstrings', 'quads', 'breath']},
+        {'label': 'Take right leg', 'pose': T.mirror(CATCH), 'hold': 3, 'notice': ['hamstrings', 'quads', 'breath']},
+        {'label': 'Chin to right knee', 'pose': T.mirror(CHIN), 'hold': 8, 'notice': ['hamstrings', 'core', 'neck', 'breath']},
+        {'label': 'Back down again', 'pose': T.mirror(CATCH), 'hold': 3, 'notice': ['hamstrings', 'quads', 'breath']},
+        {'label': 'Release right leg', 'pose': T.mirror(UP), 'hold': 3, 'notice': ['hamstrings', 'quads', 'breath']},
     ],
 })

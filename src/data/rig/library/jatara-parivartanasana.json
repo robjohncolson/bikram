@@ -90,8 +90,8 @@
       "label": "Legs to the left",
       "hold": 8,
       "pose": {
-        "pelvis.location": [0.0, 0.122826, -0.818139],
-        "pelvis": {"dir": [0, -0.856885, -0.515508], "roll": -75.0},
+        "pelvis.location": [0.0, 0.12241, -0.817453],
+        "pelvis": {"dir": [0, -0.853417, -0.521228], "roll": -75.0},
         "spine.lower": {"dir": [0, -1, 0], "roll": 75.0},
         "spine.upper": [0, -1, 0],
         "neck": [0, -1, 0.05],
@@ -146,8 +146,8 @@
       "label": "Legs to the right",
       "hold": 8,
       "pose": {
-        "pelvis.location": [0.0, 0.122826, -0.818139],
-        "pelvis": {"dir": [0, -0.856885, -0.515508], "roll": 75.0},
+        "pelvis.location": [0.0, 0.12241, -0.817453],
+        "pelvis": {"dir": [0, -0.853417, -0.521228], "roll": 75.0},
         "spine.lower": {"dir": [0, -1, 0], "roll": -75.0},
         "spine.upper": [0, -1, 0],
         "neck": [0, -1, 0.05],
@@ -225,5 +225,6 @@
       },
       "notice": ["breath"]
     }
-  ]
+  ],
+  "skeleton": "library"
 }
