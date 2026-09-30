@@ -1,7 +1,7 @@
 import { useEffect, useMemo } from 'react';
 import type { CSSProperties } from 'react';
-import { Link, useLocation, useParams } from 'react-router-dom';
-import { RIG_LIVE, applyFigureFlag, chakraById, figureRenderer, getNeighbors, getPose, hasRigData, muscleById, poses } from '../data';
+import { Link, useParams } from 'react-router-dom';
+import { chakraById, getNeighbors, getPose, muscleById, poses } from '../data';
 import { NotFound } from './NotFound';
 import { band, loadStore, nodeP } from '../trainer';
 import type { ClassicalNote, MuscleId, Pose } from '../data';
@@ -10,6 +10,7 @@ import type { MuscleHighlight } from '../components/BodyMap';
 import { PoseFigure } from '../components/PoseFigure';
 import { PoseMotion } from '../components/PoseMotion';
 import { useRestingBreath } from '../components/useRestingBreath';
+import { STUDY } from '../features';
 import './PoseDetail.css';
 
 /** Compact prev/next link shown above the header. */
@@ -56,6 +57,7 @@ const BAND_WORD = { unseen: 'not yet practiced', shaky: 'shaky', developing: 'de
  */
 function PracticeRow({ pose, next }: { pose: Pose; next?: Pose }) {
   const bands = useMemo(() => {
+    if (!STUDY) return null;
     const now = Date.now();
     const store = loadStore(now);
     return {
@@ -65,25 +67,25 @@ function PracticeRow({ pose, next }: { pose: Pose; next?: Pose }) {
   }, [pose, next]);
   return (
     <div className="pd-practice" aria-label="Practice">
-      <span className="pill" data-band={bands.identity}>
+      {bands && <span className="pill" data-band={bands.identity}>
         memory · {BAND_WORD[bands.identity]}
-      </span>
-      {bands.handoff && (
+      </span>}
+      {bands?.handoff && (
         <span className="pill" data-band={bands.handoff}>
           hand-off · {BAND_WORD[bands.handoff]}
         </span>
       )}
       <span className="pd-practice-links">
-        <Link className="pd-practice-link" to={`/train?drill=id:${pose.id}`}>
+        {STUDY && <Link className="pd-practice-link" to={`/train?drill=id:${pose.id}`}>
           Drill this posture →
-        </Link>
-        {next && (
+        </Link>}
+        {STUDY && next && (
           <Link className="pd-practice-link" to={`/train?drill=tr:${pose.order}`}>
             Drill the hand-off →
           </Link>
         )}
-        <Link className="pd-practice-link" to={`/pace?from=${pose.order}`}>
-          Practice the class from here →
+        <Link className="pd-practice-link" to={`/?from=${pose.order}`}>
+          Practise from here →
         </Link>
       </span>
     </div>
@@ -105,12 +107,9 @@ function ClassicalSection({ note, pose }: { note: ClassicalNote; pose: Pose }) {
   const sameName = note.asana !== null && baseName(note.asana) === baseName(pose.sanskritName);
   const plateCount = note.reference?.plates.match(/\d+[a-z]?/gi)?.length ?? 0;
   return (
-    <section className="card pd-card pd-classical" aria-labelledby="pd-classical-h">
+    <details className="card pd-card pd-classical" aria-labelledby="pd-classical-h">
+      <summary id="pd-classical-h">Go deeper — the classical form</summary>
       <div className="pd-classical-head">
-        <p className="eyebrow">Go deeper</p>
-        <h2 className="pd-h" id="pd-classical-h">
-          The classical form
-        </h2>
         <p className="pd-classical-lede text-soft">
           The same shape as the classical repertoire describes it — read against B.K.S. Iyengar&rsquo;s{' '}
           <em>Light on Yoga</em>, in our own words, with his plate numbers so you can open your copy.
@@ -201,35 +200,14 @@ function ClassicalSection({ note, pose }: { note: ClassicalNote; pose: Pose }) {
         Iyengar and 26 &amp; 2 are different lineages that sometimes disagree; nothing here corrects
         the class. Traditional effects are described as tradition, not as medical fact.
       </p>
-    </section>
+    </details>
   );
 }
 
-/**
- * The hero figure, breathing at rest (6 in, 6 out); only it re-renders on
- * each flip. For the live-rig rollout (`RIG_LIVE` postures, or every
- * posture with `?figure=rig`) the live three.js figure stands BESIDE the
- * sprite — same size, same breath — so the two can be compared.
- */
-function HeroMotion({ pose, motion }: { pose: Pose; motion: NonNullable<Pose['motion']> }) {
+/** One live demonstration; PoseMotion owns loading and unavailable fallbacks. */
+function HeroMotion({ motion }: { motion: NonNullable<Pose['motion']> }) {
   const breath = useRestingBreath(6);
-  const { search } = useLocation();
-  // the flag is applied whatever the posture, so ?figure=rig|sprite always sets or clears it
-  const override = useMemo(() => applyFigureFlag(search), [search]);
-  const live = hasRigData(pose.id) && (RIG_LIVE.has(pose.id) || figureRenderer(pose.id, override, 'page') === 'rig');
-  if (!live) return <PoseMotion motion={motion} size={170} frameClassName="pd-figurewrap" breath={breath} />;
-  return (
-    <div className="pd-figures">
-      <figure className="pd-figurecol">
-        <figcaption className="pd-figurelabel text-faint">sprite</figcaption>
-        <PoseMotion motion={motion} size={170} frameClassName="pd-figurewrap" breath={breath} />
-      </figure>
-      <figure className="pd-figurecol">
-        <figcaption className="pd-figurelabel text-faint">live</figcaption>
-        <PoseMotion motion={motion} size={170} frameClassName="pd-figurewrap" breath={breath} renderer="rig" />
-      </figure>
-    </div>
-  );
+  return <PoseMotion motion={motion} size={240} frameClassName="pd-figurewrap" breath={breath} renderer="rig" />;
 }
 
 export function PoseDetail() {
@@ -265,8 +243,6 @@ export function PoseDetail() {
   const hasBreath = Boolean(pose.breath);
   const hasBody = pose.muscles.length > 0;
   const hasEnergy = chakraLinks.length > 0;
-  const hasLeft = hasSetup || hasCues || hasBreath;
-  const hasRight = hasBody || hasEnergy;
 
   return (
     <div className="page pd" key={pose.id}>
@@ -297,179 +273,181 @@ export function PoseDetail() {
               {pose.timing && <span className="pill">{pose.timing}</span>}
             </div>
           </div>
-          {pose.motion ? (
-            <HeroMotion pose={pose} motion={pose.motion} />
-          ) : (
-            <div className="pd-figurewrap" aria-hidden>
-              <PoseFigure pose={pose} size={140} />
-            </div>
-          )}
+
         </header>
 
         {pose.summary && <p className="pd-summary">{pose.summary}</p>}
 
         <PracticeRow pose={pose} next={next} />
 
-        {(hasLeft || hasRight) && (
-          <div className={`pd-grid${hasLeft && hasRight ? '' : ' pd-grid--single'}`}>
-            {hasLeft && (
-              <div className="pd-col">
-                {hasSetup && (
-                  <section>
-                    <h2 className="pd-h">Getting in</h2>
-                    <ol className="pd-steps">
-                      {pose.setup.map((step, i) => (
-                        <li key={i}>{step}</li>
-                      ))}
-                    </ol>
-                  </section>
-                )}
+        <div className="pd-main">
+          <div className="pd-main-figure">
+            {pose.motion ? (
+              <HeroMotion motion={pose.motion} />
+            ) : (
+              <div className="pd-figurewrap" aria-hidden>
+                <PoseFigure pose={pose} size={140} />
+              </div>
+            )}
+          </div>
+          {hasSetup && (
+            <section>
+              <h2 className="pd-h">How to</h2>
+              <ol className="pd-steps">
+                {pose.setup.map((step, i) => (
+                  <li key={i}>{step}</li>
+                ))}
+              </ol>
+            </section>
+          )}
+        </div>
 
-                {hasCues && (
-                  <section>
-                    <h2 className="pd-h">While you&rsquo;re there</h2>
-                    <ul className="pd-cues">
-                      {pose.cues.map((cue, i) => (
-                        <li key={i}>{cue}</li>
-                      ))}
-                    </ul>
-                  </section>
-                )}
+        <section className="pd-inclass pd-col" aria-labelledby="pd-inclass-h">
+          <h2 className="pd-h" id="pd-inclass-h">In class</h2>
+          {pose.segments && pose.segments.length > 0 && (
+            <ol className="pd-segments">
+              {pose.segments.map((segment, i) => <li key={i}>{segment.label}</li>)}
+            </ol>
+          )}
 
-                {hasBreath && (
-                  <aside className="card pd-breath">
-                    <svg
-                      className="pd-breath-icon"
-                      viewBox="0 0 48 22"
-                      width="44"
-                      height="20"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      aria-hidden
-                    >
-                      <path d="M3 7c6-6 12-6 18 0s12 6 18 0" />
-                      <path d="M3 15c6-6 12-6 18 0s12 6 18 0" opacity="0.45" />
-                    </svg>
+          {hasCues && (
+            <section>
+              <h3 className="pd-h">While you&rsquo;re there</h3>
+              <ul className="pd-cues">
+                {pose.cues.map((cue, i) => (
+                  <li key={i}>{cue}</li>
+                ))}
+              </ul>
+            </section>
+          )}
+
+          {hasBreath && (
+            <aside className="card pd-breath">
+              <svg
+                className="pd-breath-icon"
+                viewBox="0 0 48 22"
+                width="44"
+                height="20"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                aria-hidden
+              >
+                <path d="M3 7c6-6 12-6 18 0s12 6 18 0" />
+                <path d="M3 15c6-6 12-6 18 0s12 6 18 0" opacity="0.45" />
+              </svg>
+              <div>
+                <h3 className="pd-h pd-breath-h">Breath</h3>
+                <p className="pd-breath-text">{pose.breath}</p>
+              </div>
+            </aside>
+          )}
+
+          {(pose.mnemonic || pose.sequenceNote) && (
+            <div className="pd-pair">
+              {pose.mnemonic && (
+                <aside className="card pd-card pd-remember">
+                  <h3 className="pd-h">Remember it</h3>
+                  <p className="pd-quote">{pose.mnemonic}</p>
+                </aside>
+              )}
+              {pose.sequenceNote && (
+                <aside className="card pd-card">
+                  <h3 className="pd-h">Why here</h3>
+                  <p className="pd-whyhere">{pose.sequenceNote}</p>
+                </aside>
+              )}
+            </div>
+          )}
+        </section>
+        <div className="pd-sections">
+          {(hasBody || pose.benefits.length > 0) && (
+            <section className="card pd-card">
+              <h2 className="pd-h">Your body</h2>
+              {hasBody && (
+                <>
+                  <div className="pd-bodymap">
+                    <BodyMap view="both" height={260} highlights={highlights} />
+                  </div>
+                  <div className="pd-legend" aria-hidden>
+                    <span className="pd-legend-item pd-action--strengthens">
+                      <span className="pd-legend-dot" /> strengthens
+                    </span>
+                    <span className="pd-legend-item pd-action--stretches">
+                      <span className="pd-legend-dot" /> stretches
+                    </span>
+                  </div>
+                  <ul className="pd-muscles">
+                    {pose.muscles.map((m, i) => (
+                      <li key={`${m.id}-${i}`} className="pd-muscle">
+                        <div className="pd-muscle-line">
+                          <span className="pd-muscle-name">
+                            {muscleById.get(m.id)?.name ?? m.id}
+                          </span>
+                          <span className={`pd-action pd-action--${m.action}`}>
+                            {m.action}
+                          </span>
+                          {m.emphasis === 'primary' && (
+                            <span className="pd-tag">primary</span>
+                          )}
+                        </div>
+                        {m.note && <p className="pd-muscle-note">{m.note}</p>}
+                      </li>
+                    ))}
+                  </ul>
+                </>
+              )}
+              {pose.benefits.length > 0 && (
+                <div className="pd-body-benefits">
+                  <h3 className="pd-h3">Benefits</h3>
+                  <ul className="pd-benefits">
+                    {pose.benefits.map((b, i) => (
+                      <li key={i}>{b}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+            </section>
+          )}
+
+          {hasEnergy && (
+            <section className="card pd-card">
+              <h2 className="pd-h">Chakras</h2>
+              <ul className="pd-chakras">
+                {chakraLinks.map(({ link, chakra }) => (
+                  <li
+                    key={chakra.id}
+                    className="pd-chakra"
+                    style={{ '--chakra': chakra.color } as CSSProperties}
+                  >
+                    <span className="pd-chakra-dot" aria-hidden />
                     <div>
-                      <h2 className="pd-h pd-breath-h">Breath</h2>
-                      <p className="pd-breath-text">{pose.breath}</p>
+                      <p className="pd-chakra-name">
+                        <strong>{chakra.englishName}</strong>
+                        <span className="pd-chakra-meta">
+                          {' '}
+                          · {chakra.sanskritName} · No. {chakra.number}
+                        </span>
+                      </p>
+                      <p className="pd-chakra-why">{link.why}</p>
                     </div>
-                  </aside>
-                )}
-              </div>
-            )}
-
-            {hasRight && (
-              <div className="pd-col">
-                {hasBody && (
-                  <section className="card pd-card">
-                    <h2 className="pd-h">In the body</h2>
-                    <div className="pd-bodymap">
-                      <BodyMap view="both" height={260} highlights={highlights} />
-                    </div>
-                    <div className="pd-legend" aria-hidden>
-                      <span className="pd-legend-item pd-action--strengthens">
-                        <span className="pd-legend-dot" /> strengthens
-                      </span>
-                      <span className="pd-legend-item pd-action--stretches">
-                        <span className="pd-legend-dot" /> stretches
-                      </span>
-                    </div>
-                    <ul className="pd-muscles">
-                      {pose.muscles.map((m, i) => (
-                        <li key={`${m.id}-${i}`} className="pd-muscle">
-                          <div className="pd-muscle-line">
-                            <span className="pd-muscle-name">
-                              {muscleById.get(m.id)?.name ?? m.id}
-                            </span>
-                            <span className={`pd-action pd-action--${m.action}`}>
-                              {m.action}
-                            </span>
-                            {m.emphasis === 'primary' && (
-                              <span className="pd-tag">primary</span>
-                            )}
-                          </div>
-                          {m.note && <p className="pd-muscle-note">{m.note}</p>}
-                        </li>
-                      ))}
-                    </ul>
-                  </section>
-                )}
-
-                {hasEnergy && (
-                  <section className="card pd-card">
-                    <h2 className="pd-h">Energy</h2>
-                    <ul className="pd-chakras">
-                      {chakraLinks.map(({ link, chakra }) => (
-                        <li
-                          key={chakra.id}
-                          className="pd-chakra"
-                          style={{ '--chakra': chakra.color } as CSSProperties}
-                        >
-                          <span className="pd-chakra-dot" aria-hidden />
-                          <div>
-                            <p className="pd-chakra-name">
-                              <strong>{chakra.englishName}</strong>
-                              <span className="pd-chakra-meta">
-                                {' '}
-                                · {chakra.sanskritName} · No. {chakra.number}
-                              </span>
-                            </p>
-                            <p className="pd-chakra-why">{link.why}</p>
-                          </div>
-                        </li>
-                      ))}
-                    </ul>
-                  </section>
-                )}
-              </div>
-            )}
-          </div>
-        )}
-
-        {(pose.benefits.length > 0 || pose.contraindications.length > 0) && (
-          <div className="pd-pair">
-            {pose.benefits.length > 0 && (
-              <section className="card pd-card">
-                <h2 className="pd-h">Benefits</h2>
-                <ul className="pd-benefits">
-                  {pose.benefits.map((b, i) => (
-                    <li key={i}>{b}</li>
-                  ))}
-                </ul>
-              </section>
-            )}
-            {pose.contraindications.length > 0 && (
-              <section className="card pd-card pd-care">
-                <h2 className="pd-h">Take care</h2>
-                <ul className="pd-cautions">
-                  {pose.contraindications.map((c, i) => (
-                    <li key={i}>{c}</li>
-                  ))}
-                </ul>
-              </section>
-            )}
-          </div>
-        )}
-
-        {(pose.mnemonic || pose.sequenceNote) && (
-          <div className="pd-pair">
-            {pose.mnemonic && (
-              <aside className="card pd-card pd-remember">
-                <h2 className="pd-h">Remember it</h2>
-                <p className="pd-quote">{pose.mnemonic}</p>
-              </aside>
-            )}
-            {pose.sequenceNote && (
-              <aside className="card pd-card">
-                <h2 className="pd-h">Why here</h2>
-                <p className="pd-whyhere">{pose.sequenceNote}</p>
-              </aside>
-            )}
-          </div>
-        )}
+                  </li>
+                ))}
+              </ul>
+            </section>
+          )}
+          {pose.contraindications.length > 0 && (
+            <section className="card pd-card pd-care">
+              <h2 className="pd-h">Cautions</h2>
+              <ul className="pd-cautions">
+                {pose.contraindications.map((c, i) => (
+                  <li key={i}>{c}</li>
+                ))}
+              </ul>
+            </section>
+          )}
+        </div>
 
         {pose.classical && <ClassicalSection note={pose.classical} pose={pose} />}
 

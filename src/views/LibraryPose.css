@@ -304,7 +304,7 @@ button.lp-step-btn:hover {
 }
 
 /* ——— phone: stack */
-@media (max-width: 760px) {
+@media (max-width: 1023px) {
   .lp-main {
     grid-template-columns: minmax(0, 1fr);
     gap: 22px;

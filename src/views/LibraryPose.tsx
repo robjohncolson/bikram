@@ -177,12 +177,6 @@ function Posture({ a }: { a: LibraryEntry }) {
           </ul>
         </section>
 
-        <section className="lp-links" aria-label="Related postures">
-          <LinkRow title="Leads in" ids={a.prepares} />
-          <LinkRow title="Afterwards" ids={a.counter} />
-          <LinkRow title="The same action in the 26 & 2" ids={a.related} />
-        </section>
-
         <section className="card lp-tradition" aria-labelledby="lp-tradition-h">
           <h2 id="lp-tradition-h" className="lp-h">
             The tradition
@@ -206,6 +200,12 @@ function Posture({ a }: { a: LibraryEntry }) {
               );
             })}
           </ul>
+        </section>
+
+        <section className="lp-links" aria-label="Related postures">
+          <LinkRow title="Leads in" ids={a.prepares} />
+          <LinkRow title="Afterwards" ids={a.counter} />
+          <LinkRow title="The same action in the 26 & 2" ids={a.related} />
         </section>
 
         <p className="lp-source text-faint">{sourceLine(a)}</p>
