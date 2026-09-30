@@ -326,6 +326,7 @@ def side_sit():
 
 
 MID = {
+    'crouch': ('Bend the knees', _posture_module('awkward').PART_1, {'center_z': 0.75, 'scale': 2.0}),
     'side': ('Roll to the side', side_lying(), {'center_z': 0.35, 'scale': 2.4}),
     'fours': ('Hands and knees', hands_and_knees(), {'center_z': 0.45, 'scale': 2.2}),
     'sat-up': ('Sit up', sat_up(), {'center_z': 0.4, 'scale': 2.1}),

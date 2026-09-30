@@ -159,10 +159,12 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   `frame` keyframed so the zoom travels too. The rig keeps the face/head
   toward -Y everywhere, so a lying-down or sitting hand-off that reverses
   the body rolls through the side and the hands and knees, or sits up and
-  swivels on the seat. The class needs eight: standing-supine,
-  supine-prone, prone-supine, supine-kneeling, kneeling-supine,
-  supine-seated, seated-supine, seated-kneeling (`figure.test.ts` walks
-  the full class and derives exactly these). `bridgeFor(from, to)` in
+  swivels on the seat. The full, short and coach classes need thirteen: standing-supine,
+  standing-prone, standing-kneeling, standing-seated, supine-prone,
+  prone-supine, prone-kneeling, prone-seated, supine-kneeling,
+  kneeling-supine, supine-seated, seated-supine, seated-kneeling
+  (`figure.test.ts` walks the full class; `figure-bridges.test.ts` also
+  walks the short class and coach-valid subsets). `bridgeFor(from, to)` in
   `data/motion` reads them; `motionUrls()` precaches them. The worker precaches
   sprites into `yoga-motion-v1` alongside the voice clips (`main.tsx`
   re-sends the list on `controllerchange` so an upgraded worker learns new
@@ -466,7 +468,7 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   class never mixes renderers; checked posture by posture against the
   sprites in `docs/live-figure-rollout.md`) gets the rig in class mode;
   `Pacer` warms the rig chunks (`components/rigPreload.ts`) and starts
-  `preloadRigData` (a readiness promise) for every posture + the eight
+  `preloadRigData` (a readiness promise) for every posture + the thirteen
   bridges as the page opens and again on Begin; class mode never moves
   its figure onto a sheet that has not loaded — it HOLDS the current rig
   pose until the sheet arrives (`rigFallback.ts holdUntilLoaded`; a sheet

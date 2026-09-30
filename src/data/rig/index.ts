@@ -58,7 +58,7 @@ export function loadRigData(id: string): Promise<RigData> {
 /**
  * Start loading these sheets and resolve once every one has settled (a
  * sheet that fails is left to the figure's own fallback). Class mode starts
- * this for the whole program and the eight bridges as soon as the pacer
+ * this for the whole program and every bridge as soon as the pacer
  * page opens, so a skip rarely has to wait — and when it does, the class
  * figure holds its pose until the sheet arrives (`holdUntilLoaded`).
  */
