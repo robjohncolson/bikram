@@ -13,7 +13,12 @@ from pathlib import Path
 _spec = importlib.util.spec_from_file_location('_library_lib', Path(__file__).resolve().parent / '_lib.py')
 L = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(L)
-L.begin('parsva_halasana')
+L.begin('parsva-halasana', skeleton='library')
+
+_ispec = importlib.util.spec_from_file_location('_library_inversion', Path(__file__).resolve().parent / '_inversion.py')
+I = importlib.util.module_from_spec(_ispec)
+_ispec.loader.exec_module(I)
+I.configure(L)
 
 # +X is the mannequin's left (README): a positive swing carries the legs to its left
 SWING = 0.65
@@ -59,6 +64,8 @@ POSTURE = L.check({
          'notice': ['lower-back', 'hips', 'core', 'breath']},
         {'label': 'Back to centre', 'pose': CENTRE, 'hold': 4, 'view': 'quarter', 'palms': 'back', 'notice': ['hamstrings']},
         # ends rolling down onto the back; the loop's return to stage 0 lays it flat
+        {'label': 'Hands off back', 'pose': I.release_back(L, CENTRE), 'hold': 3, 'notice': ['wrists']},
+        {'label': 'Arms out', 'pose': L.plough(arms='apart'), 'hold': 3, 'notice': ['shoulders']},
         {'label': 'Slide down', 'pose': L.rolling_down(), 'hold': 6, 'notice': ['core', 'neck', 'breath']},
     ],
 })

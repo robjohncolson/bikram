@@ -12,7 +12,7 @@ export const parsvaHalasana: LibraryAsana = {
     { text: 'Bring the legs back through the centre.', stage: 4 },
     { text: 'On an exhale, take them to the right, in line with the head, for the same time.', stage: 5 },
     { text: 'Return them to the centre.', stage: 6 },
-    { text: 'Slide down slowly and rest.', stage: 7 },
+    { text: 'Slide down slowly and rest.', stage: 9 },
   ],
   hold: 'Half a minute on each side (p. 99).',
   cautions: [...SHOULDERSTAND_LINEAGE, ...PLOUGH_LINEAGE],

@@ -14,7 +14,11 @@ from pathlib import Path
 _spec = importlib.util.spec_from_file_location('_library_lib', Path(__file__).resolve().parent / '_lib.py')
 L = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(L)
-L.begin('salamba_sarvangasana_i')
+L.begin('salamba-sarvangasana-i', skeleton='library')
+
+_ispec = importlib.util.spec_from_file_location('_library_inversion', Path(__file__).resolve().parent / '_inversion.py')
+I = importlib.util.module_from_spec(_ispec)
+_ispec.loader.exec_module(I)
 
 LIE = L.LIE
 LEGS_UP = L.legs_up()
@@ -48,6 +52,7 @@ POSTURE = L.check({
         {'label': 'Lie down', 'pose': LIE, 'hold': 4, 'notice': ['breath']},
         {'label': 'Legs up', 'pose': LEGS_UP, 'hold': 5, 'notice': ['core']},
         {'label': 'Hips up', 'pose': ROLL, 'hold': 5, 'notice': ['core']},
+        {'label': 'Hands lifted', 'pose': I.release_back(L, HANDS), 'hold': 3, 'notice': ['wrists']},
         {'label': 'Hands to the back', 'pose': HANDS, 'hold': 5, 'palms': 'back', 'notice': ['wrists', 'shoulders']},
         {'label': 'Shoulderstand', 'pose': UP, 'hold': 12, 'palms': 'back', 'guides': GUIDES, 'ghost': GHOST,
          'notice': ['neck', 'shoulders', 'upper-back', 'breath']},

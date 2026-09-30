@@ -12,7 +12,12 @@ from pathlib import Path
 _spec = importlib.util.spec_from_file_location('_library_lib', Path(__file__).resolve().parent / '_lib.py')
 L = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(L)
-L.begin('supta_konasana')
+L.begin('supta-konasana', skeleton='library')
+
+_ispec = importlib.util.spec_from_file_location('_library_inversion', Path(__file__).resolve().parent / '_inversion.py')
+I = importlib.util.module_from_spec(_ispec)
+_ispec.loader.exec_module(I)
+I.configure(L)
 
 SPREAD = 0.72
 
@@ -27,8 +32,8 @@ def wide(hold_toes=True):
         for side in 'LR':
             ankle, knee = at[f'ankle.{side}'], at[f'knee.{side}']
             sh = at[f'shoulder.{side}']
-            # the book's hands hold the big toes; this rig's arms are a hand
-            # short of its feet, so the grip is the lowest point of the shin
+            # The longer library arms still stop short of the big toes.
+            # Place the grip at the lowest point of the shin
             # the fingers reach (the steps offer the shins for the same reason),
             # taken from below and outside: an arm along the inside of the
             # leg lies in the shin (the clearance check)

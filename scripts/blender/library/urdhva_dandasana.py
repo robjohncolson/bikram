@@ -14,7 +14,7 @@ from pathlib import Path
 _spec = importlib.util.spec_from_file_location('_library_lib', Path(__file__).resolve().parent / '_lib.py')
 L = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(L)
-L.begin('urdhva_dandasana')
+L.begin('urdhva-dandasana', skeleton='library')
 
 UP = L.headstand()
 # the legs level: a staff held out from the hips, the hips drawn back over

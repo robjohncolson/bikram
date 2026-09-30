@@ -12,7 +12,12 @@ from pathlib import Path
 _spec = importlib.util.spec_from_file_location('_library_lib', Path(__file__).resolve().parent / '_lib.py')
 L = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(L)
-L.begin('karnapidasana')
+L.begin('karnapidasana', skeleton='library')
+
+_ispec = importlib.util.spec_from_file_location('_library_inversion', Path(__file__).resolve().parent / '_inversion.py')
+I = importlib.util.module_from_spec(_ispec)
+_ispec.loader.exec_module(I)
+I.configure(L)
 
 
 def knees_to_ears():
@@ -61,6 +66,7 @@ POSTURE = L.check({
     'stages': [
         {'label': 'Lie down', 'pose': L.LIE, 'hold': 4, 'notice': ['breath']},
         {'label': 'Shoulderstand', 'pose': L.shoulderstand(), 'hold': 5, 'palms': 'back', 'notice': ['neck', 'shoulders']},
+        {'label': 'Hands off back', 'pose': I.release_back(L, L.shoulderstand()), 'hold': 3, 'notice': ['wrists']},
         {'label': 'Plough', 'pose': L.plough(arms='apart'), 'hold': 6, 'notice': ['hamstrings']},
         {'label': 'Knees to the ears', 'pose': EARS, 'hold': 12, 'hands': 'laced', 'ghost': GHOST,
          'notice': ['neck', 'upper-back', 'lower-back', 'breath']},

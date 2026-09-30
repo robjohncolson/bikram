@@ -17,7 +17,7 @@ from pathlib import Path
 _spec = importlib.util.spec_from_file_location('_library_lib', Path(__file__).resolve().parent / '_lib.py')
 L = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(L)
-L.begin('urdhva_padmasana_in_sarvangasana')
+L.begin('urdhva-padmasana-in-sarvangasana', skeleton='library')
 
 CHEST = (0, -1, 0)   # the shoulderstand's chest faces the chin
 FLEX = -10.0         # the thighs in line with the trunk, drawn a little back from the pelvis
@@ -68,6 +68,10 @@ POSTURE = L.check({
         {'label': 'Left foot out', 'pose': HALF, 'hold': 3, 'palms': 'back', 'view': 'quarter',
          'frame': HALF_FRAME, 'notice': ['hips']},
         {'label': 'Shoulderstand', 'pose': UP, 'hold': 3, 'palms': 'back', 'notice': ['neck', 'shoulders']},
+        {'label': 'Left foot in', 'pose': L.mirror(HALF), 'hold': 4, 'palms': 'back', 'frame': HALF_FRAME},
+        {'label': 'Other lotus up', 'pose': L.mirror(LOTUS), 'hold': 12, 'palms': 'back', 'view': 'front', 'frame': L.INVERTED_LOTUS_FRAME},
+        {'label': 'Right foot out', 'pose': L.mirror(HALF), 'hold': 3, 'palms': 'back', 'frame': HALF_FRAME},
+        {'label': 'Shoulderstand', 'pose': UP, 'hold': 3, 'palms': 'back'},
         {'label': 'Slide down', 'pose': L.rolling_down(), 'hold': 5, 'notice': ['core', 'lower-back']},
         {'label': 'Lie down', 'pose': L.LIE, 'hold': 5, 'notice': ['neck', 'breath']},
     ],
