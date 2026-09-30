@@ -4,7 +4,7 @@ Read `CLAUDE.md` first (architecture + conventions; it is current). This file is
 newest-first log of where the work stands and what is still open.
 
 **Live**: https://bikram-chi.vercel.app · **Repo**: https://github.com/robjohncolson/bikram (PUBLIC
-since 2026-08-27) · `npm test` = 429 tests / 41 files, all green at `ec856bd` (2026-09-30); `npx oxlint` clean.
+since 2026-08-27) · `npm test` = 890 tests / 53 files, all green at `f6319cf` (2026-09-30); `npx oxlint` clean.
 **Deploys happen from GitHub on push to `main` via Vercel's Git integration**; the CLI token on
 this machine is expired.
 
@@ -12,27 +12,48 @@ this machine is expired.
 
 ## ▶ NEXT (resume here)
 
-1. **Robert's open decision — library arm proportions.** The rig's arms are too short for the
-   book's binds and clasps: 7–13 cm short of the wrist-clasps beyond the feet (paschimottanasana,
-   janu sirsasana, trianga), 22–35 cm short in the standing folds and upavistha konasana, 30 cm
-   in the bound lotus, 35–56 cm apart for the hands clasped behind (marichyasana I/II, ardha
-   matsyendrasana). Full table: `docs/library.md`. Options: (a) keep one figure (steps already
-   say what the figure holds, the book's technique in full); (b) a LIBRARY-ONLY skeleton with
-   longer arms — the 26 & 2 skeleton, sprites and parity fixtures untouched, but every library
-   sheet re-checked (a fan-out-sized pass). Do not change bone lengths until he decides.
-2. Warrior I's left side has no stage: both sides need 12 stages (Tadasana in/out, a feet-turn
-   stage per side). The 8-stage cap is only a convention (`library.test.ts` + library README);
-   raising it breaks nothing in code. Nine other library postures are one-sided for the same
-   reason. Robert to decide: raise to 12 for warrior I only, or all ten as a batch.
+1. **Robert's open decision — five one-crossing library sheets.** parvatasana, baddha-padmasana,
+   yoga-mudrasana, matsyasana, parsva-pindasana-in-sarvangasana show one leg-crossing; a safe
+   recross needs 20–32 stages (measured by the lotus/inversion agents; shortcuts clash or dip
+   through the floor). Recommended: keep the second crossing as an unbound step. Alternative:
+   a larger cap for these five.
+2. Behind-back binds (marichyasana I/II, ardha matsyendrasana, bound lotus) stay short even on the
+   longer arms: shoulder range, not length. Recorded in the steps; the reach table in
+   `docs/library.md` still carries the ORIGINAL rows plus the infrastructure pass's probe — the
+   family agents' new rows are in their reports, not yet merged into the table.
 3. Lineage notes the reviewers flagged but left: the pregnancy notes are a reading of p. 40,
    the p. 59 boat note is also applied to paripurna navasana, a few cautions read as facts.
-4. Not in the library on purpose: `savasana` (a 26 & 2 id; ids are never shared), the four
-   pranayama entries and dhyana (not asanas).
+4. Wind-Removing: one set or two — Robert has not said; left as it is.
+5. Not device-tested: iOS interruptions, multi-tab worker behaviour, Kapalbhati's half-beat
+   pulses on a phone speaker. A class on a real phone is the next honest check.
+6. Not in the library on purpose: `savasana` (a 26 & 2 id), the four pranayama entries and dhyana.
 
 Workflow that built this (Robert's): spec → Opus 5.5 agent implements → Codex (gpt-6-astra,
 cross-agent runner, `--task-type review --read-only`) reviews → fix → commit, push, Ops status
 (`send.py … --ref bikram`). Parallel work: one agent per family in its own git worktree, never
 editing shared files (`scripts/blender/library/README.md` says who owns what), merged by hand.
+
+---
+
+## ✔ 2026-09-30 (evening) — LONGER ARMS, BOTH SIDES, FACE-DOWN RESTS, KAPALBHATI THAT COUNTS (`f6319cf`, pushed)
+
+Robert's decisions (2026-09-30): a library-only skeleton with longer arms; the spine series rests
+face-down; the class stays ~90 (it already compiles to ~87 + 2); do NOT soften benefit claims;
+Kapalbhati's second set doubles the pulses. All by Codex (gpt-6-astra) in parallel worktrees,
+Codex-reviewed three times, fixed, integrated by Claude:
+- SKELETON: opt-in `library` variant (upper arm 31.5 / forearm 26 / hand 15 cm; span 168→179 cm),
+  every one of the 56 sheets migrated by six family agents (`docs/library-arms-fanout-spec.md`);
+  cap 12; warrior I, parsvottanasana, trianga, marichyasana I, the five twists and others show
+  both sides; padmasana, siddhasana, urdhva padmasana, pindasana both crossings. The 26 & 2
+  skeleton, sprites and fixtures byte-identical; the five library Blender fixtures now read
+  frozen original inputs (`src/rig/fixtures/inputs/`). Every finishing step binds to the stage
+  showing its completed position (`finishing-steps.test.ts`).
+- CLASS: prone rests between the sets of Cobra, Locust, Full Locust, Bow (savasana + sit-up only
+  after Bow), Locust's second set in three parts, 4 clips regenerated. Thirteen bridges now
+  (prone-kneeling, prone-seated, standing-kneeling/prone/seated added) so the short class and
+  coach programs never cut. Kapalbhati: 60 pulses a set, second set two per beat, tempo never
+  changed, one pulse clock shared by sound and figure, pauses keep every pulse, paused skips
+  reset cleanly.
 
 ---
 
