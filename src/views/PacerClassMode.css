@@ -6,12 +6,13 @@
 .cm {
   position: fixed;
   inset: 0;
+  height: 100dvh;
   z-index: 100;
-  overflow: hidden;
+  overflow-y: auto;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
-  padding: max(16px, env(safe-area-inset-top)) 20px max(16px, env(safe-area-inset-bottom));
+  padding: max(16px, env(safe-area-inset-top)) max(20px, env(safe-area-inset-right)) max(16px, env(safe-area-inset-bottom)) max(20px, env(safe-area-inset-left));
   background: radial-gradient(120% 90% at 50% 0%, var(--cm-bg-top) 0%, var(--cm-bg) 60%);
   color: var(--cm-text);
   text-align: center;
@@ -258,7 +259,7 @@
   width: min(560px, 86vw);
   height: 3px;
   border-radius: 999px;
-  background: rgb(242 233 220 / 0.14);
+  background: var(--cm-track);
   overflow: hidden;
 }
 
@@ -282,6 +283,8 @@
 }
 
 .cm-controls button {
+  min-height: 48px;
+  min-width: 48px;
   padding: 8px 16px;
   border-radius: 999px;
   border: 1px solid var(--cm-line);
@@ -346,4 +349,20 @@
   .cm-figure .figure-rig-layer--ghost {
     transition: none;
   }
+}
+
+/* Keep the figure beside its cues when the phone lies across the mat. */
+@media (orientation: landscape) and (max-height: 560px) {
+  .cm {
+    gap: 6px;
+    padding-block: max(8px, env(safe-area-inset-top)) max(8px, env(safe-area-inset-bottom));
+  }
+
+  .cm-name { font-size: 20px; }
+  .cm-sanskrit { font-size: 14px; }
+  .cm-mid { flex-direction: row; justify-content: center; gap: 24px; }
+  .cm-readout { min-height: 0; max-width: 60%; gap: 4px; }
+  .cm-bottom { gap: 6px; }
+  .cm-next { font-size: 13px; }
+  .cm-breaths { max-width: 100%; gap: 5px; }
 }

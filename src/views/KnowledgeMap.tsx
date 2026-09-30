@@ -455,6 +455,7 @@ export function KnowledgeMap() {
                 return (
                   <g key={node.id} {...nodeProps(node, p)}>
                     <title>{`${node.label} — ${fmtPct(p)} · ${band(p)}`}</title>
+                    <rect className="km-hit" x={x - 16} y={TR_Y - 16} width={32} height={32} />
                     <path
                       className="km-shape"
                       d={`M ${x} ${TR_Y - TR_S} L ${x + TR_S} ${TR_Y} L ${x} ${TR_Y + TR_S} L ${x - TR_S} ${TR_Y} Z`}
@@ -470,6 +471,7 @@ export function KnowledgeMap() {
                 return (
                   <g key={node.id} {...nodeProps(node, p)}>
                     <title>{`#${node.order} ${node.label} — ${fmtPct(p)} · ${band(p)}`}</title>
+                    <rect className="km-hit" x={x - 16} y={ID_Y - 16} width={32} height={32} />
                     <circle className="km-shape" cx={x} cy={ID_Y} r={ID_R} fill={fillFor(p)} />
                     <text className="km-order" x={x} y={ID_Y + ID_R + 15.5} textAnchor="middle">
                       {node.order}
