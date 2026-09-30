@@ -1,3 +1,4 @@
+import { STUDY } from '../features';
 import { useMemo, useRef, useState } from 'react';
 import type { CSSProperties, KeyboardEvent } from 'react';
 import { Link } from 'react-router-dom';
@@ -280,10 +281,10 @@ export function KnowledgeMap() {
     <div className="page km">
       <div className="container">
         <header className="km-head">
-          <Link to="/train" className="km-back">
+          {STUDY && <Link to="/train" className="km-back">
             <IconBack />
             <span>Trainer</span>
-          </Link>
+          </Link>}
           <p className="eyebrow">Knowledge map</p>
           <h1 className="km-title">The sequence as a living structure.</h1>
           <p className="km-lede text-soft">
@@ -333,10 +334,10 @@ export function KnowledgeMap() {
                 starts to glow from the bottom up.
               </span>
             </p>
-            <Link to="/train" className="km-cta">
+            {STUDY && <Link to="/train" className="km-cta">
               Start a review
               <IconGo />
-            </Link>
+            </Link>}
           </div>
         )}
 
@@ -572,10 +573,10 @@ export function KnowledgeMap() {
               </div>
             )}
 
-            <Link className="km-poselink km-drill" to={`/train?drill=${selNode.id}`}>
+            {STUDY && <Link className="km-poselink km-drill" to={`/train?drill=${selNode.id}`}>
               {isLeaf ? 'Drill this now' : 'Drill the weakest pieces'}
               <IconGo />
-            </Link>
+            </Link>}
 
             {selNode.kind === 'identity' && selPose && (
               <Link className="km-poselink" to={`/pose/${selPose.id}`}>

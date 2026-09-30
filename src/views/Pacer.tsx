@@ -71,6 +71,9 @@ import { PacerClassMode } from './PacerClassMode';
 import { CoachDebrief } from './CoachDebrief';
 import { COACH_PROGRAM_ID, loadCoachProgram, saveCoachProgram, validateProposal } from '../coach';
 import { classFigurePosition, stopClassPlayback, segmentSettings, segmentBeatPhase, rehearsalDelay, eligibleHandoff, practicedSpan, guardClassUnload, shouldReorient, practiceSaveMessage } from './pacerLifecycle';
+import { STUDY } from '../features';
+import { TonightCard } from '../components/TonightCard';
+import { studyRehearsal } from '../navigation';
 import './Pacer.css';
 
 const STORAGE_KEY = 'yoga-pacer-v1';
@@ -255,7 +258,12 @@ export function Pacer() {
     }
   }, [search]);
   const [settings, setSettings] = useState<PacerSettings>(restoreSettings);
-  const [cues, setCues] = useState<CuePrefs>(restoreCues);
+  const [savedCues, setCues] = useState<CuePrefs>(restoreCues);
+  const cues = useMemo(() => ({ ...savedCues, rehearse: studyRehearsal(savedCues.rehearse) }), [savedCues]);
+  const [settingsOpen, setSettingsOpen] = useState(() => {
+    try { return localStorage.getItem('yoga-class-settings-open-v1') === 'true'; }
+    catch { return false; }
+  });
   const [voices, setVoices] = useState<VoiceChoice[]>([]);
   const [running, setRunning] = useState(false);
   const pulsePausedAt = useRef(0);
@@ -601,11 +609,11 @@ export function Pacer() {
 
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...settings, cues }));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ ...settings, cues: savedCues }));
     } catch {
       // storage unavailable — the pacer still works, it just won't remember
     }
-  }, [settings, cues]);
+  }, [settings, savedCues]);
 
   // Cue prefs feed tickClass through a ref; a mid-class change also rebuilds
   // the active track's events but keeps the stored budget/left, so the
@@ -799,6 +807,8 @@ export function Pacer() {
           t.tagName === 'SELECT' ||
           t.tagName === 'TEXTAREA' ||
           t.tagName === 'BUTTON' ||
+          t.tagName === 'SUMMARY' ||
+          t.tagName === 'A' ||
           t.isContentEditable)
       ) {
         return;
@@ -853,7 +863,7 @@ export function Pacer() {
     const streak = practiceStreak(journal, now);
     const tstore = loadStore(now);
     const shaky =
-      Object.keys(tstore.kcs).length === 0
+      !STUDY || Object.keys(tstore.kcs).length === 0
         ? []
         : poses
             .slice(0, -1)
@@ -871,10 +881,6 @@ export function Pacer() {
   if (classRun.phase === 'idle') {
     classBody = (
       <div className="pc-class-idle">
-        <p className="pc-class-lede text-soft">
-          Each posture holds for its class time, counted in beats — slow the tempo and the whole
-          class slows with it.
-        </p>
         <div className="pc-programs" role="group" aria-label="Class program">
           {programs.map((pr) => (
             <button
@@ -888,8 +894,8 @@ export function Pacer() {
               }}
             >
               <span className="pc-program-head">
-                <span className="pc-program-name">{pr.name}</span>
-                <span className="pc-program-min">{programMinutes(pr, settings.bpm, settings.beatsPerBar)} min</span>
+                <span className="pc-program-name">{pr.id === COACH_PROGRAM_ID ? "Coach?s build" : pr.name}</span>
+                <span className="pc-program-min">~{programMinutes(pr, settings.bpm, settings.beatsPerBar)} min</span>
               </span>
               <span className="pc-program-blurb">{pr.blurb}</span>
             </button>
@@ -899,47 +905,6 @@ export function Pacer() {
           {program.name} ≈ <strong>{classMinutes} min</strong> at {settings.bpm} BPM, then two
           minutes of final savasana.
         </p>
-        {idleInfo && (idleInfo.last || idleInfo.shaky.length > 0) && (
-          <p className="pc-class-last text-soft">
-            {idleInfo.last && idleInfo.ago !== null && (
-              <>
-                Last class{' '}
-                {idleInfo.ago === 0 ? 'today' : idleInfo.ago === 1 ? 'yesterday' : `${idleInfo.ago} days ago`}
-                {' — '}
-                {idleInfo.last.program === 'short'
-                  ? 'the short class'
-                  : idleInfo.last.fromOrder === 1 && idleInfo.last.toOrder === poses.length
-                    ? 'the whole class'
-                    : `postures ${idleInfo.last.fromOrder}–${idleInfo.last.toOrder}`}
-                , ≈{Math.max(1, Math.round(idleInfo.last.pacedSeconds / 60))} min
-                {idleInfo.last.rehearsed &&
-                  idleInfo.last.handoffs !== undefined &&
-                  idleInfo.last.recalled !== undefined && (
-                    <>
-                      , {idleInfo.last.recalled} of {idleInfo.last.handoffs} hand-offs recalled
-                    </>
-                  )}
-                .{' '}
-                {idleInfo.streak > 1 && <>{idleInfo.streak} days of practice running. </>}
-              </>
-            )}
-            {idleInfo.shaky.length > 0 && (
-              <>
-                Listen for the hand-off{idleInfo.shaky.length > 1 ? 's' : ''} into{' '}
-                {idleInfo.shaky.map((p, i) => (
-                  <span key={p.id}>
-                    {i > 0 && ' and '}
-                    <strong>
-                      #{p.order} {p.englishName}
-                    </strong>
-                  </span>
-                ))}
-                {' — '}
-                {idleInfo.shaky.length > 1 ? 'your shakiest' : 'your shakiest one'}.
-              </>
-            )}
-          </p>
-        )}
         <div className="pc-class-startrow">
           <label className="pc-class-from" htmlFor="pc-from">
             Start from
@@ -969,7 +934,7 @@ export function Pacer() {
         <p className="text-soft">
           ≈ {Math.max(1, Math.round(classRun.pacedSeconds / 60))} minutes of paced breathing.
         </p>
-        <RehearsalDebrief handoffs={classRun.handoffs} />
+        {STUDY && <RehearsalDebrief handoffs={classRun.handoffs} />}
         <CoachDebrief
           program={programRef.current}
           beatsPerBar={settings.beatsPerBar}
@@ -1197,14 +1162,29 @@ export function Pacer() {
     <div className="page">
       <div className="container">
         <header className="pc-hero">
-          <p className="eyebrow">Breath pacer</p>
-          <h1 className="pc-title">A metronome for the breath</h1>
+          <p className="eyebrow">Practice</p>
+          <h1 className="pc-title">Make room for your practice</h1>
           <p className="pc-lede text-soft">
-            The default is 60 BPM in six-beat bars — six counts in, six counts out, five breaths a
-            minute: the pace of the opening Pranayama. At 60 BPM every count is one second.
+            Choose a class, settle into your breath, and begin.
           </p>
         </header>
 
+        <section className="card pc-class" aria-label="Choose a class">
+          {classBody}
+        </section>
+        {classRun.phase === 'idle' && <>
+          <p className="pc-class-last text-soft">
+            {idleInfo?.last ? `Last class ${idleInfo.ago === 0 ? 'today' : idleInfo.ago === 1 ? 'yesterday' : `${idleInfo.ago} days ago`} · ${Math.max(1, Math.round(idleInfo.last.pacedSeconds / 60))} min` : 'Your first class begins here.'}
+            {' · '}{idleInfo?.streak ?? 0} day{idleInfo?.streak === 1 ? '' : 's'} of practice in a row
+          </p>
+          {STUDY && !!idleInfo?.shaky.length && <p className="text-soft">Listen for the hand-offs into {idleInfo.shaky.map((p) => p.englishName).join(' and ')}.</p>}
+        </>}
+        <details className="card pc-settings" open={settingsOpen} onToggle={(event) => {
+          const open = event.currentTarget.open;
+          setSettingsOpen(open);
+          try { localStorage.setItem('yoga-class-settings-open-v1', String(open)); } catch { /* optional preference */ }
+        }}>
+          <summary>Class settings</summary>
         <div className="pc-grid">
           <section
             className="card pc-stage"
@@ -1340,12 +1320,6 @@ export function Pacer() {
           </section>
         </div>
 
-        <section className="card pc-class">
-          <div className="pc-class-head">
-            <p className="eyebrow">Class pacer</p>
-            <h2 className="pc-card-title">Pace the class</h2>
-          </div>
-          {classBody}
           <div className="pc-cues">
             {speechSupported() || clipsAvailable() ? (
               <>
@@ -1409,14 +1383,14 @@ export function Pacer() {
                         />
                         Technique cue at the start
                       </label>
-                      <label className="pc-cue-check">
+                      {STUDY && <label className="pc-cue-check">
                         <input
                           type="checkbox"
                           checked={cues.rehearse}
                           onChange={(e) => applyCues({ rehearse: e.target.checked })}
                         />
                         Rehearsal — recall each posture before it&rsquo;s announced
-                      </label>
+                      </label>}
                     </div>
                   </div>
                 )}
@@ -1428,7 +1402,8 @@ export function Pacer() {
               </p>
             )}
           </div>
-        </section>
+        </details>
+        {classRun.phase === 'idle' && <TonightCard bpm={settings.bpm} beatsPerBar={settings.beatsPerBar} onChoose={(pr) => { setProgram(pr); setStartIdx(0); document.getElementById('pc-from')?.focus(); }} />}
 
         <p className="pc-kbd text-faint">
           <kbd>Space</kbd> start / pause · <kbd>[</kbd> <kbd>]</kbd> tempo −2 / +2 ·{' '}

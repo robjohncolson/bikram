@@ -1,3 +1,4 @@
+import { STUDY } from '../features';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import type { ReactNode } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
@@ -443,7 +444,7 @@ function Landing({
                       : 'Nothing practiced yet. Every posture and hand-off starts at a 10% prior; answers move it.'}
                   </span>
                 </div>
-                <Link className="tr-map-link" to="/train/map">
+                {STUDY && <Link className="tr-map-link" to="/train/map">
                   <span className="tr-map-link-name">
                     See the knowledge map
                     <IconArrow />
@@ -451,7 +452,7 @@ function Landing({
                   <span className="tr-map-link-sub text-faint">
                     Every posture, transition, and arc as the engine sees it.
                   </span>
-                </Link>
+                </Link>}
               </div>
             </>
           )}

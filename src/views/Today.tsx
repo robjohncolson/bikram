@@ -1,3 +1,4 @@
+import { STUDY } from '../features';
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { setSkyEnabled, skyEnabled, todayLens } from '../sky';
@@ -90,8 +91,8 @@ function Lens({ lens, onDisable }: { lens: TodayLens; onDisable: () => void }) {
           </p>
           <p className="td-links">
             <Link to={`/pose/${potd.id}`}>Read the posture →</Link>
-            <Link to={`/train?drill=id:${potd.id}`}>Drill it →</Link>
-            <Link to={`/pace?from=${potd.order}`}>Class from here →</Link>
+            {STUDY && <Link to={`/train?drill=id:${potd.id}`}>Drill it →</Link>}
+            <Link to={`/?from=${potd.order}`}>Class from here →</Link>
           </p>
         </div>
         <PoseFigure pose={potd} size={110} />

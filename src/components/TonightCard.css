@@ -1,0 +1,10 @@
+﻿.practice-tonight {
+  margin-top: 20px;
+  padding: 20px 24px;
+  border-color: color-mix(in srgb, var(--ember) 30%, var(--border));
+  background: linear-gradient(to bottom right, var(--ember-soft), var(--bg-raised) 70%);
+}
+.practice-tonight h2 { margin: 6px 0; font-size: 24px; }
+.practice-tonight p { max-width: 65ch; }
+.practice-tonight-actions { display: flex; flex-wrap: wrap; gap: 12px; }
+.practice-tonight-actions:not(:empty) { margin-top: 16px; }

@@ -952,3 +952,14 @@
   background: var(--bg-sunken);
   opacity: 0.85;
 }
+
+.pc-settings { margin-top: 20px; padding: 0 24px; }
+.pc-settings > summary { padding: 16px 0; cursor: pointer; font-weight: 600; color: var(--text); }
+.pc-settings[open] { padding-bottom: 24px; }
+.pc-settings .pc-grid { margin-top: 8px; }
+.pc-program-head { width: 100%; }
+.pc-programs { grid-template-columns: repeat(auto-fit, minmax(min(220px, 100%), 1fr)); }
+@media (max-width: 560px) {
+  .pc-settings { padding-inline: 14px; }
+  .pc-settings .pc-controls { padding-inline: 14px; }
+}
