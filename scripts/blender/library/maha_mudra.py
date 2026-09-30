@@ -11,10 +11,8 @@ each side from behind its bent knee. Shape from the book's photograph; the
 stages are ours. The abdominal grip and the held breath are the work the
 figure cannot show (`notice`).
 
-The rig's compromise: the book asks for the bent knee at a right angle to
-the straight leg; here it comes about 65 degrees out (thigh and shin are
-the same length, so a knee further round cannot keep its heel at the
-perineum).
+The ankle sits outside the heel: the rolled foot brings the heel inward
+near the perineum while the bent thigh opens to a right angle.
 """
 import importlib.util
 from pathlib import Path
@@ -25,17 +23,28 @@ _spec.loader.exec_module(F)
 L = F.L
 L.begin('maha-mudra')
 
+HEEL = (0.12, -0.17, 0.075)   # ankle target; the rolled heel lies 6 cm further inward
+
+
+def open_knee(pose, straight_side):
+    side = F.OTHER[straight_side]
+    F.heel_in(pose, side, ankle=HEEL)
+    # Turn the thigh outward so the knee bends above the mat on the way in.
+    L.roll(pose, {f'thigh.{side}': -90 * F.SX[side]})
+    return L.foot_sole(pose, side, (-F.SX[side], 0, 0.15))
+
 
 def knee_in(straight_side):
-    return F.heel_rest(F.one_bent(straight_side), straight_side)
+    return F.heel_rest(open_knee(F.one_bent(straight_side, heel=HEEL), straight_side), straight_side)
 
 
 def toe(straight_side, bowed):
     """The big toe hooked by both hands, arms straight, the back long; the
     head up (`bowed` False) or lowered into the chin lock."""
-    pose = F.one_bent(straight_side)
+    pose = F.one_bent(straight_side, heel=HEEL)
     neck, head = (95, 150) if bowed else (34, 8)
     F.trunk(pose, 36, 48, 62, neck, head, x=F.SX[straight_side] * 0.1)
+    open_knee(pose, straight_side)
     F.clavicles(pose, fwd=0.75, down=0.15)
     return F.both_hands_on(pose, straight_side, where=0.12, prefix=f"{'seal' if bowed else 'toe'} ")
 
@@ -46,7 +55,7 @@ POSTURE = L.check({
     'id': 'library:maha-mudra',
     'position': {'start': 'seated', 'end': 'seated'},
     'view': 'quarter-back',
-    'frame': {'center_z': 0.44, 'scale': 1.3},
+    'frame': {'center_z': 0.44, 'scale': 1.5},
     'transition': 10,
     'stages': [
         {'label': 'Staff', 'pose': SIT, 'hold': 3, 'notice': ['lower-back', 'breath']},

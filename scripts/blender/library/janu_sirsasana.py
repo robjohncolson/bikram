@@ -11,10 +11,9 @@ behind its bent knee (quarter-back for the right leg, quarter for the
 left), so both the knee out to the side and the long fold read. Shape from
 the book's photographs; the stages are ours.
 
-Two compromises, both the rig's: the bent knee reaches about 65 degrees
-out from the straight leg (thigh and shin are the same length here, so a
-knee pushed further back cannot also keep its heel at the perineum), and
-the hands hold the foot rather than clasping a wrist beyond it (the arms
+The ankle sits outside the heel: the rolled foot brings the heel inward
+near the perineum while the bent thigh opens beyond a right angle. The
+hands hold the foot rather than clasping a wrist beyond it (the arms
 are short of that; `_folds.SHORT`). A fold that went straight back to the
 staff dipped the bent knee through the mat on the way (the trunk and the
 leg turning at once), so each fold rises first with the heel still in.
@@ -28,23 +27,35 @@ _spec.loader.exec_module(F)
 L = F.L
 L.begin('janu-sirsasana')
 
+HEEL = (0.14, -0.17, 0.075)   # ankle target; the rolled heel lies 6 cm further inward
+
+
+def open_knee(pose, straight_side):
+    side = F.OTHER[straight_side]
+    F.heel_in(pose, side, ankle=HEEL)
+    # Turn the thigh outward so the knee bends above the mat on the way in.
+    L.roll(pose, {f'thigh.{side}': -90 * F.SX[side]})
+    return L.foot_sole(pose, side, (-F.SX[side], 0, 0.15))
+
 
 def knee_in(straight_side):
-    return F.heel_rest(F.one_bent(straight_side), straight_side)
+    return F.heel_rest(open_knee(F.one_bent(straight_side, heel=HEEL), straight_side), straight_side)
 
 
 def hold(straight_side):
     """The foot held in both hands, the back long and hollowed, head up."""
-    pose = F.one_bent(straight_side)
+    pose = F.one_bent(straight_side, heel=HEEL)
     F.trunk(pose, 36, 48, 66, 34, 8, x=F.SX[straight_side] * 0.1)
+    open_knee(pose, straight_side)
     F.clavicles(pose, fwd=0.75, down=0.15)
     return F.both_hands_on(pose, straight_side, prefix='hold ')
 
 
 def fold(straight_side):
     """The trunk down the straight leg, the head beyond its knee, elbows wide."""
-    pose = F.one_bent(straight_side)
+    pose = F.one_bent(straight_side, heel=HEEL)
     F.trunk(pose, 35, 42, 105, 105, 112, x=F.SX[straight_side] * 0.15)
+    open_knee(pose, straight_side)
     F.clavicles(pose, fwd=0.6, down=0.2)
     for h in 'LR':
         F.shortfall(pose, h, F.beyond_soles(pose, straight_side), f'the book: wrist clasped beyond the {straight_side} foot, {h} hand')
@@ -57,7 +68,7 @@ POSTURE = L.check({
     'id': 'library:janu-sirsasana',
     'position': {'start': 'seated', 'end': 'seated'},
     'view': 'quarter-back',   # the right-side work: the bent left knee and the long fold both read
-    'frame': {'center_z': 0.44, 'scale': 1.3},
+    'frame': {'center_z': 0.44, 'scale': 1.5},
     'transition': 10,
     'stages': [
         {'label': 'Staff', 'pose': SIT, 'hold': 3, 'notice': ['lower-back', 'breath']},
