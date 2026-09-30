@@ -22,7 +22,7 @@ _spec = importlib.util.spec_from_file_location('_library_folds', Path(__file__).
 F = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(F)
 L = F.L
-L.begin('upavistha-konasana')
+L.begin('upavistha-konasana', skeleton='library')
 
 WIDE = 1.2   # each leg ~50 degrees out from straight ahead: as wide as the rig's frame and reach allow
 
@@ -74,7 +74,7 @@ def forward(pose, label):
     return pose
 
 
-SHIN_AT = 0.8   # how far down the shin the palms rest
+SHIN_AT = 0.72   # how far down the shin the palms rest
 
 
 # the head down to the mat, the back rounded

@@ -15,12 +15,12 @@ _spec = importlib.util.spec_from_file_location('_library_seated', Path(__file__)
 S = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(S)
 L = S.L
-L.begin('dandasana')
+L.begin('dandasana', skeleton='library')
 
 Y = 0.40   # the seat along the mat: the side view centres the whole L of the body
 
 # the side view of a long sitting: a little wider than SEATED_FRAME
-FRAME = {'center_z': 0.42, 'scale': 1.4}
+FRAME = {'center_z': 0.42, 'scale': 1.55}
 
 
 def sitting(round_back=False):

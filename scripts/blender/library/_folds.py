@@ -11,8 +11,7 @@ the side the camera pivots on the Z axis, and the hips behind and the hands
 at the feet in front must both stay inside the square. `FOLD_FRAME` is that
 side view.
 
-REACH. The rig's arms are a hand short of what the book asks of a deep fold
-(the wrists clasped beyond the soles). `reach` never asks a limb for more
+REACH. Each sheet measures the requested grip on its selected skeleton. `reach` never asks a limb for more
 than it has: a wrist target beyond the arm is pulled back along its line to
 the arm's full length, and the shortfall is kept in `SHORT` (printed only
 with FOLDS_REPORT=1, so a clean module stays silent).
@@ -212,15 +211,15 @@ def palms_down(pose, back=0.0, out=0.17, only='LR'):
         if s not in only:
             continue
         hip = at[f'hip.{s}']
-        wrist = (hip[0] + sx * out, hip[1] + back, 0.11)
-        L.arm(pose, s, wrist, (sx, 0.5, 0), n((sx * 0.1, -0.5, -1)))
+        wrist = (hip[0] + sx * out, hip[1] + back, L.WRIST_Z)
+        L.arm(pose, s, wrist, (sx, 0.5, 0), L.flat_hand((0, -1, 0)))
     return pose
 
 
 HEEL = (0.06, -0.17, 0.075)   # a heel drawn in to the perineum (the left leg's ankle; mirrored)
 SPLAY = 0.1                   # the straight leg turned a little out, clear of the bent foot
 INNER_GAP = 0.02              # the far hand a little off the inner edge of the foot…
-INNER_AROUND = -45            # …and up on its instep side
+INNER_AROUND = 15            # …and up on its instep side
 
 
 def one_bent(straight_side, heel=HEEL):
@@ -241,7 +240,7 @@ def heel_rest(pose, straight_side):
 
 def both_hands_on(pose, foot, where=0.09, hint_down=-0.5, prefix=''):
     """Both hands on one straight leg's foot: the near hand on its outer
-    edge, the far hand just off the inner edge on the instep side (the
+    edge, the far hand just off the inner edge toward the sole (the
     trunk's travel between two such stages carries the far wrist on an arc
     that would otherwise pass through the foot — the clearance check)."""
     for h, hx in SIDES:

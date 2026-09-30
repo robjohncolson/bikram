@@ -10,13 +10,12 @@ export const triangaMukhaikapadaPaschimottanasana: LibraryAsana = {
     { text: 'Sit with both legs stretched straight in front of you.', stage: 0 },
     { text: 'Bend the right knee and lift the shin.', stage: 1 },
     { text: 'Take the right foot back beside the right hip, toes pointing back and resting on the mat, the inner calf against the outer thigh. Find your balance with the weight on the bent knee; keep the left foot and toes stretched and pointing forward.', stage: 2 },
-    { text: 'Hold the left foot with both palms on the sides of the sole. If you can, reach further and hook the wrists round the foot (the figure holds the sides of the foot: its arms do not reach round it); take two deep breaths.', stage: 3 },
+    { text: 'Hold the left foot with both palms on the sides of the sole. If you can, reach further and hook the wrists round the foot (the figure keeps the side grip: the low wrist target beyond the sole remains beyond its reach in this fold); take two deep breaths.', stage: 3 },
     { text: 'Bring the knees together, and breathing out, widen the elbows and draw the trunk forward to rest the forehead, then the nose, the lips and at last the chin on the left knee. Keep the left elbow off the mat and the trunk inclined a little toward the bent leg.', stage: 4 },
-    { text: 'Stay, breathing evenly.', stage: 4 },
     { text: 'Breathing in, lift the head and trunk and let go of the foot.', stage: 5 },
-    { text: 'Bring the right foot forward with the shin upright; then straighten the leg into the staff.', stage: 6 },
-    // the figure shows the right leg folded; the other side points at no stage
-    { text: 'Repeat with the left leg folded back beside the left hip and the right leg stretched, for the same time.' },
+    { text: 'Lift the right shin, straighten that leg, then lift the left shin to change sides.', stage: 7 },
+    { text: 'Set the left foot beside its hip and fold along the straight right leg. Stay for the same time, breathing evenly.', stage: 9 },
+    { text: 'Sit up and release the foot. Lift the left shin before extending the leg into the staff.', stage: 11 },
   ],
   hold: 'Half a minute to a minute on each side, breathing evenly (p. 75).',
   cautions: [

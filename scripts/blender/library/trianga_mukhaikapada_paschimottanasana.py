@@ -25,7 +25,7 @@ _spec = importlib.util.spec_from_file_location('_library_folds', Path(__file__).
 F = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(F)
 L = F.L
-L.begin('trianga-mukhaikapada-paschimottanasana')
+L.begin('trianga-mukhaikapada-paschimottanasana', skeleton='library')
 
 
 def legs(straight_side):
@@ -40,7 +40,7 @@ def hands(pose, straight_side):
     """The straight leg's palm on the mat beside its hip, the other hand on
     the folded thigh (a palm beside that hip would sit on the folded foot)."""
     F.palms_down(pose, out=0.24, only=straight_side)
-    return L.hand_on_thigh(pose, F.OTHER[straight_side], t=0.6, nrm=L.n((F.SX[F.OTHER[straight_side]] * 0.6, 0, 1)), gap=0.03)
+    return L.hand_on_thigh(pose, F.OTHER[straight_side], t=0.35, nrm=L.n((F.SX[F.OTHER[straight_side]] * 0.6, 0, 1)), gap=0.03)
 
 
 def leg_back(straight_side):
@@ -87,6 +87,11 @@ POSTURE = L.check({
         {'label': 'Chin to knee', 'pose': fold('L'), 'hold': 12, 'notice': ['hamstrings', 'quads', 'breath']},
         {'label': 'Come up', 'pose': leg_back('L'), 'hold': 3, 'notice': ['breath']},
         {'label': 'Shin up', 'pose': KNEE_UP, 'hold': 3, 'notice': ['quads']},
+        {'label': 'Left shin up', 'pose': L.mirror(KNEE_UP), 'hold': 3, 'notice': ['quads']},
+        {'label': 'Left leg back', 'pose': leg_back('R'), 'hold': 4, 'notice': ['quads', 'feet']},
+        {'label': 'Right side fold', 'pose': fold('R'), 'hold': 12, 'notice': ['hamstrings', 'quads', 'breath']},
+        {'label': 'Rise on second side', 'pose': leg_back('R'), 'hold': 3, 'notice': ['breath']},
+        {'label': 'Left shin forward', 'pose': L.mirror(KNEE_UP), 'hold': 3, 'notice': ['quads']},
     ],
 })
 F.report()

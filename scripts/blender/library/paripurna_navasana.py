@@ -16,7 +16,7 @@ _spec = importlib.util.spec_from_file_location('_library_seated', Path(__file__)
 S = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(S)
 L = S.L
-L.begin('paripurna_navasana')
+L.begin('paripurna-navasana', skeleton='library')
 
 Y = 0.22            # the seat along the mat (the staff and the boat both stay in frame)
 RECLINE = 30        # degrees the trunk leans back from upright (the pelvis rolls back 50, the chest lifts to 22)

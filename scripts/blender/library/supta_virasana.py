@@ -16,12 +16,12 @@ _spec = importlib.util.spec_from_file_location('_library_seated', Path(__file__)
 S = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(S)
 L = S.L
-L.begin('supta_virasana')
+L.begin('supta-virasana', skeleton='library')
 
 KNEES = -0.50       # the knees on the mat: the seat and the lying body share the frame
 FRAME = {'center_z': 0.40, 'scale': 1.3}           # sitting: the camera close
 LYING = {'center_z': 0.40, 'scale': 1.5}           # the back on the mat
-REACH = {'center_z': 0.40, 'scale': 2.2}           # the arms over the head
+REACH = {'center_z': 0.40, 'scale': 2.4}           # the arms over the head
 
 # the hero: wrists on the knees
 HERO = S.hero_at(KNEES)

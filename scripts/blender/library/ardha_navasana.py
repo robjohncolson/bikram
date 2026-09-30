@@ -15,7 +15,7 @@ _spec = importlib.util.spec_from_file_location('_library_seated', Path(__file__)
 S = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(S)
 L = S.L
-L.begin('ardha_navasana')
+L.begin('ardha-navasana', skeleton='library')
 
 Y = 0.20            # the seat along the mat: the long low boat stays centred
 RECLINE = 48        # the trunk back from upright (the pelvis rolls back 62, the chest 40)
