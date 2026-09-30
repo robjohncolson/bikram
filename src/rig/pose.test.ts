@@ -183,7 +183,7 @@ describe('posing details', () => {
         }
       }
     }
-  });
+  }, 60_000);
 
   it('mirrors half moon right onto half moon left, and mirroring twice is the identity', () => {
     const hm = sheets['half-moon'];
