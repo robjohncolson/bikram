@@ -4,7 +4,7 @@ Read `CLAUDE.md` first (architecture + conventions; it is current). This file is
 newest-first log of where the work stands and what is still open.
 
 **Live**: https://bikram-chi.vercel.app · **Repo**: https://github.com/robjohncolson/bikram (PUBLIC
-since 2026-08-27) · `npm test` = 890 tests / 53 files, all green at `f6319cf` (2026-09-30); `npx oxlint` clean.
+since 2026-08-27) · `npm test` = 901 tests / 55 files, all green at `b3f6e9c` (2026-09-30); `npx oxlint` clean.
 **Deploys happen from GitHub on push to `main` via Vercel's Git integration**; the CLI token on
 this machine is expired.
 
@@ -12,26 +12,43 @@ this machine is expired.
 
 ## ▶ NEXT (resume here)
 
-1. **Robert's open decision — five one-crossing library sheets.** parvatasana, baddha-padmasana,
-   yoga-mudrasana, matsyasana, parsva-pindasana-in-sarvangasana show one leg-crossing; a safe
-   recross needs 20–32 stages (measured by the lotus/inversion agents; shortcuts clash or dip
-   through the floor). Recommended: keep the second crossing as an unbound step. Alternative:
-   a larger cap for these five.
+1. **Robert tests a class on his Galaxy S24 (Android Chrome, installed to the home screen).**
+   Watch: wake lock, voice + Kapalbhati half-beat pulses on the speaker, locking the phone for a
+   posture or two (catch-up), class mode in portrait and landscape.
 2. Behind-back binds (marichyasana I/II, ardha matsyendrasana, bound lotus) stay short even on the
    longer arms: shoulder range, not length. Recorded in the steps; the reach table in
    `docs/library.md` still carries the ORIGINAL rows plus the infrastructure pass's probe — the
    family agents' new rows are in their reports, not yet merged into the table.
 3. Lineage notes the reviewers flagged but left: the pregnancy notes are a reading of p. 40,
    the p. 59 boat note is also applied to paripurna navasana, a few cautions read as facts.
-4. Wind-Removing: one set or two — Robert has not said; left as it is.
-5. Not device-tested: iOS interruptions, multi-tab worker behaviour, Kapalbhati's half-beat
-   pulses on a phone speaker. A class on a real phone is the next honest check.
+4. Wind-Removing stays at two sets (Claude recommended, Robert asked; the short class trims it).
+5. Robert uses ANDROID (Galaxy S24, Chrome) — iOS paths are secondary. Multi-tab worker behaviour
+   is tested with node fakes only.
 6. Not in the library on purpose: `savasana` (a 26 & 2 id), the four pranayama entries and dhyana.
 
 Workflow that built this (Robert's): spec → Opus 5.5 agent implements → Codex (gpt-6-astra,
 cross-agent runner, `--task-type review --read-only`) reviews → fix → commit, push, Ops status
 (`send.py … --ref bikram`). Parallel work: one agent per family in its own git worktree, never
 editing shared files (`scripts/blender/library/README.md` says who owns what), merged by hand.
+
+---
+
+## ✔ 2026-09-30 (night) — ANDROID UI, BOTH CROSSINGS, THE TIMELINE TELLS THE TRUTH (`b3f6e9c`, pushed)
+
+- RECROSS (Robert: "b"): parvatasana, baddha padmasana (30 stages), yoga mudrasana, matsyasana (32)
+  and parsva pindasana (21) show both leg-crossings, one leg at a time; `RECROSS_SHEETS` /
+  `libraryStageCap` allow 32 for exactly these five, 12 stays the rule.
+- ANDROID (Robert's Galaxy S24, Chrome; 678 measured states incl. Samsung Internet UA and a Pixel 7):
+  48 px coarse-pointer tap targets (knowledge-map nodes via hit rects), 12 px text floor, class
+  mode on 100dvh + safe areas with a landscape side-by-side layout, scroll-padding under the
+  header, viewport-fit=cover, color-scheme meta, a real maskable icon
+  (`scripts/make-maskable-icon.py`), manifest id/shortcuts, zero installability errors
+  (`src/styles/android.test.ts`). Body-map regions stay small (their named buttons are 48 px).
+- TIMELINE: minute marks and totals come from the compiled class (`buildPoseTrack`, 60 BPM) —
+  min 87, matching Tonight's card (was the authored 64); the closing links sit in the text column.
+- Codex review: one P3 (double scroll offset on the library family links), fixed.
+- LESSON (memory `worktree-junction-trap`): unlink worktree node_modules junctions BEFORE
+  `git worktree remove` — it followed one and emptied the real node_modules (npm ci restored it).
 
 ---
 
