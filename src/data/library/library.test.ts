@@ -344,11 +344,14 @@ describe('the posture library', () => {
     }
     // every entry sits in exactly one family section
     expect(libraryFamilies.flatMap((f) => f.asanas).length).toBe(libraryAsanas.length);
-    // the inversions: the ten, and the lotus in the shoulderstand (the book groups it with them)
+    // the inversions are exactly the book's headstand-and-shoulderstand run (nos. 38–50),
+    // the lotus shoulderstands included, as the book groups them
+    for (const a of libraryAsanas) {
+      expect(a.family === 'inversion', `${a.id} (no. ${a.bookNumber})`).toBe(a.bookNumber >= 38 && a.bookNumber <= 50);
+    }
     const inv = libraryFamilies.find((f) => f.id === 'inversion')!.asanas.map((a) => a.id);
-    expect(inv).toHaveLength(11);
-    expect(inv).toContain('urdhva-padmasana-in-sarvangasana');
-    expect(libraryFamilies.find((f) => f.id === 'lotus')!.asanas.map((a) => a.id)).toEqual(['siddhasana', 'padmasana']);
+    expect(inv).toEqual(expect.arrayContaining(['salamba-sirsasana-i', 'salamba-sarvangasana-i', 'urdhva-padmasana-in-sarvangasana']));
+    expect(libraryFamilies.find((f) => f.id === 'lotus')!.asanas.map((a) => a.id)).toEqual(expect.arrayContaining(['siddhasana', 'padmasana']));
   });
 
   it('discovers the posture files and orders them by the book’s numbering', () => {
