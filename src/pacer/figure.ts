@@ -19,7 +19,7 @@
  *   `situp` ones show the sit-up sheet (its whole cycle across the segment);
  * - `breath` segments follow the breath: Pranayama's Inhale/Exhale stages
  *   scrub with the metronome's phase, Kapalbhati's Pump/Release cycle once
- *   per beat;
+ *   per pulse;
  * - "right …"/"left …"/"both …" pick that side's deepest stage (the last
  *   non-neutral stage of its run — "Face the right foot → Head to knee"
  *   lands on Head to knee); when a sheet names no "right" stage the
@@ -108,7 +108,7 @@ export type FigureSegment = FigureBridge &
       entryOver?: number;
     }
   | { kind: 'breath'; motion: PoseMotion; inhale: number; exhale: number }
-  | { kind: 'pulse'; motion: PoseMotion; from: number; to: number }
+  | { kind: 'pulse'; motion: PoseMotion; from: number; to: number; pulsesPerBeat?: number; pulseStart?: number; pulseEnd?: number }
   );
 
 export interface FigurePlan {
@@ -266,7 +266,15 @@ export function figurePlan(pose: Pose, opts: FigurePlanOptions = {}): FigurePlan
     if (seg.kind === 'breath') {
       const b = breathSegment(own);
       if (b) {
-        out.push({ ...b, ...bridgeInto(b.motion) });
+        const span = opts.track?.spans[out.length];
+        const pulseStart = span ? (span.entryBeats + (opts.leadBeats ?? 0)) * (opts.beatSeconds ?? 1) : undefined;
+        out.push({ ...b, ...bridgeInto(b.motion), ...(b.kind === 'pulse' ? {
+          pulsesPerBeat: seg.pacer?.pulsesPerBeat,
+          pulseStart,
+          pulseEnd: pulseStart !== undefined && seg.pacer?.pulses !== undefined
+            ? pulseStart + seg.pacer.pulses / (seg.pacer.pulsesPerBeat ?? 1) * (opts.beatSeconds ?? 1)
+            : undefined,
+        } : {}) });
         lastStage = undefined;
         continue;
       }
@@ -609,12 +617,22 @@ export function breathFrame(
   return k >= frames.length ? mark : frames[k];
 }
 
-/** Pulse segment: one Pump→Release→Pump cycle per beat, the pump on the beat. */
+/** Pulse segment: one Pump→Release→Pump cycle per pulse, subdividing the beat. */
 export function pulseFrame(seg: Extract<FigureSegment, { kind: 'pulse' }>, beatProgress: number): number {
   const span = seg.to - seg.from;
   if (span <= 0) return seg.from;
-  const p = Math.min(0.999, Math.max(0, beatProgress));
+  const p = Math.min(0.999, pulseProgress(seg, beatProgress));
   return seg.from + Math.floor(p * span);
+}
+
+function pulseProgress(seg: Extract<FigureSegment, { kind: 'pulse' }>, progress: number): number {
+  const p = Math.min(1, Math.max(0, progress));
+  return p === 1 ? 1 : (p * (seg.pulsesPerBeat ?? 1)) % 1;
+}
+
+function pulseRest(seg: Extract<FigureSegment, { kind: 'pulse' }>, seconds: number): boolean {
+  return (seg.pulseStart !== undefined && seconds < seg.pulseStart) ||
+    (seg.pulseEnd !== undefined && seconds >= seg.pulseEnd);
 }
 
 /** Where the live class is inside one figure segment, in real seconds. */
@@ -650,6 +668,10 @@ export function figureFrameAt(seg: FigureSegment, clock: FigureClock, steps?: Fr
       const s = stepAt(b.steps, clock.seconds);
       if (s) return { motion: s.motion, frame: s.frame };
     }
+  }
+  if (seg.kind === 'pulse' && pulseRest(seg, clock.seconds)) {
+    const release = Math.min(seg.motion.stages.length - 1, stageOfFrame(seg.motion, seg.from) + 1);
+    return { motion: seg.motion, frame: seg.motion.stages[release].frame };
   }
   return seg.kind === 'breath'
     ? { motion: seg.motion, frame: breathFrame(seg, clock.breath?.phase, clock.breath?.progress ?? 0) }
@@ -760,7 +782,8 @@ export function figurePoseAt(seg: FigureSegment, clock: FigureClock, steps?: Fra
   }
   const pump = stageOfFrame(m, seg.from);
   const release = Math.min(m.stages.length - 1, pump + 1);
-  const p = Math.min(1, Math.max(0, clock.beatProgress));
+  if (pulseRest(seg, clock.seconds)) return hold(m, release);
+  const p = pulseProgress(seg, clock.beatProgress);
   return p < 0.5
     ? { motion: m, from: pump, to: release, t: smoothstep(p * 2) }
     : { motion: m, from: release, to: pump, t: smoothstep(p * 2 - 1) };

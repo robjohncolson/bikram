@@ -1,4 +1,5 @@
 import type { PacerSettings } from './timing';
+import type { PoseSegment } from '../data';
 import { beatSeconds, clampSettings, PACER_DEFAULTS } from './timing';
 
 /**
@@ -42,7 +43,13 @@ export interface BeatEvent {
 export interface BeatPhase {
   beat: number;
   bar: number;
+  pacer?: PoseSegment['pacer'];
+  /** Beats into the counted hold, negative during entry. */
+  pulseBeat?: number;
+  quiet?: boolean;
 }
+
+type MetronomeSettings = PacerSettings & Pick<NonNullable<PoseSegment['pacer']>, 'pulsesPerBeat' | 'pulses'>;
 
 export interface Metronome {
   /** create/resume audio and start ticking (call from a user gesture) */
@@ -50,8 +57,8 @@ export interface Metronome {
   stop(): void;
   readonly running: boolean;
   /** merge + clamp settings; takes effect from the next scheduled beat */
-  update(partial: Partial<PacerSettings>): void;
-  readonly settings: PacerSettings;
+  update(partial: Partial<MetronomeSettings>): void;
+  readonly settings: MetronomeSettings;
   /** current audio-clock time, for syncing visuals to BeatEvent.time */
   now(): number;
   /** gentle two-note chime (class pacer pose changes) */
@@ -78,7 +85,7 @@ export function createMetronome(
   let ctx: AudioContext | null = null;
   let master: GainNode | null = null;
   let timer: ReturnType<typeof setInterval> | null = null;
-  let settings: PacerSettings = { ...PACER_DEFAULTS };
+  let settings: MetronomeSettings = { ...PACER_DEFAULTS };
   let running = false;
   let quiet = false;
   let nextTime = 0;
@@ -86,6 +93,12 @@ export function createMetronome(
   let beat = 0;
   let bar = 0;
   let serial = 0;
+  let subdivision = 0;
+  let divisions = 1;
+  let stepSeconds = 1;
+  let pulseBeat = 0;
+  let pulseCap: number | undefined;
+  let currentBarBeats = settings.beatsPerBar;
   let phaseSource: ((serial: number) => BeatPhase | null) | null = null;
 
   /** Bring a suspended/interrupted context back while we are meant to run
@@ -124,10 +137,10 @@ export function createMetronome(
   }
 
   function tickSound(time: number, b: number, currentBar: number) {
-    const pulse = settings.beatsPerBar === 1;
+    const pulse = currentBarBeats === 1;
     if (b === 0) {
       if (pulse) {
-        blip(time, 560, 0.85, 0.09); // kapalbhati pulse: every beat firm
+        blip(time, 560, 0.85, 0.09); // kapalbhati: every pulse firm
       } else if (currentBar % 2 === 0) {
         blip(time, 780, 0.9, 0.14); // inhale bar opens high
       } else {
@@ -154,13 +167,29 @@ export function createMetronome(
     while (running && nextTime < now + LOOKAHEAD_S) {
       const late = now - nextTime > LATE_S || (resumed && nextTime < now);
       const ph = phaseSource?.(serial) ?? null;
-      if (ph) {
-        beat = ph.beat;
-        bar = ph.bar;
+      if (ph?.quiet !== undefined) quiet = ph.quiet;
+      if (subdivision === 0) {
+        if (ph) {
+          beat = ph.beat;
+          bar = ph.bar;
+        }
+        const pacer = ph?.pacer ?? settings;
+        currentBarBeats = pacer?.beatsPerBar ?? settings.beatsPerBar;
+        divisions = Math.max(1, Math.round(pacer?.pulsesPerBeat ?? 1));
+        pulseCap = pacer?.pulses;
+        pulseBeat = ph?.pulseBeat ?? serial;
+        stepSeconds = beatSeconds(settings.bpm) / divisions;
       }
-      if (!late && !quiet) tickSound(nextTime, beat, bar);
-      onBeat({ time: late ? now : nextTime, beat, bar, beatsPerBar: settings.beatsPerBar, late, serial });
-      nextTime += beatSeconds(settings.bpm);
+      const pulse = pulseBeat * divisions + subdivision;
+      const audible = pulseCap === undefined || (pulse >= 0 && pulse < pulseCap);
+      if (!late && !quiet && audible && (subdivision === 0 || nextTime >= now)) tickSound(nextTime, beat, bar);
+      if (subdivision === 0) {
+        onBeat({ time: late ? now : nextTime, beat, bar, beatsPerBar: currentBarBeats, late, serial });
+      }
+      nextTime += stepSeconds;
+      subdivision += 1;
+      if (subdivision < divisions) continue;
+      subdivision = 0;
       serial += 1;
       beat += 1;
       if (beat >= settings.beatsPerBar) {
@@ -190,6 +219,7 @@ export function createMetronome(
       beat = 0;
       bar = 0;
       serial = 0;
+      subdivision = 0;
       clockOffset = wallNow() - ctx.currentTime;
       nextTime = ctx.currentTime + 0.12;
       schedule();
@@ -203,7 +233,8 @@ export function createMetronome(
       }
     },
     update(partial) {
-      settings = clampSettings({ ...settings, ...partial });
+      const merged = { ...settings, ...partial };
+      settings = { ...clampSettings(merged), pulsesPerBeat: merged.pulsesPerBeat, pulses: merged.pulses };
       if (master && ctx) {
         master.gain.setTargetAtTime(settings.muted ? 0 : settings.volume, ctx.currentTime, 0.02);
       }

@@ -1,4 +1,5 @@
-import { silenceVoice } from '../pacer';
+import type { PoseSegment } from '../data';
+import { phaseAtBeat, segmentAtBeat, silenceVoice } from '../pacer';
 import type { Metronome, WakeLock, PacerSettings, PoseTrack } from '../pacer';
 
 /** Rehearsal: beats between the hand-off chime and the announce. */
@@ -18,8 +19,20 @@ export function stopClassPlayback(
   clearPending();
 }
 
-export function segmentSettings(settings: PacerSettings, override?: number): PacerSettings {
-  return { ...settings, beatsPerBar: override ?? settings.beatsPerBar };
+export function segmentSettings(settings: PacerSettings, override?: PoseSegment['pacer']): Metronome['settings'] {
+  return { ...settings, ...override, pulsesPerBeat: override?.pulsesPerBeat, pulses: override?.pulses };
+}
+
+/** Address pulse counts from the hold, so entry, pause and catch-up cannot add pulses. */
+export function segmentBeatPhase(track: PoseTrack, atBeat: number) {
+  const ph = phaseAtBeat(track, atBeat);
+  const segment = segmentAtBeat(track, atBeat);
+  const span = segment ? track.spans[segment.index] : undefined;
+  const pacer = segment ? track.pose.segments?.[segment.index]?.pacer : undefined;
+  const pulseBeat = span ? atBeat - span.startBeat - span.entryBeats : 0;
+  const quiet = pacer?.pulses !== undefined &&
+    (pulseBeat < 0 || pulseBeat * (pacer.pulsesPerBeat ?? 1) >= pacer.pulses);
+  return { beat: ph.beatInBar, bar: ph.bar, pacer: pacer ?? { beatsPerBar: track.barBeats }, pulseBeat, quiet };
 }
 
 export function rehearsalDelay(rehearse: boolean, idx: number, from: number): number {

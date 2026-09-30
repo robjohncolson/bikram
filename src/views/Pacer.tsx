@@ -49,7 +49,7 @@ import type {
   VoiceChoice,
   WakeLock,
 } from '../pacer';
-import type { Pose } from '../data';
+import type { Pose, PoseSegment } from '../data';
 import { applyFigureFlag, figureRenderer, poses, preloadRigData, rigBridgeIds } from '../data';
 import {
   amendLastClass,
@@ -70,7 +70,7 @@ import { preloadRig } from '../components/rigPreload';
 import { PacerClassMode } from './PacerClassMode';
 import { CoachDebrief } from './CoachDebrief';
 import { COACH_PROGRAM_ID, loadCoachProgram, saveCoachProgram, validateProposal } from '../coach';
-import { stopClassPlayback, segmentSettings, rehearsalDelay, eligibleHandoff, practicedSpan, guardClassUnload, shouldReorient, practiceSaveMessage } from './pacerLifecycle';
+import { stopClassPlayback, segmentSettings, segmentBeatPhase, rehearsalDelay, eligibleHandoff, practicedSpan, guardClassUnload, shouldReorient, practiceSaveMessage } from './pacerLifecycle';
 import './Pacer.css';
 
 const STORAGE_KEY = 'yoga-pacer-v1';
@@ -299,7 +299,7 @@ export function Pacer() {
   /** The chosen opening posture has no rehearsal delay. */
   const classFromRef = useRef(0);
   const classStartedAtRef = useRef(0);
-  const segmentOverrideRef = useRef<number | undefined>(undefined);
+  const segmentOverrideRef = useRef<PoseSegment['pacer']>(undefined);
   const practicedRef = useRef(new Set<number>());
   const recallAttemptRef = useRef<number | undefined>(undefined);
   const handoffsRef = useRef(new Set<number>());
@@ -410,11 +410,11 @@ export function Pacer() {
   );
 
   /** Apply a segment's metronome override (or restore the user's setting). */
-  const applySegmentPacer = useCallback((key: string | null, beatsPerBar?: number) => {
+  const applySegmentPacer = useCallback((key: string | null, pacer?: PoseSegment['pacer']) => {
     if (segAppliedRef.current === key) return;
     segAppliedRef.current = key;
-    segmentOverrideRef.current = beatsPerBar;
-    metRef.current?.update(segmentSettings(settingsRef.current, beatsPerBar));
+    segmentOverrideRef.current = pacer;
+    metRef.current?.update(segmentSettings(settingsRef.current, pacer));
   }, []);
 
   /** The class is over: bell, silence, journal, done screen. */
@@ -481,7 +481,7 @@ export function Pacer() {
       }
       const segNow = track ? segmentAtBeat(track, beatIdx) : null;
       const segData = segNow ? track?.pose.segments?.[segNow.index] : undefined;
-      applySegmentPacer(segNow ? `${c.idx}:${segNow.index}` : `${c.idx}:-`, segData?.pacer?.beatsPerBar);
+      applySegmentPacer(segNow ? `${c.idx}:${segNow.index}` : `${c.idx}:-`, segData?.pacer);
       if (late) {
         stalledRef.current = true;
       } else {
@@ -566,16 +566,15 @@ export function Pacer() {
     m.setPhaseSource((serial) => {
       const a = anchorRef.current;
       const c = classRef.current;
-      if (!a || (c.phase !== 'running' && c.phase !== 'closing')) return null;
-      const t = a.beatIdx + (serial - a.serial);
-      if (a.track && t < a.track.totalBeats) {
-        const ph = phaseAtBeat(a.track, t);
-        return { beat: ph.beatInBar, bar: ph.bar };
+      if (c.phase === 'closing') return { beat: 0, bar: 0, quiet: true };
+      if (c.phase === 'paused' && segmentOverrideRef.current?.pulses !== undefined) {
+        return { beat: 0, bar: 0, quiet: true };
       }
-      // past the anchor's posture: the next one opens on an inhale
-      const u = a.track ? t - a.track.totalBeats : t;
-      const bpb = m.settings.beatsPerBar;
-      return { beat: u % bpb, bar: Math.floor(u / bpb) };
+      if (c.phase !== 'running') return null;
+      const track = trackRef.current;
+      if (!track) return null;
+      const t = a?.track?.pose === track.pose ? a.beatIdx + (serial - a.serial) : c.budget - c.left;
+      return segmentBeatPhase(track, Math.min(t, track.totalBeats - 1));
     });
     metRef.current = m;
     m.update(settingsRef.current);

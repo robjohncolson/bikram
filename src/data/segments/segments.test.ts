@@ -1,8 +1,9 @@
 import { describe, expect, it } from 'vitest';
 import { poses } from '../index';
 import { segmentsByPose } from './index';
-import { buildClassTrack, classMinutes, CLOSING_SECONDS } from '../../pacer/cues';
+import { buildClassTrack, buildPoseTrack, classMinutes, CLOSING_SECONDS } from '../../pacer/cues';
 import { FULL_CLASS } from '../../pacer/programs';
+import { BPM_MIN, BPM_MAX, beatSeconds } from '../../pacer/timing';
 import { poseGridSeconds } from '../../pacer/grid';
 
 /**
@@ -110,4 +111,25 @@ describe('segment metronome overrides', () => {
     const pranayama = poses.find((p) => p.id === 'pranayama')!;
     expect(pranayama.segments!.every((s) => s.pacer?.beatsPerBar === 6)).toBe(true);
   });
+});
+
+it('fits sixty pulses per set on the fixed class grid at every allowed tempo', () => {
+  const pose = poses.find((p) => p.id === 'kapalbhati')!;
+  const track = buildPoseTrack(pose, 60); // class beats stay fixed as the live BPM changes
+  for (let bpm = BPM_MIN; bpm <= BPM_MAX; bpm++) {
+    pose.segments!.forEach((seg, i) => {
+      const span = track.spans[i];
+      const beats = span.endBeat - span.startBeat - span.entryBeats;
+      const pacer = seg.pacer!;
+      expect(pacer.pulses).toBe(60);
+      expect(pacer.pulsesPerBeat).toBe(i + 1);
+      expect(seg.cue).toMatch(/sixty/i);
+      expect(seg.label).toContain(String(pacer.pulses));
+      expect(beats % track.breathBeats).toBe(0);
+      expect(pacer.pulses!).toBeLessThanOrEqual(beats * pacer.pulsesPerBeat!);
+      expect((beats - pacer.pulses! / pacer.pulsesPerBeat!) * beatSeconds(bpm)).toBe(6 * beatSeconds(bpm));
+    });
+  }
+  expect(pose.timing).toContain('60');
+  expect(pose.cues.join(' ')).toMatch(/second set goes faster/i);
 });

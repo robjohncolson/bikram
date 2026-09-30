@@ -172,7 +172,7 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   resolves; sides land on their run's deepest stage, bare sets on the
   climax, `rest` segments borrow the savasana sheet, `situp` the sit-up
   sheet, Pranayama scrubs Inhale/Exhale with the metronome's breath,
-  Kapalbhati pumps once per beat) and `figureFrameAt` answers the frame
+  Kapalbhati pumps once per PULSE: 60 a set, the second set two pulses a beat (`pacer.pulsesPerBeat`, capped by `pacer.pulses`; the tempo never changes)) and `figureFrameAt` answers the frame
   from seconds into the segment: entry transitions at sheet speed, setup
   stages held briefly, the target held to the segment's end. `PoseMotion`'s
   `frame` prop is the controlled mode; `PacerClassMode` extrapolates

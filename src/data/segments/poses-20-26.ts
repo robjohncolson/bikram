@@ -61,7 +61,7 @@ export const segments2026: Record<string, PoseSegment[]> = {
   ],
 
   kapalbhati: [
-    { kind: 'breath', label: 'First set — 60 exhalations', cue: 'Kneel tall, hands on the knees — sixty sharp exhalations, snap the belly in on every one.', seconds: 90, pacer: { beatsPerBar: 1 } },
-    { kind: 'breath', label: 'Second set — 60 exhalations', cue: 'Second set — a little faster. Sixty more.', seconds: 75, pacer: { beatsPerBar: 1 } },
+    { kind: 'breath', label: 'First set — 60 exhalations', cue: 'Kneel tall, hands on the knees — sixty sharp exhalations, snap the belly in on every one.', seconds: 66, pacer: { beatsPerBar: 1, pulsesPerBeat: 1, pulses: 60 } },
+    { kind: 'breath', label: 'Second set — 60 exhalations', cue: 'Second set — a little faster. Sixty more.', seconds: 36, pacer: { beatsPerBar: 1, pulsesPerBeat: 2, pulses: 60 } },
   ],
 };

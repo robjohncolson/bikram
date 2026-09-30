@@ -636,3 +636,27 @@ describe('continuous poses for the live rig', () => {
     expect(figurePoseAt(rest, { seconds: end, total: 20, beatProgress: 0 }, full).motion).toBe(rest.motion);
   });
 });
+
+it('pumps twice per beat in the second set and rests during entry and recovery', () => {
+  const kapalbhati = pose('kapalbhati');
+  const track = buildPoseTrack(kapalbhati, 60);
+  for (const beatSeconds of [0.5, 1, 2]) {
+    const plan = figurePlan(kapalbhati, { track, beatSeconds, leadBeats: 1 })!;
+    const seg = plan.segments[1];
+    if (seg.kind !== 'pulse') throw new Error('expected pulse segment');
+    const start = (track.spans[1].entryBeats + 1) * beatSeconds;
+    const clock = (beatProgress: number, seconds = start + beatProgress * beatSeconds) => ({
+      seconds, total: 100 * beatSeconds, beatProgress,
+    });
+    expect(figureFrameAt(seg, clock(0)).frame).toBe(seg.from);
+    expect(figureFrameAt(seg, clock(0.5)).frame).toBe(seg.from);
+    expect(figureFrameAt(seg, clock(0.25)).frame).toBe(figureFrameAt(seg, clock(0.75)).frame);
+    expect(figurePoseAt(seg, clock(0.25))).toEqual(figurePoseAt(seg, clock(0.75)));
+    expect(figurePoseAt(seg, clock(0))).toEqual(figurePoseAt(seg, clock(0.5)));
+    const release = seg.motion.stages.findIndex((s) => s.label === 'Release');
+    for (const seconds of [start - beatSeconds, start + 30 * beatSeconds, start + 35 * beatSeconds]) {
+      expect(figureFrameAt(seg, clock(0.25, seconds)).frame).toBe(seg.motion.stages[release].frame);
+      expect(figurePoseAt(seg, clock(0.25, seconds))).toEqual({ motion: seg.motion, from: release, to: release, t: 1 });
+    }
+  }
+});
