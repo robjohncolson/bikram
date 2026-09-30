@@ -32,6 +32,14 @@ const sheets = Object.fromEntries(
     .filter((d) => 'stages' in d)
     .map((d) => [d.id, d]),
 );
+/**
+ * The library sheets move on (the longer-arm skeleton, both sides); the
+ * Blender fixtures were rendered from the ORIGINAL sheets, frozen here as
+ * their inputs. The migrated sheets' parity lives in library-variant.test.ts.
+ */
+const frozen = Object.fromEntries(
+  Object.values(import.meta.glob<RigData>('./fixtures/inputs/*.json', { eager: true, import: 'default' })).map((d) => [d.id, d]),
+);
 
 /**
  * The pose the PRODUCTION path gives: held stages and ghosts through
@@ -40,7 +48,7 @@ const sheets = Object.fromEntries(
  * eases a frame.
  */
 function posed(f: Fixture): Solved {
-  const d = sheets[f.id];
+  const d = frozen[f.id] ?? sheets[f.id];
   if (f.kind === 'stage') return solve(applyStage(d.stages[f.stage!].pose));
   if (f.kind === 'ghost') return solve(ghostPose(d.stages[f.stage!]));
   return solve(sheetPose(d, f.from!, f.to!, smoothstep(f.s!)));

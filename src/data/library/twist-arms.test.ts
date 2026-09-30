@@ -7,7 +7,7 @@ import jatara from '../rig/library/jatara-parivartanasana.json';
 import marichi from '../rig/library/marichyasana-ii.json';
 import supta from '../rig/library/supta-padangusthasana.json';
 
-const sheets = [ardha, bharadvaja, jatara, marichi, supta] as RigData[];
+const sheets = [ardha, bharadvaja, jatara, marichi, supta] as unknown as RigData[];
 for (const sheet of sheets) {
   it(`${sheet.id}: library arms clear the held poses and both-side transitions`, () => {
     expect(sheet.skeleton).toBe('library');
