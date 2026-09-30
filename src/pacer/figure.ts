@@ -15,8 +15,8 @@
  *
  * Segment → stages, by label (no authoring needed; `figure.test.ts` checks
  * every authored segment resolves to a real stage):
- * - `rest` segments show the savasana sheet, `situp` ones the sit-up sheet
- *   (its whole cycle spread across the segment);
+ * - `rest` segments show the savasana sheet or stage zero of a prone sheet;
+ *   `situp` ones show the sit-up sheet (its whole cycle across the segment);
  * - `breath` segments follow the breath: Pranayama's Inhale/Exhale stages
  *   scrub with the metronome's phase, Kapalbhati's Pump/Release cycle once
  *   per beat;
@@ -273,7 +273,10 @@ export function figurePlan(pose: Pose, opts: FigurePlanOptions = {}): FigurePlan
     }
     let m = own;
     let targets: number[];
-    if (seg.kind === 'rest' && savasana) {
+    if (seg.kind === 'rest' && seg.orientation === 'prone') {
+      m = own.position?.start === 'prone' ? own : getPose('cobra')!.motion!;
+      targets = [0];
+    } else if (seg.kind === 'rest' && savasana) {
       m = savasana;
       targets = [climaxStage(m)];
     } else if (seg.kind === 'situp' && situp) {

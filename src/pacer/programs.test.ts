@@ -48,8 +48,8 @@ describe('class programs', () => {
       expect(segs.every((s) => !/^second set/i.test(s.label))).toBe(true);
       expect(segs.reduce((s, seg) => s + seg.seconds, 0)).toBe(pose.approxTotalSeconds);
     }
-    // a floor posture keeps its savasana and sit-up out of the first set
-    expect(firstSetOnly(byId('cobra')).segments!.map((s) => s.kind)).toEqual(['set', 'rest', 'situp']);
+    // a spine posture keeps its face-down rest after the first set
+    expect(firstSetOnly(byId('cobra')).segments!.map((s) => s.kind)).toEqual(['set', 'rest']);
     expect(firstSetOnly(byId('cobra')).approxTotalSeconds).toBe(55);
     expect(firstSetOnly(byId('half-moon')).approxTotalSeconds).toBe(240);
     // no second set authored: taken whole, same object

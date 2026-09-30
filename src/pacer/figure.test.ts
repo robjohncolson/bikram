@@ -105,24 +105,35 @@ describe('figurePlan', () => {
     }
   });
 
-  it('sends rests to the savasana sheet and sit-ups through the whole sit-up sheet', () => {
-    const cobra = pose('cobra'); // First set, savasana, sit-up, Second set, savasana, sit-up
-    const plan = figurePlan(cobra)!;
-    const rest = stagesSeg(cobra, 1);
-    expect(rest.motion).toBe(motion('savasana'));
-    expect(label(rest.motion, rest.targets[0])).toBe('Stillness');
-    const situp = stagesSeg(cobra, 2);
+  it('uses prone sheets for belly rests and preserves supine rests and sit-ups', () => {
+    for (const p of poses) {
+      const plan = figurePlan(p)!;
+      p.segments?.forEach((seg, i) => {
+        if (seg.kind !== 'rest') return;
+        const rest = stagesSeg(p, i);
+        if (seg.orientation === 'prone') {
+          expect(rest.motion.position?.start).toBe('prone');
+          expect(rest.targets).toEqual([0]);
+          expect(label(rest.motion, 0)).toBe('Lie prone');
+          const clock = { seconds: 29, total: 30, beatProgress: 0 };
+          expect(figureFrameAt(rest, clock).frame).toBe(rest.motion.stages[0].frame);
+          expect(figurePoseAt(rest, clock)).toMatchObject({ from: 0, to: 0 });
+        } else {
+          expect(rest.motion).toBe(motion('savasana'));
+        }
+      });
+      expect(plan.segments).toHaveLength(p.segments!.length);
+    }
+    const situp = stagesSeg(pose('bow'), 4);
     expect(situp.motion).toBe(motion('situp'));
     expect(situp.targets).toEqual([0, 1, 2, 3]);
-    // after lying down and sitting up, the second set re-enters from the start
-    const second = stagesSeg(cobra, 3);
-    expect(second.motion).toBe(cobra.motion);
+    const second = stagesSeg(pose('cobra'), 2);
     expect(label(second.motion, second.from)).toBe('Lie prone');
     // a same-sheet second set continues from where the first set left off
     const hm = stagesSeg(pose('half-moon'), 4);
     expect(label(hm.motion, hm.from)).toBe('Hands to feet');
     expect(label(hm.motion, hm.targets[0])).toBe('Right side');
-    expect(plan.segments.length).toBe(6);
+    expect(figurePlan(pose('cobra'))!.segments.length).toBe(4);
   });
 
   it('follows the breath in Pranayama and pulses in Kapalbhati', () => {
@@ -180,11 +191,11 @@ describe('segmentTimeline', () => {
     expect(hmSteps.some((s) => s.frame === hmM.frames - 1)).toBe(false); // no path back through the sheet's tail
     expect(hmSteps[hmSteps.length - 1]).toEqual({ motion: hmM, frame: hmM.stages[rightSide].frame, until: 36 });
     const cobra = pose('cobra');
-    const second = stagesSeg(cobra, 3); // Lie prone → Hands under shoulders → Lift, 20 s
+    const second = stagesSeg(cobra, 2); // Lie prone → Hands under shoulders → Lift, 20 s
     const steps = segmentTimeline(second, 20);
     expect(steps.some((s) => s.frame === second.motion.stages[1].frame)).toBe(true); // hands held as a setup
     expect(steps[steps.length - 1].until).toBe(20);
-    const situp = stagesSeg(cobra, 2);
+    const situp = stagesSeg(pose('bow'), 4);
     const st = segmentTimeline(situp, 12);
     const m = situp.motion;
     // each of the four stages ends its slice at a multiple of 3 s
@@ -287,9 +298,9 @@ describe('spoken walk-in moves', () => {
     const cobra = pose('cobra');
     const track = buildPoseTrack(cobra, 60);
     const plan = figurePlan(cobra, { track, beatSeconds: 1, leadBeats: 6, clipSeconds: () => 2 })!;
-    expect((plan.segments[1] as { moves?: unknown }).moves).toBeUndefined(); // savasana sheet
-    expect((plan.segments[2] as { moves?: unknown }).moves).toBeUndefined(); // sit-up sheet
-    expect((plan.segments[3] as { moves?: unknown }).moves).toBeUndefined(); // second set: no walk-in
+    expect((plan.segments[1] as { moves?: unknown }).moves).toBeUndefined(); // prone rest
+    expect((plan.segments[2] as { moves?: unknown }).moves).toBeUndefined(); // second set: no walk-in
+    expect((plan.segments[3] as { moves?: unknown }).moves).toBeUndefined(); // prone rest
   });
 });
 
@@ -329,17 +340,10 @@ describe('breath and pulse frames', () => {
 describe('hand-off bridges', () => {
   const bridge = (s: FigureSegment) => s.bridge?.position && `${s.bridge.position.start}-${s.bridge.position.end}`;
 
-  it('bridges cobra onto the front, into its rest, and onto the front again for the second set', () => {
-    const cobra = pose('cobra'); // First set, savasana, sit-up, Second set, savasana, sit-up
+  it('bridges onto the belly and stays prone through Cobra rests and its second set', () => {
+    const cobra = pose('cobra');
     const plan = figurePlan(cobra, { previous: motion('situp') })!;
-    expect(plan.segments.map(bridge)).toEqual([
-      'supine-prone',
-      'prone-supine',
-      undefined, // savasana → sit-up: both on the back
-      'supine-prone',
-      'prone-supine',
-      undefined,
-    ]);
+    expect(plan.segments.map(bridge)).toEqual(['supine-prone', undefined, undefined, undefined]);
     expect(plan.segments[0].bridge).toBe(bridgeFor('supine', 'prone'));
     // without a previous sheet the first segment has nothing to bridge from
     expect(figurePlan(cobra)!.segments[0].bridge).toBeUndefined();
@@ -353,12 +357,12 @@ describe('hand-off bridges', () => {
   });
 
   it('releases the held stage, plays the bridge, then the segment', () => {
-    const cobra = pose('cobra');
-    const rest = stagesSeg(cobra, 1);
+    const bow = pose('bow');
+    const rest = stagesSeg(bow, 3);
     const b = rest.bridge!;
-    const m = cobra.motion!;
-    // the first set held Lift: the release to Lower plays on the cobra sheet first
-    expect(rest.bridgeFrom).toEqual({ motion: m, stage: m.stages.findIndex((s) => s.label === 'Lift') });
+    const m = bow.motion!;
+    // The final Bow set lowers before rolling onto the back.
+    expect(rest.bridgeFrom).toEqual({ motion: m, stage: m.stages.findIndex((s) => s.label === 'Kick up') });
     const steps = segmentTimeline(rest, 20);
     const release = steps.filter((s) => s.motion === m);
     expect(release.length).toBeGreaterThan(0);
@@ -608,7 +612,7 @@ describe('continuous poses for the live rig', () => {
   });
 
   it("blends a bridge's frames between its own stages, and the release before it", () => {
-    const rest = stagesSeg(pose('cobra'), 1);
+    const rest = stagesSeg(pose('bow'), 3);
     const b = rest.bridge!;
     const { steps, end } = bridgeSteps(rest);
     const own = steps.filter((s) => s.motion === b);
@@ -622,7 +626,7 @@ describe('continuous poses for the live rig', () => {
       if (s.blend) expect(s.blend.to).toBe(s.blend.from + 1);
     }
     expect(travels(own).map((x) => x.blend.to)).toEqual(b.stages.slice(1).map((_, i) => i + 1));
-    // the release on the cobra sheet (Lift → Lower) blends too
+    // the release on the Bow sheet (Kick up → Lower) blends too
     const release = steps.filter((s) => s.motion !== b);
     expect(release.length).toBeGreaterThan(0);
     expect(release.every((s) => s.blend)).toBe(true);

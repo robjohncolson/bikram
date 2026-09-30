@@ -87,6 +87,8 @@ export type PoseCategory = 'breathing' | 'standing' | 'floor';
  * spoken cues all ride one clock.
  */
 export interface PoseSegment {
+  /** Rest position; omitted means supine. Prone rests stay on the belly without a sit-up. */
+  orientation?: 'supine' | 'prone';
   kind: 'side' | 'set' | 'rest' | 'situp' | 'breath';
   /** short display label, e.g. "First set — right leg" */
   label: string;
