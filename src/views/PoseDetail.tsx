@@ -1,7 +1,8 @@
 import { useEffect, useMemo } from 'react';
 import type { CSSProperties } from 'react';
 import { Link, useLocation, useParams } from 'react-router-dom';
-import { RIG_LIVE, applyFigureFlag, chakraById, figureRenderer, getNeighbors, getPose, hasRigData, muscleById } from '../data';
+import { RIG_LIVE, applyFigureFlag, chakraById, figureRenderer, getNeighbors, getPose, hasRigData, muscleById, poses } from '../data';
+import { NotFound } from './NotFound';
 import { band, loadStore, nodeP } from '../trainer';
 import type { ClassicalNote, MuscleId, Pose } from '../data';
 import { BodyMap } from '../components/BodyMap';
@@ -17,7 +18,7 @@ function TopLink({ pose, dir }: { pose: Pose; dir: 'prev' | 'next' }) {
     <Link
       to={`/pose/${pose.id}`}
       className={`pd-toplink pd-toplink--${dir}`}
-      aria-label={`${dir === 'prev' ? 'Previous' : 'Next'} posture: ${pose.englishName}`}
+      aria-label={`${dir === 'prev' ? 'Previous' : 'Next'} ${pose.category === 'breathing' ? 'item' : 'posture'}: ${pose.englishName}`}
     >
       {dir === 'prev' && <span aria-hidden>←</span>}
       <span className="pd-toplink-text">
@@ -34,12 +35,12 @@ function NavCard({ pose, dir }: { pose: Pose; dir: 'prev' | 'next' }) {
     <Link
       to={`/pose/${pose.id}`}
       className={`card pd-navcard pd-navcard--${dir}`}
-      aria-label={`${dir === 'prev' ? 'Previous' : 'Next'} posture: ${pose.englishName}`}
+      aria-label={`${dir === 'prev' ? 'Previous' : 'Next'} ${pose.category === 'breathing' ? 'item' : 'posture'}: ${pose.englishName}`}
     >
       <PoseFigure pose={pose} size={54} />
       <span className="pd-navcard-text">
         <span className="pd-navcard-label">
-          {dir === 'prev' ? '← Previous' : 'Next →'} · {pose.order} of 26
+          {dir === 'prev' ? '← Previous' : 'Next →'} · {pose.order} of {poses.length}
         </span>
         <span className="pd-navcard-name">{pose.englishName}</span>
       </span>
@@ -239,21 +240,7 @@ export function PoseDetail() {
     window.scrollTo(0, 0);
   }, [id]);
 
-  if (!pose) {
-    return (
-      <div className="page container pd-missing">
-        <p className="eyebrow">26 &amp; 2</p>
-        <h1>Posture not found</h1>
-        <p className="text-soft pd-missing-copy">
-          Nothing in the sequence lives at this address. The class runs from
-          posture 1, Standing Deep Breathing, to posture 26, Blowing in Firm.
-        </p>
-        <Link to="/" className="pd-missing-link">
-          ← Back to the sequence
-        </Link>
-      </div>
-    );
-  }
+  if (!pose) return <NotFound />;
 
   const { prev, next } = getNeighbors(pose);
 
@@ -294,7 +281,7 @@ export function PoseDetail() {
         <header className="pd-header">
           <div className="pd-header-copy">
             <p className="eyebrow">
-              Posture {pose.order} of 26 · {pose.category}
+              {pose.category === 'breathing' ? 'Item' : 'Posture'} {pose.order} of {poses.length} · {pose.category}
             </p>
             <h1 className="pd-title">{pose.englishName}</h1>
             <p className="pd-sanskrit">

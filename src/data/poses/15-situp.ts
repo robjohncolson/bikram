@@ -4,7 +4,7 @@ export const situp: Pose = {
   id: 'situp',
   order: 15,
   englishName: "Sit-Up",
-  sanskritName: "Pada-Hastasana (Sit-Up)",
+  sanskritName: "Pada-Hastasana",
   pronunciation: 'PAH-dah hahs-TAHS-ah-nah',
   category: 'floor',
   sets: 1,

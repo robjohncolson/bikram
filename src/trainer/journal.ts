@@ -48,6 +48,11 @@ export function dayKey(ts: number): string {
 const isNum = (v: unknown): v is number => typeof v === 'number' && Number.isFinite(v);
 const DAY_RE = /^\d{4}-\d{2}-\d{2}$/;
 
+function newerJournal(data: unknown): boolean {
+  return !!data && typeof data === 'object' && 'version' in data &&
+    typeof data.version === 'number' && data.version > 1;
+}
+
 function sanitize(data: unknown): Journal | null {
   if (!data || typeof data !== 'object') return null;
   const d = data as Partial<Journal>;
@@ -84,7 +89,12 @@ export function loadJournal(): Journal {
   try {
     const raw = window.localStorage.getItem(JOURNAL_KEY);
     if (raw) {
-      const j = sanitize(JSON.parse(raw));
+      const data: unknown = JSON.parse(raw);
+      if (newerJournal(data)) {
+        console.warn('Journal data was saved by a newer app. Saving is disabled until the app is updated.');
+        return emptyJournal();
+      }
+      const j = sanitize(data);
       if (j) return j;
     }
   } catch {
@@ -93,11 +103,19 @@ export function loadJournal(): Journal {
   return emptyJournal();
 }
 
-export function saveJournal(j: Journal): void {
+/** False means practice was not saved; a newer schema is never overwritten. */
+export function saveJournal(j: Journal): boolean {
   try {
+    const raw = window.localStorage.getItem(JOURNAL_KEY);
+    if (raw && newerJournal(JSON.parse(raw))) {
+      console.warn('Journal data was saved by a newer app. Saving is disabled until the app is updated.');
+      return false;
+    }
     window.localStorage.setItem(JOURNAL_KEY, JSON.stringify(j));
+    return true;
   } catch {
     /* storage unavailable — practice without a journal */
+    return false;
   }
 }
 
@@ -142,15 +160,16 @@ export function daysSince(ts: number, now: number): number {
  */
 export function practiceStreak(j: Journal, now: number): number {
   const days = new Set(j.days);
-  let cursor = now;
-  if (!days.has(dayKey(cursor))) {
-    cursor -= DAY_MS;
-    if (!days.has(dayKey(cursor))) return 0;
+  const cursor = new Date(now);
+  cursor.setHours(12, 0, 0, 0);
+  if (!days.has(dayKey(cursor.getTime()))) {
+    cursor.setDate(cursor.getDate() - 1);
+    if (!days.has(dayKey(cursor.getTime()))) return 0;
   }
   let streak = 0;
-  while (days.has(dayKey(cursor))) {
+  while (days.has(dayKey(cursor.getTime()))) {
     streak++;
-    cursor -= DAY_MS;
+    cursor.setDate(cursor.getDate() - 1);
   }
   return streak;
 }
