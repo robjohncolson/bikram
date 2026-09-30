@@ -19,5 +19,8 @@ export { MAX_ELEVATION, cameraAt, clampElevation, orbitBetween, stageCamera, wit
 export type { BodySegment } from './body';
 export { SKIN_FIT, SUBSURF_SHRINK, bodyRecipe, bodySegments, guideSegments, hingeBone, isLeaf, jointCenter, jointRadii, placeBone, placeJoint, radiusAlong, vertexRadii } from './body';
 export type { JointRecipe, Radii3, RimRecipe, TubeRecipe } from './body';
+export type { Clash } from './clearance';
+export type { ClearanceOptions } from './clearance';
+export { CLEARANCE_TOL, SOCKET_R, TRUNK_HOPS, clashes, hullPoints, pairRule, pieceNames } from './clearance';
 export { LOOP_REST, anchorToContacts, groundedSheetPose, liftToFloor, playAt, sheetPose, stageGhost, stagePose, stageStartAt } from './sheet';
 export type { SheetBlend } from './sheet';

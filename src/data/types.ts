@@ -308,6 +308,8 @@ export interface RigStage {
   notice?: NoticeRegion[];
   /** library sheets only: the palms carry the back here (contact-checked in Blender and in library.test.ts) */
   palms?: 'back';
+  /** library sheets only: the fingers lace here — the two hands' finger regions are then exempt from the clearance check (`src/rig/clearance.ts`) */
+  hands?: 'laced';
 }
 
 /**
@@ -360,8 +362,13 @@ export interface LineageNote {
   page: number;
 }
 
-/** Library families; the union grows as later families are added. */
-export type LibraryFamily = 'inversion';
+/**
+ * Library families, in the order `/library` shows them. The lotus
+ * shoulderstands belong to `inversion`, as the book groups them; `lotus`
+ * holds the crossed-leg seats (siddhasana, the lotus and the poses built
+ * on it).
+ */
+export type LibraryFamily = 'standing' | 'backbend' | 'seated' | 'lotus' | 'inversion' | 'twist';
 
 /**
  * One posture of the LIBRARY — the wider classical repertoire, a second

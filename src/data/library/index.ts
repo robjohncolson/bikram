@@ -6,6 +6,12 @@
  * Each entry is our own `LibraryAsana` (one file per posture) joined with
  * its facts from `classical/illustrated-index.json` by id — the Sanskrit
  * name, pages, photograph numbers, grade and roots are never duplicated.
+ *
+ * The posture files are DISCOVERED: every `./*.ts` here except this index,
+ * the shared notes (`common.ts`, `common-<family>.ts`) and the tests is
+ * loaded, and every export that is a `LibraryAsana` is an entry, ordered by
+ * the book's own numbering. Adding a posture is two new files (its content
+ * here, its rig module in `scripts/blender/library/`) and nothing shared.
  * Sutra ids resolve against `classical/sutras-index.json` (transliteration
  * and our topic label). Both JSON files land in the library's own chunk:
  * the routes are lazy, so the 26 & 2 never loads them.
@@ -14,16 +20,6 @@ import illustrated from '../classical/illustrated-index.json';
 import sutras from '../classical/sutras-index.json';
 import { getPose } from '../index';
 import type { LibraryAsana, LibraryFamily, NoticeRegion } from '../types';
-import { ekaPadaSarvangasana } from './eka-pada-sarvangasana';
-import { halasana } from './halasana';
-import { karnapidasana } from './karnapidasana';
-import { parsvaHalasana } from './parsva-halasana';
-import { parsvaikaPadaSarvangasana } from './parsvaika-pada-sarvangasana';
-import { salambaSarvangasanaI } from './salamba-sarvangasana-i';
-import { salambaSirsasanaI } from './salamba-sirsasana-i';
-import { setuBandhaSarvangasana } from './setu-bandha-sarvangasana';
-import { suptaKonasana } from './supta-konasana';
-import { urdhvaDandasana } from './urdhva-dandasana';
 
 /** The fixed `notice` vocabulary (the Blender helper's NOTICE, in the same order). */
 export const NOTICE_REGIONS: readonly NoticeRegion[] = [
@@ -46,6 +42,8 @@ export const noticeLabel = (r: NoticeRegion): string => r.replace('-', ' ');
 
 /** The book's facts for an entry, from the illustrated index. */
 export interface BookFacts {
+  /** the book's own number for the posture (its order) */
+  bookNumber: number;
   sanskrit: string;
   page: number;
   pdfPage: number;
@@ -66,22 +64,36 @@ const book = new Map((illustrated as IndexRow[]).map((r) => [r.romanised, r]));
 function join(a: LibraryAsana): LibraryEntry {
   const r = book.get(a.id);
   if (!r) throw new Error(`library: ${a.id} is not in the illustrated index`);
-  return { ...a, sanskrit: r.sanskrit, page: r.page, pdfPage: r.pdfPage, figures: r.figures, grade: r.grade, roots: r.roots };
+  return {
+    ...a,
+    bookNumber: r.bookNumber,
+    sanskrit: r.sanskrit,
+    page: r.page,
+    pdfPage: r.pdfPage,
+    figures: r.figures,
+    grade: r.grade,
+    roots: r.roots,
+  };
 }
 
-/** Every library posture, in the book's order within each family. */
-export const libraryAsanas: LibraryEntry[] = [
-  salambaSirsasanaI,
-  urdhvaDandasana,
-  salambaSarvangasanaI,
-  halasana,
-  karnapidasana,
-  suptaKonasana,
-  parsvaHalasana,
-  ekaPadaSarvangasana,
-  parsvaikaPadaSarvangasana,
-  setuBandhaSarvangasana,
-].map(join);
+const LIBRARY_FAMILIES: readonly LibraryFamily[] = ['standing', 'backbend', 'seated', 'lotus', 'inversion', 'twist'];
+
+/** A module export that is a posture entry (the shape, checked loosely; the tests check the rest). */
+function isAsana(v: unknown): v is LibraryAsana {
+  if (typeof v !== 'object' || v === null) return false;
+  const o = v as Partial<LibraryAsana>;
+  return typeof o.id === 'string' && LIBRARY_FAMILIES.includes(o.family as LibraryFamily) && Array.isArray(o.steps) && Array.isArray(o.sutras);
+}
+
+const postureModules = import.meta.glob<Record<string, unknown>>(['./*.ts', '!./index.ts', '!./common.ts', '!./common-*.ts', '!./*.test.ts'], {
+  eager: true,
+});
+
+/** Every library posture, in the book's order (its numbering). */
+export const libraryAsanas: LibraryEntry[] = Object.values(postureModules)
+  .flatMap((m) => Object.values(m).filter(isAsana))
+  .map(join)
+  .sort((a, b) => a.bookNumber - b.bookNumber);
 
 const byId = new Map(libraryAsanas.map((a) => [a.id, a]));
 
@@ -99,19 +111,40 @@ export interface LibraryFamilyInfo {
   asanas: LibraryEntry[];
 }
 
+/** Each family's heading and blurb, in the order `/library` shows them. */
 const FAMILY_TEXT: Record<LibraryFamily, { title: string; blurb: string }> = {
+  standing: {
+    title: 'Standing',
+    blurb: 'Poses built on the feet: the legs grow strong and steady, and the rest of the practice stands on them.',
+  },
+  backbend: {
+    title: 'Backbends',
+    blurb: 'The spine arched back, lying on the front or pushing up from the floor: the chest opens and the back grows supple.',
+  },
+  seated: {
+    title: 'Seated',
+    blurb: 'Sitting on the floor, the legs straight, spread or folded: forward bends and the long quiet stretches.',
+  },
+  lotus: {
+    title: 'Crossed legs',
+    blurb: 'The crossed-leg seats — siddhasana, the lotus, and the poses built on the lotus: the seats the book gives for breath practice and meditation.',
+  },
   inversion: {
     title: 'Inversions',
     blurb: 'The headstand and the shoulderstand, and the variations built on them. Learn them with a teacher; read the cautions first.',
   },
+  twist: {
+    title: 'Twists',
+    blurb: 'The spine turned about its own length, seated or lying: the trunk wrings and the back loosens.',
+  },
 };
 
-/** Families as page sections, each with its postures. */
-export const libraryFamilies: LibraryFamilyInfo[] = (Object.keys(FAMILY_TEXT) as LibraryFamily[]).map((f) => ({
+/** Families as page sections, in `FAMILY_TEXT` order, each with its postures (book order); empty families are left out. */
+export const libraryFamilies: LibraryFamilyInfo[] = LIBRARY_FAMILIES.map((f) => ({
   id: f,
   ...FAMILY_TEXT[f],
   asanas: libraryAsanas.filter((a) => a.family === f),
-}));
+})).filter((f) => f.asanas.length > 0);
 
 interface SutraRow {
   id: string;

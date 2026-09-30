@@ -29,13 +29,15 @@ def wide(hold_toes=True):
             sh = at[f'shoulder.{side}']
             # the book's hands hold the big toes; this rig's arms are a hand
             # short of its feet, so the grip is the lowest point of the shin
-            # the fingers reach (the steps offer the shins for the same reason)
+            # the fingers reach (the steps offer the shins for the same reason),
+            # taken from below and outside: an arm along the inside of the
+            # leg lies in the shin (the clearance check)
+            sx = 1 if side == 'L' else -1
             span = L.UPPER + L.FORE + L.HAND - 0.01
-            grip = next(g for g in (L.add(ankle, L.sub(knee, ankle), k / 50) for k in range(51))
-                        if L.dist(sh, g) <= span)
-            grip = L.add(grip, (0, 0, 0.05))
+            grip = next(g for g in (L.add(L.add(ankle, L.sub(knee, ankle), k / 50), (sx * 0.07, 0, -0.07))
+                                    for k in range(51)) if L.dist(sh, g) <= span)
             way = L.n(L.sub(grip, sh))
-            L.arm(pose, side, L.add(sh, way, L.dist(sh, grip) - L.HAND), (0, 0, 1), way)
+            L.arm(pose, side, L.add(sh, way, L.dist(sh, grip) - L.HAND), (sx, 0, 0), way)
     else:
         L.hands_on_back(pose)
         L.plough_legs(pose, spread=SPREAD)
@@ -48,11 +50,13 @@ TOES = wide()
 
 def reaching():
     """On the way from the back to the toes: the hands leave the back and the
-    straight arms rise over the chest before they reach down the legs (a
-    straight swing from the back to the shins would pass through the floor)."""
+    straight arms open out along the mat to the sides before they reach up
+    to the legs (a straight swing from the back to the shins would pass
+    through the floor; arms raised over the chest would pass through the
+    thighs)."""
     pose = wide(hold_toes=False)
     for side, sx in (('L', 1), ('R', -1)):
-        d = L.n((sx * 0.25, -0.35, 1))
+        d = L.n((sx, -0.35, -0.04))
         pose[f'upperarm.{side}'] = d
         pose[f'forearm.{side}'] = d
         pose[f'hand.{side}'] = d
@@ -80,7 +84,9 @@ POSTURE = L.check({
         {'label': 'Reach', 'pose': REACH, 'hold': 3, 'notice': ['shoulders']},
         {'label': 'Take hold', 'pose': TOES, 'hold': 12, 'guides': GUIDES,
          'notice': ['hamstrings', 'hips', 'upper-back', 'breath']},
-        {'label': 'Legs together', 'pose': L.plough(arms='back'), 'hold': 4, 'view': 'side', 'palms': 'back',
+        # back into the plough, the arms long on the mat (from the shins
+        # straight to the back, a forearm swings through the other)
+        {'label': 'Legs together', 'pose': L.plough(arms='apart'), 'hold': 4, 'view': 'side',
          'notice': ['core']},
         # ends sliding down onto the back; the loop's return to stage 0 lays it flat
         {'label': 'Slide down', 'pose': L.rolling_down(), 'hold': 6, 'view': 'side', 'notice': ['core', 'breath']},

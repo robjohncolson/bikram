@@ -1,11 +1,11 @@
 import { describe, expect, it } from 'vitest';
-import { SKIN_FIT, anchorToContacts, bodyRecipe, jointRadii, placeBone, placeJoint, applyStage, groundedSheetPose, liftToFloor, sheetPose, smoothstep, solve } from '../../rig';
+import { CLEARANCE_TOL, J, SKIN_EXTRA, SKIN_FIT, anchorToContacts, bodyRecipe, clashes, hullPoints, jointRadii, pairRule, pieceNames, placeBone, placeJoint, applyStage, groundedSheetPose, liftToFloor, sheetPose, smoothstep, solve, stageCamera } from '../../rig';
 import type { Solved, Vec3 } from '../../rig';
 import { rotate } from '../../rig/math';
 import illustrated from '../classical/illustrated-index.json';
 import sutras from '../classical/sutras-index.json';
 import { getPose } from '../index';
-import type { RigData } from '../types';
+import type { RigData, RigStagePose } from '../types';
 import { NOTICE_REGIONS, getLibraryAsana, libraryAsanas, libraryFamilies, libraryRigId, resolveLink, sourceLine, sutraInfo } from './index';
 
 /**
@@ -98,6 +98,51 @@ function hullLow(s: Solved): number {
 }
 
 const helper = import.meta.glob<string>('../../../scripts/blender/library/_lib.py', { eager: true, query: '?raw', import: 'default' });
+const hullPy = import.meta.glob<string>('../../../scripts/blender/library/_hull.py', { eager: true, query: '?raw', import: 'default' });
+/** Clashes the Python port (`_hull.py`) finds for a few poses (`_selftest.py --write`). */
+const clashFixtures = Object.values(
+  import.meta.glob<{ case: string; laced: boolean; pose: RigStagePose; clashes: [string, string, number][] }[]>(
+    '../../rig/clearance-fixtures/clashes-from-python.json',
+    { eager: true, import: 'default' },
+  ),
+)[0];
+
+/**
+ * The spec's step 1, for teeth: the old two-bone `leg()` with a knee hint,
+ * each ankle sent to the other groin (knees up and forward, the feet in the
+ * thighs). Directions as `_lib.leg` solved them.
+ */
+const NAIVE_LOTUS: RigStagePose = {
+  'pelvis.location': [0, 0.05, -0.86],
+  pelvis: [0, 0, 1],
+  'spine.lower': [0, 0, 1],
+  'spine.upper': [0, 0, 1],
+  'thigh.R': [-0.3297, -0.6251, 0.7075],
+  'shin.R': [0.7842, 0.3296, -0.5257],
+  'foot.R': [0.9535, 0.0953, 0.286],
+  'thigh.L': [0.449, -0.6205, 0.643],
+  'shin.L': [-0.9035, 0.2796, -0.3248],
+  'foot.L': [-0.9535, 0.0953, 0.286],
+};
+
+/** A foot swelling's world position in a solved pose (it rides the foot bone rigidly). */
+function footExtraAt(s: Solved, v: string, side: 'L' | 'R'): Vec3 {
+  const b = s[`foot.${side}`];
+  const r = rotate(b.q, sub(SKIN_EXTRA[v][0], J[`ankle.${side}`]));
+  return [b.head[0] + r[0], b.head[1] + r[1], b.head[2] + r[2]];
+}
+
+/** How far the heel spur and the ball swelling sit off the foot's axis along `facing` (both > 0: the sole faces it). */
+function soleSide(s: Solved, side: 'L' | 'R', facing: Vec3): [number, number] {
+  const f = s[`foot.${side}`];
+  const axis = unit(sub(f.tail, f.head));
+  const off = (k: string) => {
+    const p = sub(footExtraAt(s, `${k}.${side}`, side), f.head);
+    const d = dot(p, axis);
+    return dot(sub(p, [axis[0] * d, axis[1] * d, axis[2] * d]), facing);
+  };
+  return [off('heel'), off('ball')];
+}
 
 describe('the posture library', () => {
   it('pairs every library sheet with an entry, and every entry with a sheet', () => {
@@ -286,9 +331,31 @@ describe('the posture library', () => {
     }
   });
 
-  it('groups the ten inversions under one family', () => {
-    expect(libraryFamilies.map((f) => f.id)).toEqual(['inversion']);
-    expect(libraryFamilies[0].asanas).toHaveLength(10);
+  it('lists every family in its order, only when it has postures, each in the book’s order', () => {
+    const ORDER = ['standing', 'backbend', 'seated', 'lotus', 'inversion', 'twist'];
+    expect(libraryFamilies.map((f) => f.id)).toEqual(ORDER.filter((f) => libraryAsanas.some((a) => a.family === f)));
+    for (const f of libraryFamilies) {
+      expect(f.asanas.length, f.id).toBeGreaterThan(0);
+      expect(f.title.length, f.id).toBeGreaterThan(0);
+      expect(f.blurb.length, f.id).toBeGreaterThan(0);
+      const nums = f.asanas.map((a) => a.bookNumber);
+      expect(nums, f.id).toEqual([...nums].sort((a, b) => a - b));
+      for (const a of f.asanas) expect(a.family).toBe(f.id);
+    }
+    // every entry sits in exactly one family section
+    expect(libraryFamilies.flatMap((f) => f.asanas).length).toBe(libraryAsanas.length);
+    // the inversions: the ten, and the lotus in the shoulderstand (the book groups it with them)
+    const inv = libraryFamilies.find((f) => f.id === 'inversion')!.asanas.map((a) => a.id);
+    expect(inv).toHaveLength(11);
+    expect(inv).toContain('urdhva-padmasana-in-sarvangasana');
+    expect(libraryFamilies.find((f) => f.id === 'lotus')!.asanas.map((a) => a.id)).toEqual(['siddhasana', 'padmasana']);
+  });
+
+  it('discovers the posture files and orders them by the book’s numbering', () => {
+    const nums = libraryAsanas.map((a) => a.bookNumber);
+    expect(nums).toEqual([...nums].sort((a, b) => a - b));
+    expect(new Set(libraryAsanas.map((a) => a.id)).size).toBe(libraryAsanas.length);
+    expect(libraryAsanas.map((a) => a.id)).toEqual(expect.arrayContaining(['padmasana', 'siddhasana', 'halasana']));
   });
 
   it('never puts a joint through the floor, ghosts included', () => {
@@ -301,6 +368,165 @@ describe('the posture library', () => {
             expect(Math.min(b.head[2], b.tail[2]), `${id} #${i} ${st.label} ${what} ${bone}`).toBeGreaterThanOrEqual(-0.005);
           }
         }
+      });
+    }
+  });
+
+  it('keeps every limb out of every other in every held stage and ghost (the rendered hull)', () => {
+    let checked = 0;
+    for (const [id, d] of Object.entries(sheets)) {
+      d.stages.forEach((st, i) => {
+        for (const [what, pose] of [['pose', st.pose], ['ghost', st.ghost && { ...st.pose, ...st.ghost }]] as const) {
+          if (!pose) continue;
+          const c = clashes(solve(applyStage(pose)), CLEARANCE_TOL, { laced: st.hands === 'laced' });
+          expect(c.map((x) => `${x.a} / ${x.b} ${(x.depth * 100).toFixed(1)} cm`), `${id} #${i} ${st.label} ${what}`).toEqual([]);
+          checked++;
+        }
+      });
+    }
+    expect(checked).toBeGreaterThan(90);
+  });
+
+  it('keeps every limb out of every other on the way between stages (8 samples a transition, the path the library draws)', () => {
+    let worst = 0;
+    for (const [id, d] of Object.entries(sheets)) {
+      const n = d.stages.length;
+      for (let i = 0; i < n; i++) {
+        const j = (i + 1) % n;
+        for (let k = 1; k <= 8; k++) {
+          // a blend into or out of a laced stage keeps the fingers' exemption
+          const laced = d.stages[i].hands === 'laced' || d.stages[j].hands === 'laced';
+          const c = clashes(solve(groundedSheetPose(d, i, j, smoothstep(k / 9))), 0, { laced });
+          worst = Math.max(worst, c[0]?.depth ?? 0);
+          const deep = c.filter((x) => x.depth > CLEARANCE_TOL);
+          expect(deep.map((x) => `${x.a} / ${x.b} ${(x.depth * 100).toFixed(1)} cm`), `${id} ${d.stages[i].label} → ${d.stages[j].label} @${k}/9`).toEqual([]);
+        }
+      }
+    }
+    expect(worst).toBeLessThanOrEqual(CLEARANCE_TOL);
+  }, 180_000);
+
+  it('has teeth: the naive lotus (two-bone legs, each ankle sent to the other groin) fails the clearance check', () => {
+    const c = clashes(solve(applyStage(NAIVE_LOTUS)));
+    expect(c.length).toBeGreaterThan(0);
+    expect(c[0].depth).toBeGreaterThan(0.04);
+    expect(c.some((x) => x.a.startsWith('hip.') || x.b.startsWith('hip.'))).toBe(true);
+  });
+
+  it('exempts only by its named rules, and the rest pose is clean', () => {
+    expect(clashes(solve(applyStage({})), 0)).toEqual([]);
+    expect(pieceNames()).toContain('knee.L>ankle.L');
+    expect(pairRule('hip.L>knee.L', 'knee.L>ankle.L')).toBe('shared joint');
+    expect(pairRule('knee.L>ankle.L', 'heel.L')).toBe('shared joint');
+    expect(pairRule('pelvis>waist', 'chest>neck')).toBe('trunk neighbours');
+    expect(pairRule('head', 'chest')).toBe('trunk neighbours');
+    expect(pairRule('hip.L>knee.L', 'pelvis>waist')).toBe('hip socket');
+    expect(pairRule('hip.L', 'pelvis>hip.L')).toBe('shared joint');
+    expect(pairRule('fingers.L', 'palm.R>fingers.R')).toBe('laced hands');
+    // compared: trunk pieces far apart, the opposite hip, wrists and proximal palms, the other leg,
+    // the trunk above the pelvis, a heel against its own hip, a hand against a foot, two forearms
+    expect(pairRule('head', 'pelvis>waist')).toBeUndefined();
+    expect(pairRule('crown', 'waist>chest')).toBeUndefined();
+    expect(pairRule('hip.R', 'pelvis>hip.L')).toBeUndefined();
+    expect(pairRule('hip.R>knee.R', 'pelvis>hip.L')).toBeUndefined();
+    expect(pairRule('wrist.L', 'wrist.R')).toBeUndefined();
+    expect(pairRule('palm.L', 'fingers.R')).toBeUndefined();
+    expect(pairRule('wrist.L>palm.L', 'palm.R>fingers.R')).toBeUndefined();
+    expect(pairRule('knee.L>ankle.L', 'knee.R>ankle.R')).toBeUndefined();
+    expect(pairRule('hip.L>knee.L', 'waist>chest')).toBeUndefined();
+    expect(pairRule('hip.L', 'heel.L')).toBeUndefined();
+    expect(pairRule('palm.L', 'ankle.R')).toBeUndefined();
+    expect(pairRule('elbow.L>wrist.L', 'elbow.R>wrist.R')).toBeUndefined();
+  });
+
+  it('turns the crossed feet sole up: the heel spur and ball lie on the side the sole should face', () => {
+    const lotus = sheets['padmasana'].stages.find((x) => x.label === 'Lotus')!;
+    const up = solve(applyStage(lotus.pose));
+    for (const side of ['L', 'R'] as const) {
+      const [heel, ball] = soleSide(up, side, [0, 0, 1]);
+      expect(heel, `lotus ${side} heel`).toBeGreaterThan(0.02);
+      expect(ball, `lotus ${side} ball`).toBeGreaterThan(0.004);
+      const entry = lotus.pose[`foot.${side}`];
+      expect(typeof entry === 'object' && !Array.isArray(entry) && typeof entry.roll === 'number', `foot.${side} is rolled`).toBe(true);
+    }
+    // upside down the same crossing turns the soles to the chest's side (-Y)
+    const inv = sheets['urdhva-padmasana-in-sarvangasana'].stages.find((x) => x.label === 'Lotus up')!;
+    const s = solve(applyStage(inv.pose));
+    for (const side of ['L', 'R'] as const) {
+      const [heel, ball] = soleSide(s, side, [0, -1, 0]);
+      expect(heel, `inverted ${side} heel`).toBeGreaterThan(0.02);
+      expect(ball, `inverted ${side} ball`).toBeGreaterThan(0.004);
+    }
+    // the roll is what turns it: the same feet unrolled keep the sole elsewhere
+    const bare = { ...lotus.pose };
+    for (const side of ['L', 'R']) {
+      const e = bare[`foot.${side}`];
+      if (typeof e === 'object' && !Array.isArray(e)) bare[`foot.${side}`] = e.dir;
+    }
+    const flat = solve(applyStage(bare));
+    expect(Math.min(...soleSide(flat, 'L', [0, 0, 1]), ...soleSide(flat, 'R', [0, 0, 1]))).toBeLessThan(0);
+  });
+
+  it('keeps the Blender hull port on the measured skin (SKIN_FIT in _hull.py is the TypeScript one)', () => {
+    const src = Object.values(hullPy)[0];
+    const block = /SKIN_FIT = \{([\s\S]*?)\n\}/.exec(src);
+    expect(block).not.toBeNull();
+    const py = Object.fromEntries([...block![1].matchAll(/'([a-z]+)': \(([\d.]+), ([\d.]+)\)/g)].map((m) => [m[1], [Number(m[2]), Number(m[3])]]));
+    expect(py).toEqual(SKIN_FIT);
+  });
+
+  it('fails what the rules must not excuse: the head through the pelvis, a distal thigh through it, crossed wrists (laced or not)', () => {
+    const head = clashes(solve(applyStage({ 'spine.upper': [0, 0.02, -1], neck: [0, 0, -1], head: [0, 0, -1] })));
+    expect(head.some((c) => /head|crown/.test(c.a + c.b) && /pelvis|waist/.test(c.a + c.b)), 'head through the pelvis').toBe(true);
+    const thigh = clashes(solve(applyStage({ 'thigh.L': [-1, 0, 0.05], 'shin.L': [-1, 0, 0.05], 'foot.L': [-1, 0, 0.3] })));
+    const own = ['pelvis', 'pelvis>waist', 'pelvis>hip.L', 'waist'];
+    expect(thigh.some((c) => [c.a, c.b].includes('hip.L>knee.L') && (own.includes(c.a) || own.includes(c.b))), 'distal thigh through its own pelvis').toBe(true);
+    expect(thigh.some((c) => [c.a, c.b].includes('hip.L>knee.L') && [c.a, c.b].includes('hip.R')), 'thigh through the opposite socket').toBe(true);
+    const crossed: RigStagePose = {
+      'upperarm.L': [0, -1, 0], 'forearm.L': [-0.8, -0.6, 0], 'hand.L': [-0.8, -0.6, 0],
+      'upperarm.R': [0, -1, 0], 'forearm.R': [0.8, -0.6, 0], 'hand.R': [0.8, -0.6, 0],
+    };
+    for (const laced of [false, true]) {
+      const c = clashes(solve(applyStage(crossed)), CLEARANCE_TOL, { laced });
+      expect(c.some((x) => /wrist/.test(x.a) && /wrist/.test(x.b)), `crossed wrists, laced ${laced}`).toBe(true);
+    }
+  });
+
+  it('matches the Blender port: the Python clash fixtures, pair for pair, within 1 mm', () => {
+    expect(clashFixtures.length).toBeGreaterThanOrEqual(6);
+    expect(clashFixtures.some((f) => f.clashes.length === 0)).toBe(true);
+    expect(clashFixtures.some((f) => f.clashes.some((c) => c[2] > 0.03))).toBe(true);
+    for (const f of clashFixtures) {
+      const ts = clashes(solve(applyStage(f.pose)), 0, { laced: f.laced });
+      const key = (a: string, b: string) => [a, b].sort().join(' / ');
+      const got = new Map(ts.map((c) => [key(c.a, c.b), c.depth]));
+      const want = new Map(f.clashes.map(([a, b, d]) => [key(a, b), d]));
+      for (const [k, d] of want) {
+        expect(got.has(k), `${f.case}: ${k} (python ${d})`).toBe(true);
+        expect(Math.abs((got.get(k) ?? 0) - d), `${f.case}: ${k}`).toBeLessThanOrEqual(0.001);
+      }
+      for (const [k, d] of got) if (d > 0.002) expect(want.has(k), `${f.case}: TS only ${k} ${d}`).toBe(true);
+    }
+  });
+
+  it('frames every held stage: the whole hull inside its camera square, clear of the disc’s rounded corners', () => {
+    // the page's disc is a rounded square (22 px corners on a ~300 px disc): every hull point must sit
+    // inside the frame with a 4 % margin, and in the corners inside a quarter circle of 15 % of the half-size
+    const M = 0.04;
+    const C = 0.15;
+    const lim = 1 - M;
+    for (const [id, d] of Object.entries(sheets)) {
+      d.stages.forEach((st, i) => {
+        const cam = stageCamera(d, i);
+        const half = cam.scale / 2;
+        let worst = -Infinity;
+        for (const p of hullPoints(solve(applyStage(st.pose)))) {
+          const a = Math.abs(p[0] * Math.cos(cam.azimuth) + p[1] * Math.sin(cam.azimuth)) / half;
+          const b = Math.abs(p[2] - cam.centerZ) / half;
+          const e = a <= lim - C || b <= lim - C ? Math.max(a, b) - lim : Math.hypot(a - (lim - C), b - (lim - C)) - C;
+          worst = Math.max(worst, e);
+        }
+        expect(worst, `${id} #${i} ${st.label}: ${(worst * 100).toFixed(1)} % of the half-frame outside`).toBeLessThanOrEqual(0);
       });
     }
   });

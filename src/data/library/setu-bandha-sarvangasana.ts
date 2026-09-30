@@ -11,7 +11,8 @@ export const setuBandhaSarvangasana: LibraryAsana = {
     { text: 'Let the feet travel over behind you, past the wrists, and down to the floor.', stage: 4 },
     { text: 'Stretch the legs out and keep them together: the body is now a bridge.', stage: 5 },
     { text: 'The elbows and wrists carry the bridge; only the back of the head and neck, the shoulders, the elbows and the feet touch the floor. Keep the head still, and if the wrists or elbows tire, walk the feet in and lower the back to the floor.', stage: 5 },
-    { text: 'Lie flat to rest.', stage: 6 },
+    { text: 'To come down, lower the back to the floor, bringing the hands out from under it.', stage: 6 },
+    { text: 'Lie flat to rest.', stage: 7 },
   ],
   hold: 'Half a minute to a minute, breathing normally (p. 102).',
   cautions: [

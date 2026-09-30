@@ -33,7 +33,7 @@ LEFT = to_side('L')
 # tips toward it and the trunk leans off the shoulders
 _LEAN = L.on_shoulders(up=(-0.2, 0.05, 1))
 L.hands_on_back(_LEAN)
-L.legs_vertical(_LEAN, lean=(-0.3, -0.03, 1))
+L.legs_vertical(_LEAN, lean=(-0.2, -0.03, 1))   # (at -0.3 the leg crossed through the other hip)
 L.one_leg_down(_LEAN, 'R', (-1, 0, 0))
 GHOST = L.diff(_LEAN, RIGHT)
 

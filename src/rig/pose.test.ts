@@ -80,6 +80,8 @@ describe('parity with render_motion.py', () => {
       // the library's upside-down held stages (antiparallel aims)
       'library.salamba-sirsasana-i--headstand',
       'library.salamba-sarvangasana-i--shoulderstand',
+      // the lotus: rolled feet at the ends of crossed leg chains
+      'library.padmasana--lotus',
     ]) {
       expect(cases.has(c), c).toBe(true);
     }

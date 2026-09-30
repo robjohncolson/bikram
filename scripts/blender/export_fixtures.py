@@ -97,6 +97,9 @@ def main() -> None:
         ('library:salamba-sarvangasana-i', 'Shoulderstand'),
         ('library:halasana', 'Arms long'),
         ('library:urdhva-dandasana', 'Legs level'),
+        # the lotus: rolled leaf bones (the feet turned sole up) at the ends
+        # of two crossed leg chains
+        ('library:padmasana', 'Lotus'),
     ]
     for pid, label in held:
         p = posture(pid)

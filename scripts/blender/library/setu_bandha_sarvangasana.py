@@ -45,16 +45,25 @@ def bridge(straight=True):
         hip = at[f'hip.{side}']
         if straight:
             ankle = L.on_floor(hip, L.THIGH + L.SHIN - 0.004, 0.10, (0, 1, 0))
-            ankle = (sx * 0.08, ankle[1], ankle[2])
+            ankle = (sx * 0.1, ankle[1], ankle[2])
         else:
             ankle = (sx * 0.1, hip[1] + 0.62, 0.10)   # a gentle knee bend: the straightening never dips a heel
-        L.leg(pose, side, ankle, (0, 0, 1), L.n((0, 1, -0.5)))
+        L.leg(pose, side, ankle, (0, 0, 1), L.n((sx * 0.2, 1, -0.5)))
     return pose
 
 
 BEND = knees_bend()
 FEET = bridge(straight=False)
 BRIDGE = bridge()
+# on the way down the hands come out from under the back first, the elbows
+# staying put and the forearms lifting up and a little out, over the upper
+# arms: lowered straight from the bridge to lying flat, each thigh came down
+# through its wrist, and a forearm swept out low along the mat passed through
+# its upper arm (the clearance check, over the in-betweens)
+HANDS_OUT = {**BRIDGE}
+for _s, _sx in (('L', 1), ('R', -1)):
+    HANDS_OUT[f'forearm.{_s}'] = L.n((_sx * 0.5, 0.0, 0.85))
+    HANDS_OUT[f'hand.{_s}'] = L.n((_sx * 0.5, 0.0, 0.85))
 
 # the common mistake: the arch collapses onto the hands and the hips sag,
 # pressing the weight into the wrists and the neck
@@ -85,6 +94,7 @@ POSTURE = L.check({
         {'label': 'Feet down', 'pose': FEET, 'hold': 5, 'palms': 'back', 'notice': ['wrists', 'lower-back', 'quads']},
         {'label': 'Bridge', 'pose': BRIDGE, 'hold': 12, 'palms': 'back', 'guides': GUIDES, 'ghost': GHOST,
          'notice': ['wrists', 'upper-back', 'lower-back', 'breath']},
+        {'label': 'Hands out', 'pose': HANDS_OUT, 'hold': 3, 'notice': ['lower-back']},
         {'label': 'Lie down', 'pose': L.LIE, 'hold': 5, 'notice': ['lower-back', 'breath']},
     ],
 })

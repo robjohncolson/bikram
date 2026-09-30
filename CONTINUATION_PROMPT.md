@@ -10,6 +10,32 @@ push to `main` via Vercel's Git integration**; the CLI token on this machine is 
 
 ---
 
+## ✔ 2026-09-29 (late) — A LOTUS-CAPABLE RIG, AND THE LIBRARY READY TO FAN OUT (uncommitted)
+
+`docs/library-lotus-rig-spec.md`, as uncommitted working-tree changes (not reviewed, not committed):
+- CLEARANCE: `src/rig/clearance.ts` (rendered hull, named rules: shared joint, trunk neighbours
+  (≤ 2 trunk edges), hip socket (own side, beyond 13 cm of the hip), laced hands (finger regions,
+  `hands: 'laced'` stages only); 1 cm, one tolerance; cross-language fixture + `_selftest.py`;
+  camera-containment test) + its Python port `scripts/blender/library/_hull.py`
+  (`clearance warning` from `_lib.check`, held stages and ghosts). `library.test.ts` checks held
+  stages, ghosts and 8 samples of every transition; the naive two-bone lotus fails it.
+- Inversions re-posed where it bit: headstand fingers (in the skull), plough elbows (meeting),
+  karnapidasana thighs (8 cm through the chest), side plough thighs, reclining-angle forearms,
+  and transitions (halasana `Arms out` stage, Legs up dropped; setu bandha `Hands out` stage; the
+  plough arms `apart` between back and laced; LIE arms a hand's width out). Fixtures for
+  headstand, shoulderstand, legs level re-exported from Blender (the 26 & 2 fixtures unchanged).
+- Lotus solvers in `_lib.py`, pelvis frame: `lotus`, `half_lotus`, `siddha`, `rest_on`, `knee_on`,
+  `knee_out`, `carry_foot`, `lift_shin`, `foot_sole` (leaf rolls). Second lotus foot rests on the
+  first shin (both on the thighs = shins 3–4 cm into each other, measured). New sheets + content:
+  `padmasana` (lotus family), `siddhasana` (lotus family), `urdhva-padmasana-in-sarvangasana`
+  (inversion). Parity fixture `library.padmasana--lotus`.
+- Fan-out ready: `LibraryFamily` = standing | backbend | seated | lotus | inversion | twist;
+  `index.ts` discovers `./*.ts` posture files, orders by `bookNumber`; `common-lotus.ts`;
+  `scripts/blender/library/README.md` (the contract); gate ALWAYS includes the spec.
+- Baddha padmasana: the hands behind the back stop 26 cm (left) / 15 cm (right) short of the toes.
+Not done / known: the second foot is on the first shin, not the thigh; the hands do not hold the
+feet on the way in (they wait on the mat); `/pose/*` and the class were not re-screenshotted.
+
 ## ✔ 2026-09-29 — THE POSTURE LIBRARY, FIRST FAMILY: INVERSIONS (uncommitted)
 
 `docs/library-inversions-spec.md`, as uncommitted working-tree changes (not reviewed, not

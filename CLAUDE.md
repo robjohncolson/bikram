@@ -253,12 +253,18 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   "corrects" the other. Rendered by PoseDetail's `ClassicalSection`.
 - `src/data/library/` — the POSTURE LIBRARY, a second collection beside the
   26 & 2 and never mixed into it (not the class, trainer, coach or
-  `RIG_LIVE`). First family: ten inversions (headstand, shoulderstand and
-  variations). One `LibraryAsana` per file (`<id>.ts`, contract in
-  `types.ts`: steps with an optional rig `stage`, hold, cautions, links,
-  sutras); `index.ts` is the access layer (views import only from it) and
-  joins the illustrated index's facts by id (Sanskrit, pages, figures,
-  grade, roots — never duplicated). FAITHFUL TO THE LINEAGE, IN OUR WORDS:
+  `RIG_LIVE`). FAMILIES (`LibraryFamily`, shown in this order, empty ones
+  left out): standing, backbend, seated, lotus (the crossed-leg seats:
+  siddhasana, padmasana), inversion (the ten + the lotus shoulderstand, as
+  the book groups them), twist. One `LibraryAsana` per file (`<id>.ts`,
+  contract in `types.ts`: steps with an optional rig `stage`, hold,
+  cautions, links, sutras); `index.ts` DISCOVERS them (`import.meta.glob`
+  of `./*.ts` minus index/common/common-*/tests, every `LibraryAsana`
+  export) and orders them by the book's `bookNumber` — adding a posture is
+  two new files, nothing shared; family lineage notes go in
+  `common-<family>.ts`. `index.ts` is the access layer (views import only
+  from it) and joins the illustrated index's facts by id (Sanskrit, pages,
+  figures, grade, roots, bookNumber — never duplicated). FAITHFUL TO THE LINEAGE, IN OUR WORDS:
   Patanjali gives no technique or cautions, so steps, holds and cautions
   follow Iyengar's book (read for facts, never copied); cautions come from
   the lineage, attributed and page-cited (`LineageNote {text, page}`, shown
@@ -270,7 +276,9 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   Rig data: `scripts/blender/library/<id>.py` (the posture contract plus a
   per-stage `notice` from a fixed vocabulary and `palms: 'back'` where the
   hands carry the back; `_lib.py` = shared solvers and the floor/reach/palm-
-  contact checks, silent), exported by `npm run rig:export` to
+  contact/CLEARANCE checks, silent; `_hull.py` = the rendered hull in
+  Python; family helpers in `_<family>.py`; the authoring contract is
+  `scripts/blender/library/README.md`), exported by `npm run rig:export` to
   `src/data/rig/library/<id>.json` (a subfolder: `RIG_LIVE` and
   `rig-data.test.ts` never see it), loaded as `loadRigData('library:<id>')`.
   Live figure only — `render_motion.py` renders no sprites for them; the
@@ -281,6 +289,31 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   (steps never point back to an earlier stage). The library draws
   `groundedSheetPose` (FigureRig `grounded`: shared floor contacts carried
   straight, `liftToFloor` as a guard); the 26 & 2 draws `sheetPose`.
+  CLEARANCE (`src/rig/clearance.ts`, ported in `_hull.py`): limbs never pass
+  through each other on the RENDERED hull (bodyRecipe tubes + joint
+  ellipsoids as FigureRig places them) by more than 1 cm; exempt only by
+  named rules — shared joint (swellings count as their bone's joint), trunk
+  neighbours (trunk pieces ≤ 2 trunk edges apart: head–chest yes,
+  head–pelvis no), hip socket (a thigh against ITS OWN pelvis pieces, only
+  beyond `SOCKET_R` = 13 cm of its hip; the opposite hip in full), laced
+  hands (the two finger regions only, only in a stage with `hands:
+  'laced'`). `library.test.ts` checks every held stage, ghost and 8 samples
+  of every transition; the naive two-bone lotus, the head through the
+  pelvis, a distal thigh through it and crossed wrists all fail it. The
+  Python port is held to the TS one by `src/rig/clearance-fixtures/
+  clashes-from-python.json` (`_selftest.py --write`; `scripts/library-helpers.test.mjs` runs
+  `_selftest.py`, which also tests `knee_on`). A containment test keeps
+  every held stage's hull inside its camera square (4 % margin, the disc's
+  rounded corners). LOTUS SOLVERS (`_lib.py`, all in the pelvis's own frame,
+  `lap(pose, flex, front)`, so one crossing rides into any trunk — the
+  lying/inverted poses are mirror-labelled, pass `front`): `lotus`,
+  `half_lotus`, `siddha`, `rest_on`, `knee_on`, `knee_out`, `carry_foot`/
+  `lift_shin` (one-leg-at-a-time midpoints), `foot_sole` (aims and ROLLS a
+  foot so its heel/ball side faces a direction; rolls allowed on leaf bones
+  only, which move no joint). On this hull the second lotus foot rests on
+  the first shin, not the thigh (both on the thighs drives the shins 3–4 cm
+  into each other — measured). Frames: `SEATED_FRAME`, `LOTUS_FRAME`,
+  `INVERTED_LOTUS_FRAME`. Parity fixture `library.padmasana--lotus`.
 - Forgetting decay: `trainer/bkt.ts` decays each leaf's P(known) back
   toward its prior between practice sessions. The half-life stretches
   only with SPACED correct answers (`KcState.spaced`: a hit ≥ 6 h after

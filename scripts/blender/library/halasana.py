@@ -16,7 +16,10 @@ _spec.loader.exec_module(L)
 L.begin('halasana')
 
 TOES = L.plough(arms='back')
+APART = L.plough(arms='apart')
 LONG = L.plough(arms='long')
+BACK_UP = L.shoulderstand()
+BACK_UP.update(L.ARMS_FLAT)
 
 # the common mistake: the back rounds and the hips drop over the face, so the
 # weight slides onto the neck and the knees give to find the floor
@@ -25,7 +28,7 @@ L.arms_long(_CURL)
 _at = L.fk(_CURL)
 for _s, _sx in (('L', 1), ('R', -1)):
     _hip = _at[f'hip.{_s}']
-    L.leg(_CURL, _s, (_sx * 0.06, _hip[1] - 0.62, 0.19), (0, -0.3, -1), (0, -0.3, -1))
+    L.leg(_CURL, _s, (_sx * 0.06, _hip[1] - 0.7, 0.19), (0, -0.3, -1), (0, -0.3, -1))   # (at 0.62 the thighs folded into the belly)
 GHOST = L.diff(_CURL, LONG)
 
 GUIDES = [
@@ -41,13 +44,16 @@ POSTURE = L.check({
     'transition': 10,
     'stages': [
         {'label': 'Lie down', 'pose': L.LIE, 'hold': 4, 'notice': ['breath']},
-        {'label': 'Legs up', 'pose': L.legs_up(), 'hold': 4, 'notice': ['core']},
         {'label': 'Shoulderstand', 'pose': L.shoulderstand(), 'hold': 6, 'palms': 'back', 'notice': ['neck', 'shoulders']},
         {'label': 'Toes down', 'pose': TOES, 'hold': 6, 'palms': 'back', 'notice': ['hamstrings', 'lower-back']},
-        {'label': 'Arms long', 'pose': LONG, 'hold': 12, 'guides': GUIDES, 'ghost': GHOST,
+        # the hands leave the back to the mat first, then lace (straight from
+        # the back to the laced hands, one forearm swings through the other)
+        {'label': 'Arms out', 'pose': APART, 'hold': 3, 'notice': ['shoulders']},
+        {'label': 'Arms long', 'pose': LONG, 'hold': 12, 'hands': 'laced', 'guides': GUIDES, 'ghost': GHOST,
          'notice': ['neck', 'shoulders', 'hamstrings', 'breath']},
-        # the book's way out: the legs back up to the shoulderstand, then slide down
-        {'label': 'Back up', 'pose': L.shoulderstand(), 'hold': 4, 'palms': 'back', 'notice': ['core', 'shoulders']},
+        # the book's way out: the hands released, the legs back up over the
+        # shoulders, then slide down
+        {'label': 'Back up', 'pose': BACK_UP, 'hold': 4, 'notice': ['core', 'shoulders']},
         {'label': 'Slide down', 'pose': L.rolling_down(), 'hold': 5, 'notice': ['core', 'lower-back']},
         {'label': 'Lie down', 'pose': L.LIE, 'hold': 5, 'notice': ['neck', 'breath']},
     ],

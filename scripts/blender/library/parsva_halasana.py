@@ -16,16 +16,24 @@ _spec.loader.exec_module(L)
 L.begin('parsva_halasana')
 
 # +X is the mannequin's left (README): a positive swing carries the legs to its left
-SWING = 0.7
+SWING = 0.65
+# the feet a little apart as they travel: from hips 0.2 m apart, two legs
+# swung to one side with the ankles together would press the thighs into
+# each other (the clearance check)
+APART = 0.12
 CENTRE = L.plough(arms='back')
-LEFT = L.plough(arms='back', side=SWING)
-RIGHT = L.plough(arms='back', side=-SWING)
+# the pelvis turns under the legs as they go over to one side: with the hip
+# line square, the far thigh swung across passed 8 cm through the pelvis
+TURN = 35.0
+LEFT = L.plough(arms='back', side=SWING, spread=APART, hip_turn=TURN)
+RIGHT = L.plough(arms='back', side=-SWING, spread=APART, hip_turn=-TURN)
 
 # the common mistake: the trunk drops toward the legs' side and the hips sink,
 # instead of the trunk staying tall while only the legs travel
-_TIP = L.on_shoulders(up=(0.3, 0.12, 0.95))
+_TIP = L.on_shoulders(up=(0.2, 0.1, 0.97))
+L.turn_hips(_TIP, TURN)
 L.hands_on_back(_TIP)
-L.plough_legs(_TIP, side=SWING - 0.08)
+L.plough_legs(_TIP, side=SWING - 0.08, spread=APART)
 GHOST = L.diff(_TIP, LEFT)
 
 GUIDES = [

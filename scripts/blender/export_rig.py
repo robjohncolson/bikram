@@ -199,7 +199,7 @@ def export_module(path: Path) -> dict:
             if k in st:
                 s[k] = clean(st[k])
         s['pose'] = clean(st['pose'])
-        for k in ('guides', 'ghost', 'notice', 'palms'):
+        for k in ('guides', 'ghost', 'notice', 'palms', 'hands'):
             if st.get(k):
                 s[k] = clean(st[k])
         out['stages'].append(s)

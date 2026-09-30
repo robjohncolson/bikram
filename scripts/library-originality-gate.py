@@ -5,7 +5,7 @@ two local book extractions, never printing a matched passage.
 
 Every text file the working tree adds or changes (`git status --porcelain
 -uall`: content, rig modules, views, styles, generated JSON, docs, this
-script), plus the library spec and the two living docs that carry library
+script), plus the library specs and the two living docs that carry library
 prose (CLAUDE.md, CONTINUATION_PROMPT.md) whether or not they changed, is folded like the earlier gates (NFKC, lower case, punctuation
 dropped) and every window of eight consecutive words is looked up among
 the windows of every extracted page of BOTH books:
@@ -29,7 +29,7 @@ CORPORA = (
     Path('C:/Users/rober/Downloads/yoga-ocr'),
 )
 TEXT = {'.ts', '.tsx', '.css', '.md', '.py', '.json', '.mjs', '.js', '.html', '.txt'}
-ALWAYS = ('docs/library-inversions-spec.md', 'CLAUDE.md', 'CONTINUATION_PROMPT.md')
+ALWAYS = ('docs/library-inversions-spec.md', 'docs/library-lotus-rig-spec.md', 'CLAUDE.md', 'CONTINUATION_PROMPT.md')
 WINDOW = 8
 
 

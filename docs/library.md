@@ -3,9 +3,13 @@
 A second collection beside the 26 & 2, never mixed into it: postures from the
 wider classical repertoire, each drawn by the live figure next to our own
 instructions, its cautions, and the sutras that bear on it. The first family
-is the inversions (ten postures: the headstand and the shoulderstand with
-their variations). The lotus-in-shoulderstand entries are left out because
-the tube rig cannot cross the legs.
+was the inversions (ten postures: the headstand and the shoulderstand with
+their variations); the crossed-leg seats followed once the rig learned to
+cross the legs (`docs/library-lotus-rig-spec.md`): siddhasana, padmasana
+and the lotus in the shoulderstand. Families: standing, backbend, seated,
+lotus, inversion, twist; the index discovers the posture files, so the
+rest of the book is written family by family without shared edits
+(`scripts/blender/library/README.md` is the authoring contract).
 
 ## How it is built
 
@@ -34,6 +38,36 @@ the tube rig cannot cross the legs.
   (`LiveFigure`: the rig path of `PoseMotion` without the sprite, driven by
   `useSheetPlayer`, so the step list follows the figure and scrubs it). Both
   routes are lazy, so the 26 & 2 never loads the book indexes.
+
+## Crossed legs and clearance
+
+- **Clearance.** Two limbs never pass through each other: the rendered hull
+  (the live figure's own tubes and joint ellipsoids) is checked pair by
+  pair, in Blender (`_hull.py`, a warning) and in `library.test.ts` (held
+  stages, ghosts, and eight samples of every transition). Only named rules
+  exempt a pair: a shared joint, trunk pieces at most two trunk edges apart
+  (the chin on the breastbone, not the head in the pelvis), a thigh's root
+  in its own socket (within 13 cm of its hip; the rest of the thigh and the
+  other hip are checked), and the finger regions of two hands in a stage
+  that laces them. A shared fixture holds the Python port to the
+  TypeScript one. Turning it on found real faults in the
+  inversions — the headstand's laced fingers 2–3 cm inside the skull, the
+  plough's elbows meeting under the back, karnapidasana's thighs 8 cm
+  through the chest, the side plough's thighs through each other, the
+  reclining angle's forearms through the legs, and several arms swung
+  through the body between stages — each fixed by re-posing or by a
+  midpoint stage.
+- **The lotus.** The legs are crossed in the pelvis's own frame, so the
+  same solver sits, lies back or turns upside down. The first foot rests
+  ON the other thigh; the second comes over and rests on the first shin
+  where it crosses the lap — with both ankles on the thighs the shins pass
+  3–4 cm into each other on this hull whatever the angles, a searched and
+  measured fact. The soles turn up by a roll of the foot (a leaf bone, so
+  no joint moves). The way in and out is one leg at a time, a lifted
+  midpoint for each crossing.
+- **Not yet.** The bound lotus (baddha padmasana) is out of reach: a hand
+  taken behind the back stops 26 cm (left) and 15 cm (right) short of its
+  big toe, the bones being the 26 & 2's and not to be lengthened.
 
 ## Why the rules
 
