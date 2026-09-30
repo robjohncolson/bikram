@@ -57,11 +57,6 @@
   color: var(--text-soft);
 }
 
-/* a heading reached by the index (its id is the link's target) clears the sticky app bar */
-.lib-family-title {
-  scroll-margin-top: calc(var(--nav-height) + 16px);
-}
-
 .lib-family + .lib-family {
   margin-top: 40px;
 }
