@@ -5,7 +5,9 @@ library sheet, live figure only.
 Up into the supported shoulderstand; the legs crossed, right foot first,
 into the lotus upside down (urdhva padmasana); on an exhalation the
 crossed legs fold down from the hips toward the head; back up to the
-lotus; uncrossed, left foot first, to the shoulderstand; and down.
+lotus; uncrossed, left foot first, to the shoulderstand. Repeat with the
+left foot placed first. The loop finishes uncrossing into shoulderstand;
+the supported-shoulderstand sheet demonstrates lowering to the floor.
 
 The fold stops short of the book's: the crossed feet meet the belly, so
 the knees stay about 44 cm from the head rather than resting on it
@@ -19,7 +21,12 @@ _spec = importlib.util.spec_from_file_location('_library_lotus', Path(__file__).
 LT = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(LT)
 L = LT.L
-L.begin('pindasana_in_sarvangasana')
+L.begin('pindasana-in-sarvangasana', skeleton='library')
+
+_ispec = importlib.util.spec_from_file_location('_library_inversion', Path(__file__).resolve().parent / '_inversion.py')
+I = importlib.util.module_from_spec(_ispec)
+_ispec.loader.exec_module(I)
+I.configure(L)
 
 UP = L.shoulderstand()
 HALF = LT.half_up()
@@ -36,7 +43,6 @@ POSTURE = L.check({
     'frame': L.SUPINE_FRAME,
     'transition': 10,
     'stages': [
-        {'label': 'Lie down', 'pose': L.LIE, 'hold': 4, 'notice': ['breath']},
         {'label': 'Shoulderstand', 'pose': UP, 'hold': 4, 'palms': 'back', 'notice': ['neck', 'shoulders']},
         {'label': 'Right foot in', 'pose': HALF, 'hold': 3, 'palms': 'back', 'view': 'quarter',
          'frame': HALF_FRAME, 'notice': ['hips']},
@@ -48,6 +54,11 @@ POSTURE = L.check({
          'frame': L.INVERTED_LOTUS_FRAME, 'notice': ['hips']},
         {'label': 'Left foot out', 'pose': HALF, 'hold': 3, 'palms': 'back', 'view': 'quarter',
          'frame': HALF_FRAME, 'notice': ['hips']},
-        {'label': 'Slide down', 'pose': L.rolling_down(), 'hold': 5, 'notice': ['core', 'lower-back', 'breath']},
+        {'label': 'Shoulderstand', 'pose': UP, 'hold': 3, 'palms': 'back'},
+        {'label': 'Left foot in', 'pose': L.mirror(HALF), 'hold': 3, 'palms': 'back', 'frame': HALF_FRAME},
+        {'label': 'Other lotus up', 'pose': L.mirror(LOTUS), 'hold': 4, 'palms': 'back', 'frame': L.INVERTED_LOTUS_FRAME},
+        {'label': 'Other fold down', 'pose': L.mirror(PINDA), 'hold': 12, 'palms': 'back', 'frame': FOLD_FRAME},
+        {'label': 'Other lotus up', 'pose': L.mirror(LOTUS), 'hold': 3, 'palms': 'back', 'frame': L.INVERTED_LOTUS_FRAME},
+        {'label': 'Right foot out', 'pose': L.mirror(HALF), 'hold': 3, 'palms': 'back', 'frame': HALF_FRAME},
     ],
 })

@@ -13,9 +13,8 @@ export const urdhvaPadmasanaInSarvangasana: LibraryAsana = {
     { text: 'Stretch the crossed legs straight up, draw the knees closer together and take the legs back, away from the pelvis, as far as they will go.', stage: 3 },
     { text: 'Stay with deep, even breathing.', stage: 3 },
     { text: 'Uncross the legs, left foot first, and return to the shoulderstand.', stage: 4 },
-    // the other side: the figure only shows the right foot placed first, so this step points at no stage
-    { text: 'Cross them again with the left foot placed first, and stay for the same time.' },
-    { text: 'Slide slowly down and lie flat.', stage: 6 },
+    { text: 'Cross them again with the left foot placed first, and stay for the same time.', stage: 7 },
+    { text: 'Slide slowly down and lie flat.', stage: 10 },
   ],
   hold: 'Twenty to thirty seconds each way, breathing deeply and evenly (p. 103).',
   cautions: [

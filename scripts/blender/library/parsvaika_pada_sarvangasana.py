@@ -13,7 +13,7 @@ from pathlib import Path
 _spec = importlib.util.spec_from_file_location('_library_lib', Path(__file__).resolve().parent / '_lib.py')
 L = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(L)
-L.begin('parsvaika_pada_sarvangasana')
+L.begin('parsvaika-pada-sarvangasana', skeleton='library')
 
 UP = L.shoulderstand()
 
@@ -33,7 +33,7 @@ LEFT = to_side('L')
 # tips toward it and the trunk leans off the shoulders
 _LEAN = L.on_shoulders(up=(-0.2, 0.05, 1))
 L.square(_LEAN, 'pelvis')   # tipped sideways upside down: keep the hips' width across (the trunk-across rule)
-L.hands_on_back(_LEAN)
+L.hands_on_back(_LEAN, theta=25.0)
 L.legs_vertical(_LEAN, lean=(-0.2, -0.03, 1))   # (at -0.3 the leg crossed through the other hip)
 L.one_leg_down(_LEAN, 'R', (-1, 0, 0))
 GHOST = L.diff(_LEAN, RIGHT)

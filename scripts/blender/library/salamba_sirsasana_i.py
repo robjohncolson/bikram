@@ -16,7 +16,7 @@ from pathlib import Path
 _spec = importlib.util.spec_from_file_location('_library_lib', Path(__file__).resolve().parent / '_lib.py')
 L = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(L)
-L.begin('salamba_sirsasana_i')
+L.begin('salamba-sirsasana-i', skeleton='library')
 
 SET = L.head_set()
 WALK = L.head_walk()
@@ -30,6 +30,8 @@ _SAG = L.headstand(legs=(0, -0.14, 1), spine=((0, 0.08, 1), (0, 0.0, 1), (0, -0.
 _SAG.update({'clavicle.L': (1, 0, -0.45), 'clavicle.R': (-1, 0, -0.45)})
 L.place(_SAG, 'crown', L.CROWN)
 L.forearm_tripod(_SAG)
+for side, sx in (('L', 1), ('R', -1)):
+    _SAG[f'hand.{side}'] = L.n((sx * 0.2, -0.5, 1))
 GHOST = L.diff(_SAG, UP)
 
 GUIDES = [
@@ -38,6 +40,8 @@ GUIDES = [
 ]
 
 CHILD = L.childs_pose()
+for side, sx in (('L', 1), ('R', -1)):
+    CHILD[f'hand.{side}'] = L.n((sx * 0.2, -0.5, 1))
 
 POSTURE = L.check({
     'id': 'library:salamba-sirsasana-i',

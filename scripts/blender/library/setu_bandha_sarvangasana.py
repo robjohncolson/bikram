@@ -16,7 +16,7 @@ from pathlib import Path
 _spec = importlib.util.spec_from_file_location('_library_lib', Path(__file__).resolve().parent / '_lib.py')
 L = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(L)
-L.begin('setu_bandha_sarvangasana')
+L.begin('setu-bandha-sarvangasana', skeleton='library')
 
 # the trunk arched back from the shoulders: neck → chest, chest → waist,
 # waist → pelvis, each leaning further toward +Y (the feet's side)
@@ -60,6 +60,9 @@ BRIDGE = bridge()
 # arms: lowered straight from the bridge to lying flat, each thigh came down
 # through its wrist, and a forearm swept out low along the mat passed through
 # its upper arm (the clearance check, over the in-betweens)
+FINGERS_OUT = {**BRIDGE}
+for _s, _sx in (('L', 1), ('R', -1)):
+    FINGERS_OUT[f'hand.{_s}'] = (_sx, 0, 0)
 HANDS_OUT = {**BRIDGE}
 for _s, _sx in (('L', 1), ('R', -1)):
     HANDS_OUT[f'forearm.{_s}'] = L.n((_sx * 0.5, 0.0, 0.85))
@@ -94,6 +97,7 @@ POSTURE = L.check({
         {'label': 'Feet down', 'pose': FEET, 'hold': 5, 'palms': 'back', 'notice': ['wrists', 'lower-back', 'quads']},
         {'label': 'Bridge', 'pose': BRIDGE, 'hold': 12, 'palms': 'back', 'guides': GUIDES, 'ghost': GHOST,
          'notice': ['wrists', 'upper-back', 'lower-back', 'breath']},
+        {'label': 'Release support', 'pose': FINGERS_OUT, 'hold': 3, 'notice': ['wrists']},
         {'label': 'Hands out', 'pose': HANDS_OUT, 'hold': 3, 'notice': ['lower-back']},
         {'label': 'Lie down', 'pose': L.LIE, 'hold': 5, 'notice': ['lower-back', 'breath']},
     ],

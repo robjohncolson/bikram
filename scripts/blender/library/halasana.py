@@ -13,7 +13,12 @@ from pathlib import Path
 _spec = importlib.util.spec_from_file_location('_library_lib', Path(__file__).resolve().parent / '_lib.py')
 L = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(L)
-L.begin('halasana')
+L.begin('halasana', skeleton='library')
+
+_ispec = importlib.util.spec_from_file_location('_library_inversion', Path(__file__).resolve().parent / '_inversion.py')
+I = importlib.util.module_from_spec(_ispec)
+_ispec.loader.exec_module(I)
+I.configure(L)
 
 TOES = L.plough(arms='back')
 APART = L.plough(arms='apart')
@@ -48,11 +53,13 @@ POSTURE = L.check({
         {'label': 'Toes down', 'pose': TOES, 'hold': 6, 'palms': 'back', 'notice': ['hamstrings', 'lower-back']},
         # the hands leave the back to the mat first, then lace (straight from
         # the back to the laced hands, one forearm swings through the other)
+        {'label': 'Hands off back', 'pose': I.release_back(L, TOES), 'hold': 3, 'notice': ['wrists']},
         {'label': 'Arms out', 'pose': APART, 'hold': 3, 'notice': ['shoulders']},
         {'label': 'Arms long', 'pose': LONG, 'hold': 12, 'hands': 'laced', 'guides': GUIDES, 'ghost': GHOST,
          'notice': ['neck', 'shoulders', 'hamstrings', 'breath']},
         # the book's way out: the hands released, the legs back up over the
         # shoulders, then slide down
+        {'label': 'Release clasp', 'pose': APART, 'hold': 3, 'notice': ['wrists']},
         {'label': 'Back up', 'pose': BACK_UP, 'hold': 4, 'notice': ['core', 'shoulders']},
         {'label': 'Slide down', 'pose': L.rolling_down(), 'hold': 5, 'notice': ['core', 'lower-back']},
         {'label': 'Lie down', 'pose': L.LIE, 'hold': 5, 'notice': ['neck', 'breath']},
