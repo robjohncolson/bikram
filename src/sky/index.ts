@@ -70,8 +70,16 @@ export interface TodayLens {
    * phase and weekday notes happen to name.
    */
   postureOfTheDay: Pose;
+  /** the local day number every "of the day" pick walks by (`ofTheDay`) */
+  day: number;
   /** postures named by today's notes, resolved and de-duplicated, in sequence order */
   leaning: Pose[];
+}
+
+/** Today's item of a list walked in order, one a day: each item gets its
+ *  day once every `list.length` days (the 26, or the library's 56). */
+export function ofTheDay<T>(list: readonly T[], day: number): T {
+  return list[((day % list.length) + list.length) % list.length];
 }
 
 /** Resolve pose ids to poses, dropping unknown ids, in sequence order. */
@@ -94,7 +102,8 @@ export function todayLens(now: number): TodayLens {
     weekday,
     phaseNote,
     dayNote,
-    postureOfTheDay: poses[((day % poses.length) + poses.length) % poses.length],
+    postureOfTheDay: ofTheDay(poses, day),
+    day,
     leaning: resolvePostures([...phaseNote.postures, ...dayNote.postures]),
   };
 }

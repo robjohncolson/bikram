@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { poses } from '../data';
-import { DAY_NOTES, PHASE_NOTES, localDayIndex, todayLens } from './index';
+import { DAY_NOTES, PHASE_NOTES, localDayIndex, ofTheDay, todayLens } from './index';
+import { libraryAsanas } from '../data/library';
 
 const NOW = new Date(2026, 7, 27, 12).getTime();
 const DAY = 86_400_000;
@@ -36,6 +37,17 @@ describe('moon-days lens', () => {
     const a = todayLens(NOW).postureOfTheDay;
     const b = todayLens(NOW + DAY).postureOfTheDay;
     expect((poses.indexOf(a) + 1) % poses.length).toBe(poses.indexOf(b));
+  });
+
+  it('walks the library in book order, every one of its postures once per cycle', () => {
+    const seen = new Set<string>();
+    const start = todayLens(NOW).day;
+    for (let d = 0; d < libraryAsanas.length; d++) seen.add(ofTheDay(libraryAsanas, start + d).id);
+    expect(seen.size).toBe(libraryAsanas.length);
+    const a = ofTheDay(libraryAsanas, start);
+    const b = ofTheDay(libraryAsanas, start + 1);
+    expect((libraryAsanas.indexOf(a) + 1) % libraryAsanas.length).toBe(libraryAsanas.indexOf(b));
+    expect(ofTheDay(libraryAsanas, -1)).toBe(libraryAsanas.at(-1));
   });
 
   it('is the same lens all day and resolves the notes it shows', () => {

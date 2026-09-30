@@ -1,11 +1,50 @@
 import { STUDY } from '../features';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { setSkyEnabled, skyEnabled, todayLens } from '../sky';
+import { ofTheDay, setSkyEnabled, skyEnabled, todayLens } from '../sky';
 import type { SkyNote, TodayLens } from '../sky';
 import type { Pose } from '../data';
 import { PoseFigure } from '../components/PoseFigure';
+import type { LibraryEntry } from '../data/library';
 import './Today.css';
+
+/** The library's posture of the day. The library is its own lazy chunk (it
+ *  loads the book's indexes), so it arrives after the page does. */
+function LibraryOfTheDay({ day }: { day: number }) {
+  const [pick, setPick] = useState<{ asana: LibraryEntry; family: string; count: number } | null>(null);
+  useEffect(() => {
+    let live = true;
+    import('../data/library').then(({ libraryAsanas, libraryFamilies }) => {
+      if (!live || libraryAsanas.length === 0) return;
+      const asana = ofTheDay(libraryAsanas, day);
+      const family = libraryFamilies.find((f) => f.id === asana.family)?.title ?? '';
+      setPick({ asana, family, count: libraryAsanas.length });
+    }).catch(() => {
+      /* offline before the library was ever cached: the card simply stays away */
+    });
+    return () => {
+      live = false;
+    };
+  }, [day]);
+  if (!pick) return null;
+  const { asana, family, count } = pick;
+  return (
+    <section className="card td-card td-potd">
+      <div>
+        <p className="eyebrow">From the library</p>
+        <h2 className="td-card-title">{asana.english}</h2>
+        <p className="td-sanskrit text-soft"><em>{asana.sanskrit}</em> · {family}</p>
+        <p className="text-soft">
+          One posture a day from <em>Light on Yoga</em>, in the book’s own order — each of the {count} gets its
+          day once every {count} days.
+        </p>
+        <p className="td-links">
+          <Link to={`/library/${asana.id}`}>See it move →</Link>
+        </p>
+      </div>
+    </section>
+  );
+}
 
 /** A moon disc lit to today's phase — the terminator is an ellipse. */
 function MoonDisc({ elongation }: { elongation: number }) {
@@ -86,7 +125,7 @@ function Lens({ lens, onDisable }: { lens: TodayLens; onDisable: () => void }) {
             {potd.order} · {potd.englishName}
           </h2>
           <p className="text-soft">
-            One posture a day, walking the class in order — every posture gets its day once each lunar month,
+            One posture a day, walking the class in order — every posture gets its day once every 26 days,
             whatever the moon and the weekday lean toward.
           </p>
           <p className="td-links">
@@ -98,6 +137,8 @@ function Lens({ lens, onDisable }: { lens: TodayLens; onDisable: () => void }) {
         <PoseFigure pose={potd} size={110} />
       </section>
 
+      <LibraryOfTheDay day={lens.day} />
+
       <div className="td-grid">
         <NoteCard note={lens.phaseNote} postures={leanPhase} eyebrow="By the moon" />
         <NoteCard note={lens.dayNote} postures={leanDay} eyebrow="By the day" />
@@ -106,8 +147,7 @@ function Lens({ lens, onDisable }: { lens: TodayLens; onDisable: () => void }) {
       <footer className="td-foot text-faint">
         <p>
           These are traditional associations, described as tradition. They never change the sequence, the
-          class, or the cautions on a posture’s page, and the trainer’s own choice of what to drill always
-          comes first.
+          class, or the cautions on a posture’s page{STUDY ? ', and the trainer’s own choice of what to drill always comes first' : ''}.
         </p>
         <button type="button" className="td-off" onClick={onDisable}>
           Turn the lens off
@@ -146,8 +186,9 @@ export function Today() {
             <h2 className="td-card-title">Off by default.</h2>
             <p className="text-soft">
               Turn it on and this page shows tonight’s moon phase, the planetary day, a posture of the day
-              (every posture once per lunar month), and two short notes. It computes the sky here, offline —
-              nothing is sent anywhere, and nothing about the class or the trainer changes.
+              from the class (each of the 26 once every 26 days) and one from the library, and two short
+              notes. It computes the sky here, offline — nothing is sent anywhere, and nothing about the
+              class changes.
             </p>
             <p className="td-tradition text-faint">
               What it is not: a prediction, a prescription, or a health claim. The associations are old

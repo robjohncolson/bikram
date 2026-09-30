@@ -418,7 +418,10 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   postures and one thing to notice; every association is described as
   tradition, never as effect — `lens.test.ts` enforces it). `index.ts`
   builds `todayLens`: a posture of the day walking the sequence in order
-  (every posture once per 26 days) plus the two notes. Nothing here
+  (every posture once per 26 days) plus the two notes; `ofTheDay(list,
+  lens.day)` is the shared one-a-day walk, and the page also shows a
+  LIBRARY posture of the day (the 56 in book order, once per 56 days; the
+  library chunk is imported lazily by `Today.tsx`, never by `src/sky`). Nothing here
   changes the class, the trainer, or a posture's cautions. Views import
   only from `src/sky/index.ts`.
 - `src/rig/` — the LIVE FIGURE's rig, pure TS, no three (views import only
