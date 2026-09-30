@@ -69,3 +69,16 @@ export function shouldReorient(handoff: boolean, beat: number, announceAt: numbe
 export function practiceSaveMessage(saved: boolean): string {
   return saved ? 'Practice saved.' : 'Your practice could not be saved on this device.';
 }
+
+/** Pulses follow the consumed audible beat; other figures retain their movement lead. */
+export function classFigurePosition(track: PoseTrack, budget: number, left: number) {
+  const audible = Math.max(0, budget - left - 1);
+  const current = segmentAtBeat(track, audible);
+  if (current && track.pose.segments?.[current.index]?.pacer?.pulses !== undefined) return current;
+  return segmentAtBeat(track, Math.min(track.totalBeats - 1, budget - left + track.barBeats));
+}
+
+/** A subdivision snapshot keeps the current beat's tempo until the next integer beat. */
+export function figureBeatProgress(now: number, stamp: number, seconds: number, subdivision = 0, divisions = 1) {
+  return Math.min(1, Math.max(0, subdivision / divisions + (now - stamp) / (seconds * 1000)));
+}

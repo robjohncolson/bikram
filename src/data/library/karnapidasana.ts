@@ -11,7 +11,7 @@ export const karnapidasana: LibraryAsana = {
     { text: 'Keep the toes stretched back with the heels and toes together; rest the hands on the back of the ribs, or lace the fingers and stretch the arms out.', stage: 4 },
     { text: 'Stay, breathing normally.', stage: 4 },
     { text: 'Straighten the legs back into the plough.', stage: 5 },
-    { text: 'Slide down slowly and lie flat.', stage: 6 },
+    { text: 'Slide down slowly and lie flat.', stage: 7 },
   ],
   hold: 'Half a minute to a minute (p. 98).',
   cautions: [...SHOULDERSTAND_LINEAGE, ...PLOUGH_LINEAGE],

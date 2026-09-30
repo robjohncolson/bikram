@@ -267,7 +267,7 @@ export function figurePlan(pose: Pose, opts: FigurePlanOptions = {}): FigurePlan
       const b = breathSegment(own);
       if (b) {
         const span = opts.track?.spans[out.length];
-        const pulseStart = span ? (span.entryBeats + (opts.leadBeats ?? 0)) * (opts.beatSeconds ?? 1) : undefined;
+        const pulseStart = span ? span.entryBeats * (opts.beatSeconds ?? 1) : undefined;
         out.push({ ...b, ...bridgeInto(b.motion), ...(b.kind === 'pulse' ? {
           pulsesPerBeat: seg.pacer?.pulsesPerBeat,
           pulseStart,

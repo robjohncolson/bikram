@@ -12,7 +12,8 @@ export const urdhvaMukhaSvanasana: LibraryAsana = {
     { text: 'Breathing in, begin to lift the head and the trunk.', stage: 1 },
     { text: 'Straighten the arms fully and take the head and trunk back as far as they will go. The knees stay off the floor: the palms and the toes carry the whole weight.', stage: 2 },
     { text: 'Stretch the spine, the thighs and the calves, firm the buttocks and the backs of the arms, press the chest forward and let the head go back.', stage: 2 },
-    { text: 'Bend the elbows, let the stretch go and come down to rest on the floor.', stage: 3 },
+    { text: 'Bend the elbows and begin to lower the trunk.', stage: 3 },
+    { text: 'Settle onto the floor and rest.' },
   ],
   hold: 'Half a minute to a minute, breathing deeply (p. 56).',
   cautions: [

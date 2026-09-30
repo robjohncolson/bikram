@@ -8,6 +8,7 @@ import { holdUntilLoaded } from '../components/rigFallback';
 import type { BreathPhase } from '../components/PoseMotion';
 import { clipSeconds, figureFrameAt, figurePlan, figurePoseAt, planEnd, segmentTimeline } from '../pacer';
 import type { CueLayer, FigureFrame, FigurePlan, FigurePose, PoseTrack, SegmentPosition } from '../pacer';
+import { figureBeatProgress } from './pacerLifecycle';
 import './PacerClassMode.css';
 
 /** Where the class clock is: the live segment and the beats into it. */
@@ -20,6 +21,9 @@ export interface FigureClockProps {
   beats: number;
   /** real seconds per counted beat at the live tempo */
   beatSeconds: number;
+  stamp?: number;
+  subdivision?: number;
+  divisions?: number;
 }
 
 export interface PacerClassModeProps {
@@ -97,6 +101,9 @@ function useClassFigureFrame(
   const seg = plan && segIndex >= 0 ? plan.segments[segIndex] : undefined;
   const beatsIn = clock?.beatsIn ?? 0;
   const beatSeconds = clock?.beatSeconds ?? 0;
+  const stamp = clock?.stamp;
+  const subdivision = clock?.subdivision ?? 0;
+  const divisions = clock?.divisions ?? 1;
   const total = (clock?.beats ?? 0) * beatSeconds;
   const steps = useMemo(() => (seg?.kind === 'stages' ? segmentTimeline(seg, total) : undefined), [seg, total]);
   const breathPhase = breath?.phase;
@@ -131,11 +138,12 @@ function useClassFigureFrame(
       setFigure(undefined);
       return;
     }
+    if (paused && seg.kind === 'pulse' && lastRef.current) return;
     const compute = (now: number) => {
       const beatMs = beatSeconds * 1000;
       // paused: no extrapolation, the beat's own frame (so a skip while
       // paused still shows the new posture's sheet)
-      const sub = paused || beatMs <= 0 ? 0 : Math.min(1, Math.max(0, (now - beatStamp.current) / beatMs));
+      const sub = paused || beatMs <= 0 ? 0 : figureBeatProgress(now, stamp ?? beatStamp.current, beatSeconds, subdivision, divisions);
       const breathP = breathPhase && breathSeconds > 0 ? Math.min(1, (now - breathStamp.current) / (breathSeconds * 1000)) : undefined;
       const figureClock = {
         seconds: (beatsIn + sub) * beatSeconds,
@@ -172,7 +180,7 @@ function useClassFigureFrame(
       raf = requestAnimationFrame(tick);
     });
     return () => cancelAnimationFrame(raf);
-  }, [seg, steps, beatsIn, beatSeconds, total, breathPhase, breathSeconds, paused, rig]);
+  }, [seg, steps, beatsIn, beatSeconds, stamp, subdivision, divisions, total, breathPhase, breathSeconds, paused, rig]);
 
   return seg ? figure : undefined;
 }

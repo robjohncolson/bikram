@@ -12,7 +12,8 @@ export const parvatasana: LibraryAsana = {
     { text: 'Stretch the arms straight up over the head and turn the palms to face the ceiling.', stage: 3 },
     { text: 'Bow the head until the chin rests on the breastbone.', stage: 3 },
     { text: 'Lift the arms from the back of the lower ribs and from the shoulder blades, and stay, breathing deeply and evenly.', stage: 3 },
-    { text: 'Bring the arms down in front of you and unlace the hands.', stage: 5 },
+    { text: 'Bring the arms down in front of you.', stage: 5 },
+    { text: 'Unlace the hands.' },
     // the other crossing: the figure only shows the right foot placed first, so this step points at no stage
     { text: 'Change both the crossing of the legs and the way the fingers interlace, and repeat, the back held erect.' },
   ],

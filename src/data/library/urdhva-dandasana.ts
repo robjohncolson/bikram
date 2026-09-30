@@ -11,8 +11,9 @@ export const urdhvaDandasana: LibraryAsana = {
     { text: 'On an exhale, lower the straight legs together until they are parallel to the floor, the hips drawing back a little to balance them.', stage: 4 },
     { text: 'Stay only as long as you can hold it steadily, breathing normally.', stage: 4 },
     { text: 'On an exhale, take the legs back up to vertical.', stage: 5 },
-    { text: 'Come down in the reverse order, both legs together.', stage: 6 },
-    { text: 'Rest the feet and knees on the floor, then raise the head.', stage: 7 },
+    { text: 'Bend both knees toward the trunk.', stage: 6 },
+    { text: 'Rest the feet and knees on the floor.', stage: 7 },
+    { text: 'Raise the head and rest.' },
   ],
   hold: 'About ten seconds; on the way down from the headstand the book suggests staying here up to a minute as capacity grows (p. 87).',
   cautions: [

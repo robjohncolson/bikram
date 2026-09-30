@@ -70,7 +70,7 @@ import { preloadRig } from '../components/rigPreload';
 import { PacerClassMode } from './PacerClassMode';
 import { CoachDebrief } from './CoachDebrief';
 import { COACH_PROGRAM_ID, loadCoachProgram, saveCoachProgram, validateProposal } from '../coach';
-import { stopClassPlayback, segmentSettings, segmentBeatPhase, rehearsalDelay, eligibleHandoff, practicedSpan, guardClassUnload, shouldReorient, practiceSaveMessage } from './pacerLifecycle';
+import { classFigurePosition, stopClassPlayback, segmentSettings, segmentBeatPhase, rehearsalDelay, eligibleHandoff, practicedSpan, guardClassUnload, shouldReorient, practiceSaveMessage } from './pacerLifecycle';
 import './Pacer.css';
 
 const STORAGE_KEY = 'yoga-pacer-v1';
@@ -258,6 +258,8 @@ export function Pacer() {
   const [cues, setCues] = useState<CuePrefs>(restoreCues);
   const [voices, setVoices] = useState<VoiceChoice[]>([]);
   const [running, setRunning] = useState(false);
+  const pulsePausedAt = useRef(0);
+  const [pulseClock, setPulseClock] = useState<{ stamp: number; beatSeconds: number; subdivision: number; divisions: number }>();
   const [beatView, setBeatView] = useState<{ beat: number; bar: number; beatsPerBar: number } | null>(null);
   const [classRun, setClassRun] = useState<ClassRun>({ phase: 'idle' });
   /** a coaching line just spoken lights its teaching layer on the class
@@ -539,14 +541,17 @@ export function Pacer() {
   useEffect(() => {
     const m = createMetronome((e: BeatEvent) => {
       if (e.late) {
-        tickClass(true, e.serial); // catch-up after a stall: clock moves, nothing sounds
+        if (e.subdivision === 0) tickClass(true, e.serial); // catch-up after a stall: clock moves, nothing sounds
         return;
       }
       const delay = Math.max(0, (e.time - m.now()) * 1000);
       later(() => {
+        setPulseClock({ stamp: performance.now() - Math.max(0, m.now() - e.time) * 1000,
+          beatSeconds: e.beatSeconds, subdivision: e.subdivision, divisions: e.divisions });
+        if (e.subdivision !== 0) return;
         setBeatView({ beat: e.beat, bar: e.bar, beatsPerBar: e.beatsPerBar });
         const c = classRef.current;
-        const bs = beatSeconds(settingsRef.current.bpm);
+        const bs = e.beatSeconds;
         if (c.phase === 'running') {
           // the class's own breath grid, not the metronome's bar count
           const tr = trackRef.current;
@@ -745,15 +750,23 @@ export function Pacer() {
     const c = classRef.current;
     if (c.phase === 'running') {
       silenceVoice();
-      anchorRef.current = null;
+      if (segmentOverrideRef.current?.pulses !== undefined) {
+        pulsePausedAt.current = performance.now();
+        metRef.current?.pause();
+        clearPending();
+      } else anchorRef.current = null;
       commitClass({ ...c, phase: 'paused' });
     } else if (c.phase === 'paused') {
-      // resume on an inhale: rewind to the start of the breath that was cut
+      // Pulses retain their subdivision; ordinary breaths resume on an inhale.
       const tr = trackRef.current;
-      const back = tr ? (c.budget - c.left) % tr.breathBeats : 0;
+      const back = tr && segmentOverrideRef.current?.pulses === undefined ? (c.budget - c.left) % tr.breathBeats : 0;
       commitClass({ ...c, phase: 'running', left: Math.min(c.budget, c.left + back) });
+      if (segmentOverrideRef.current?.pulses !== undefined) {
+        setPulseClock((pc) => pc ? { ...pc, stamp: pc.stamp + performance.now() - pulsePausedAt.current } : pc);
+      }
+      metRef.current?.resume();
     }
-  }, [commitClass]);
+  }, [commitClass, clearPending]);
 
   const endClass = useCallback(() => finishClass(false), [finishClass]);
   // Preserve practice on unmount even before the app adopts a data router.
@@ -1039,7 +1052,7 @@ export function Pacer() {
     const seg = track ? segmentAtBeat(track, beatIdx) : null;
     // the figure leads the class by one bar: it moves on the exhale the
     // change cue is spoken on, so the new hold is shown as it begins
-    const figSeg = track ? segmentAtBeat(track, Math.min(track.totalBeats - 1, beatIdx + track.barBeats)) : null;
+    const figSeg = track ? classFigurePosition(track, classRun.budget, classRun.left) : null;
     const nextCue = track ? cueWhen(track, beatIdx) : undefined;
     // the one-breath layer flash, while its breath lasts (never in rehearsal's hidden stretch)
     const lit = flash && flash.idx === classRun.idx && beatIdx < flash.untilBeat ? flash.layer : undefined;
@@ -1161,7 +1174,7 @@ export function Pacer() {
           breath={breath}
           figureClock={
             figSeg
-              ? { segment: figSeg.index, beatsIn: figSeg.beatsIn, beats: figSeg.beats, beatSeconds: beatSeconds(settings.bpm) }
+              ? { segment: figSeg.index, beatsIn: figSeg.beatsIn, beats: figSeg.beats, beatSeconds: pulseClock?.beatSeconds ?? beatSeconds(settings.bpm), ...pulseClock }
               : {
                   segment: 0,
                   beatsIn: classRun.budget - classRun.left,

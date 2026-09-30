@@ -12,7 +12,7 @@ export const parsvaikaPadaSarvangasana: LibraryAsana = {
     { text: 'On an exhale, return to the shoulderstand.', stage: 3 },
     { text: 'Repeat with the left leg for the same time.', stage: 4 },
     { text: 'Return to the shoulderstand.', stage: 5 },
-    { text: 'Slide down slowly and rest.', stage: 6 },
+    { text: 'Slide down slowly and rest.', stage: 7 },
   ],
   hold: 'About twenty seconds on each side (p. 101).',
   cautions: SHOULDERSTAND_LINEAGE,

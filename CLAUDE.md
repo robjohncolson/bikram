@@ -291,8 +291,10 @@ tokens — no CSS framework, no other runtime deps. `npm run dev` / `npm run bui
   `rig-data.test.ts` never see it), loaded as `loadRigData('library:<id>')`.
   Sheets opt into the longer-arm variant with `L.begin(id, skeleton='library')`
   before posing; `L.check` exports `skeleton: 'library'`. Omission keeps the
-  original rig. Seven-stage paschimottanasana is the first migrated sheet;
-  the rest await `docs/library-arms-fanout-spec.md`. The stage cap is 12.
+  original rig. All 56 sheets now use the library skeleton; the fan-out is
+  complete. The stage cap is 12. Five sheets show one leg-crossing because
+  a recross exceeds that cap: parvatasana, baddha-padmasana, yoga-mudrasana,
+  matsyasana and parsva-pindasana-in-sarvangasana.
   Live figure only — `render_motion.py` renders no sprites for them; the
   preview does: `npm run motion:preview library:halasana` →
   `.motion-tmp/preview-library.halasana.png`. The page draws it with

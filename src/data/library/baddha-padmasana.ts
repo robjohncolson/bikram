@@ -14,7 +14,8 @@ export const baddhaPadmasana: LibraryAsana = {
     { text: 'On the next exhalation bring the right arm round toward the left hip and catch the right big toe, the arms crossed behind the back (the figure’s right hand, too, stops by the far hip).', stage: 4 },
     { text: 'Throw the head back as far as it will go and take a few deep breaths.', stage: 5 },
     { text: 'Let go with the right hand,', stage: 6 },
-    { text: 'then with the left, and bring the hands back to the knees.', stage: 7 },
+    { text: 'then with the left, opening the arms out.', stage: 7 },
+    { text: 'Bring the hands back to the knees.' },
     // the other crossing: the figure only shows the right foot placed first, so this step points at no stage
     { text: 'Cross the legs the other way and bind again, now catching the right toe first, since the right foot lies on top.' },
   ],

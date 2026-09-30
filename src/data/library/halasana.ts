@@ -13,7 +13,7 @@ export const halasana: LibraryAsana = {
     { text: 'Take the hands from the back and stretch the arms along the floor, away from the legs.', stage: 4 },
     { text: 'Lace the fingers, so legs and arms reach in opposite directions; halfway through, change the interlock.', stage: 5 },
     { text: 'To come out, release the hands and raise the legs back up over the shoulders.', stage: 7 },
-    { text: 'Slide slowly down to the floor.', stage: 8 },
+    { text: 'Begin to slide down slowly.', stage: 8 },
     { text: 'Lie flat on the back and relax.', stage: 9 },
   ],
   hold: 'One to five minutes, breathing normally (p. 96).',

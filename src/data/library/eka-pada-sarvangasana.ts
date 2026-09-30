@@ -12,7 +12,7 @@ export const ekaPadaSarvangasana: LibraryAsana = {
     { text: 'On an exhale, lift the right leg back to the shoulderstand.', stage: 3 },
     { text: 'Take the left leg down in the same way, the right leg upright.', stage: 4 },
     { text: 'Lift it back up to join the other.', stage: 5 },
-    { text: 'Slide down slowly and rest.', stage: 6 },
+    { text: 'Slide down slowly and rest.', stage: 7 },
   ],
   hold: 'About twenty seconds on each side (p. 100).',
   cautions: SHOULDERSTAND_LINEAGE,

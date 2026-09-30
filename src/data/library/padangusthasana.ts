@@ -11,7 +11,7 @@ export const padangusthasana: LibraryAsana = {
     { text: 'Set the feet about a foot apart.', stage: 1 },
     { text: 'Breathing out, bend forward and hook each big toe between the thumb and the first two fingers, palms facing one another, and hold on firmly. (The figure takes the toes; its rigid trunk leaves the head ahead of the knees.)', stage: 2 },
     { text: 'Lift the head, draw the diaphragm toward the chest and hollow the back as far as it will go. Let the bend come from the pelvis, not from the shoulders reaching down, so the back is concave from the tailbone. Keep the legs stiff and take a breath or two here.', stage: 2 },
-    { text: 'Breathing out, tighten and pull on the toes without lifting them, and take the head down between the knees.', stage: 3 },
+    { text: 'Breathing out, tighten and pull on the toes without lifting them, and take the head down between the knees.', stage: 4 },
     { text: 'Stay there, breathing normally.', stage: 4 },
     { text: 'Breathing in, come back up to the concave back, head raised.', stage: 6 },
     { text: 'Let go of the toes and separate the hands from the feet.', stage: 7 },

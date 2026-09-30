@@ -35,7 +35,8 @@ const sheets = Object.fromEntries(
 /**
  * The library sheets move on (the longer-arm skeleton, both sides); the
  * Blender fixtures were rendered from the ORIGINAL sheets, frozen here as
- * their inputs. The migrated sheets' parity lives in library-variant.test.ts.
+ * their inputs. Migrated sheets have geometry coverage in library.test.ts and Python/TS
+ * variant fixtures in library-variant.test.ts, not Blender parity.
  */
 const frozen = Object.fromEntries(
   Object.values(import.meta.glob<RigData>('./fixtures/inputs/*.json', { eager: true, import: 'default' })).map((d) => [d.id, d]),

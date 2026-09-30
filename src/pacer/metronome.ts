@@ -23,6 +23,11 @@ const LATE_S = 1.0;
 export interface BeatEvent {
   /** absolute audio-clock time this beat sounds at */
   time: number;
+  /** Duration of the scheduled integer beat, retained across its subdivisions. */
+  beatSeconds: number;
+  /** Zero-based slot within that beat; only slot zero advances the class. */
+  subdivision: number;
+  divisions: number;
   /** 0-based beat within the bar */
   beat: number;
   /** 0-based bar count since start — even bars inhale, odd exhale */
@@ -55,6 +60,10 @@ export interface Metronome {
   /** create/resume audio and start ticking (call from a user gesture) */
   start(): void;
   stop(): void;
+  /** Freeze the next unplayed slot and cancel lookahead ticks. */
+  pause(): void;
+  /** Continue the preserved slot after an explicit pause. */
+  resume(): void;
   readonly running: boolean;
   /** merge + clamp settings; takes effect from the next scheduled beat */
   update(partial: Partial<MetronomeSettings>): void;
@@ -99,6 +108,9 @@ export function createMetronome(
   let pulseBeat = 0;
   let pulseCap: number | undefined;
   let currentBarBeats = settings.beatsPerBar;
+  let pausedAt: number | null = null;
+  const queued: { time: number; osc?: OscillatorNode; restore: () => void }[] = [];
+  let tickOsc: OscillatorNode | undefined;
   let phaseSource: ((serial: number) => BeatPhase | null) | null = null;
 
   /** Bring a suspended/interrupted context back while we are meant to run
@@ -132,6 +144,7 @@ export function createMetronome(
     gain.gain.exponentialRampToValueAtTime(peak, time + 0.008);
     gain.gain.exponentialRampToValueAtTime(0.0001, time + decay);
     osc.connect(gain).connect(master);
+    tickOsc = osc;
     osc.start(time);
     osc.stop(time + decay + 0.05);
   }
@@ -152,8 +165,9 @@ export function createMetronome(
   }
 
   function schedule() {
-    if (!running || !ctx || ctx.state !== 'running') return;
+    if (!running || pausedAt !== null || !ctx || ctx.state !== 'running') return;
     const now = ctx.currentTime;
+    while (queued.length && queued[0].time <= now) queued.shift();
     const offset = wallNow() - now;
     const frozen = offset - clockOffset;
     // Audio clocks are quantized; retain small drift until it is meaningful.
@@ -165,6 +179,11 @@ export function createMetronome(
     // onBeat may stop the metronome, so `running` can change inside the loop.
     // oxlint-disable-next-line no-unmodified-loop-condition
     while (running && nextTime < now + LOOKAHEAD_S) {
+      const saved = { nextTime, beat, bar, serial, subdivision, divisions, stepSeconds, pulseBeat, pulseCap, currentBarBeats };
+      const restore = () => {
+        ({ nextTime, beat, bar, serial, subdivision, divisions, stepSeconds, pulseBeat, pulseCap, currentBarBeats } = saved);
+      };
+      tickOsc = undefined;
       const late = now - nextTime > LATE_S || (resumed && nextTime < now);
       const ph = phaseSource?.(serial) ?? null;
       if (ph?.quiet !== undefined) quiet = ph.quiet;
@@ -183,9 +202,9 @@ export function createMetronome(
       const pulse = pulseBeat * divisions + subdivision;
       const audible = pulseCap === undefined || (pulse >= 0 && pulse < pulseCap);
       if (!late && !quiet && audible && (subdivision === 0 || nextTime >= now)) tickSound(nextTime, beat, bar);
-      if (subdivision === 0) {
-        onBeat({ time: late ? now : nextTime, beat, bar, beatsPerBar: currentBarBeats, late, serial });
-      }
+      onBeat({ time: late ? now : nextTime, beat, bar, beatsPerBar: currentBarBeats,
+        beatSeconds: stepSeconds * divisions, subdivision, divisions, late, serial });
+      if (!late && nextTime > now) queued.push({ time: nextTime, osc: tickOsc, restore });
       nextTime += stepSeconds;
       subdivision += 1;
       if (subdivision < divisions) continue;
@@ -216,6 +235,7 @@ export function createMetronome(
       if (!ensureAudio() || !ctx) return;
       void ctx.resume().catch(() => {});
       running = true;
+      pausedAt = null;
       beat = 0;
       bar = 0;
       serial = 0;
@@ -225,8 +245,27 @@ export function createMetronome(
       schedule();
       timer = setInterval(schedule, TICK_MS);
     },
+    pause() {
+      if (!ctx || pausedAt !== null) return;
+      pausedAt = ctx.currentTime;
+      const pauseTime = ctx.currentTime;
+      const pending = queued.filter((slot) => slot.time > pauseTime);
+      pending[0]?.restore();
+      for (const slot of pending) slot.osc?.stop(ctx.currentTime);
+      queued.length = 0;
+    },
+    resume() {
+      if (!ctx || pausedAt === null) return;
+      nextTime += ctx.currentTime - pausedAt;
+      pausedAt = null;
+      clockOffset = wallNow() - ctx.currentTime;
+      schedule();
+    },
     stop() {
       running = false;
+      pausedAt = null;
+      for (const slot of queued) if (ctx && slot.time > ctx.currentTime) slot.osc?.stop(ctx.currentTime);
+      queued.length = 0;
       if (timer !== null) {
         clearInterval(timer);
         timer = null;

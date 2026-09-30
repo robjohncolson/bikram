@@ -14,8 +14,8 @@ export const virabhadrasanaI: LibraryAsana = {
     { text: 'Breathing out, turn to the right: the right foot turns out a quarter turn and the left foot a little in, and the hips and chest come round to face the right foot. Bend the right knee until the thigh is level with the floor and the shin upright, the knee over the heel and no further. Keep the left leg stretched straight with the knee tight. Face, chest and right knee all point the way of the right foot; take the head back, stretch the spine up from its base and look up at the joined palms.', stage: 4 },
     { text: 'Straighten the right knee and turn back to face the front.', stage: 5 },
     { text: 'Turn to the left and repeat, the left knee bending, for the same short time.', stage: 7 },
-    { text: 'Breathe out and jump the feet back together, parting the palms.', stage: 9 },
-    { text: 'Lower the arms and stand in Tadasana.', stage: 10 },
+    { text: 'Breathe out and step the feet inward, parting the palms.', stage: 9 },
+    { text: 'Bring the feet together, lower the arms and stand in Tadasana.', stage: 10 },
   ],
   hold: 'Twenty seconds to half a minute on each side with normal breathing (p. 44); the book warns against staying long (p. 45).',
   cautions: [

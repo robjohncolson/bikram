@@ -644,7 +644,7 @@ it('pumps twice per beat in the second set and rests during entry and recovery',
     const plan = figurePlan(kapalbhati, { track, beatSeconds, leadBeats: 1 })!;
     const seg = plan.segments[1];
     if (seg.kind !== 'pulse') throw new Error('expected pulse segment');
-    const start = (track.spans[1].entryBeats + 1) * beatSeconds;
+    const start = track.spans[1].entryBeats * beatSeconds;
     const clock = (beatProgress: number, seconds = start + beatProgress * beatSeconds) => ({
       seconds, total: 100 * beatSeconds, beatProgress,
     });
