@@ -99,9 +99,10 @@ HALF_FOLD = (25, 35, 90, 130, 110)
 HALF_UP = (25, 25, 25, 5, -10)
 # the left arm round the back toward the left big toe in the half lotus
 # (the foot lies nearer the right hip than in the full lotus): the fingers
-# stop about 6 cm short sitting up and 8 cm short folded (searched, as BIND)
-HALF_BIND_UP = {'wrist': (-0.15, 0.13, 0.08), 'hint': (1, 0.3, 1)}
-HALF_BIND_FOLD = {'wrist': (-0.15, 0.24, 0.08), 'hint': (1, 1, 0.5)}
+# touch the toe surface (joint-centre gaps 2.4 cm upright, 2.8 cm folded
+# with the library skeleton; both contacts within the hull tolerance).
+HALF_BIND_UP = {'wrist': (-0.15, 0.15, 0.10), 'hint': (1, -0.1, 1)}
+HALF_BIND_FOLD = {'wrist': (-0.15, 0.24, 0.08), 'hint': (1, 1, 0)}
 
 
 def half_seat(fold=(0, 0, 0, 0, 0)):
@@ -122,7 +123,7 @@ def palm_behind(pose, side, out=0.24, back=0.26):
     sweeping through the pelvis)."""
     sx = 1 if side == 'L' else -1
     hip = fk(pose)[f'hip.{side}']
-    L.arm(pose, side, (hip[0] + sx * out, hip[1] + back, 0.11), (sx, 0.5, 0), n((sx * 0.1, 0.5, -1)))
+    L.arm(pose, side, (hip[0] + sx * out, hip[1] + back, L.WRIST_Z), (sx, 0.5, 0), L.flat_hand((sx * 0.1, 1, 0)))
     return pose
 
 
@@ -209,7 +210,7 @@ def hold_feet(pose):
         g = HOLD[s]
         a, t = at[f'ankle.{other}'], at[f'toes.{other}']
         wrist = add(add(a, sub(t, a), g['along']), (sx * g['out'], g['back'], 0))
-        L.arm(pose, s, wrist, g['hint'], n((-sx * 0.2, -0.6, -0.4)))
+        L.arm(pose, s, wrist, g['hint'], n((-sx * 0.2, -0.6, 0.0)))
     return pose
 
 
@@ -314,12 +315,12 @@ def parsva_pinda(side='R'):
 # the wrists this far either side of the midline: closer (7 cm) the palms
 # pass into the other hand's fingers (the laced-hands rule exempts only the
 # finger regions); the hands tipped up a little, as a roof over the head
-LACE_X = 0.09
+LACE_X = 0.13
 LACE_TILT = 0.3
 BOWED = {'neck': n((0, -0.5, 0.85)), 'head': n((0, -0.75, 0.6))}   # the chin down on the breastbone
 
 
-def laced_up(pose, reach=0.53, x=LACE_X, tilt=LACE_TILT):
+def laced_up(pose, reach=0.57, x=LACE_X, tilt=LACE_TILT):
     """Both arms stretched straight up over the head, the wrists `x` either
     side of the midline and the hands turned in to lace (palms up)."""
     at = fk(pose)
@@ -329,7 +330,7 @@ def laced_up(pose, reach=0.53, x=LACE_X, tilt=LACE_TILT):
     return pose
 
 
-def laced_forward(pose, reach=0.5, x=LACE_X, drop=0.02):
+def laced_forward(pose, reach=0.56, x=LACE_X, drop=0.02):
     """Both arms stretched forward at shoulder height, the fingers laced, the
     palms turned out (the hands point in toward each other)."""
     at = fk(pose)
@@ -356,17 +357,17 @@ def pelvis_dir(pose, a, b, c):
 
 
 # --- the bind behind the back (baddha padmasana) ----------------------------------
-# THE ARMS ARE SHORT OF THE FEET: in this rig's lotus the feet rest well in
+# THE BIND STILL STOPS SHORT: in this rig's lotus the feet rest well in
 # front of the hip line (the measured crossing, `_lib.lotus`), and a hand
-# carried round the back stops beside the opposite hip — about 30 cm short
-# of its big toe sitting up, 17-19 cm folded forward (searched over wrist
-# places and elbow hints, the clearance check on). The bind is drawn as far as it goes:
+# carried round the back stops beside the opposite hip: 24.8-25.7 cm
+# from its toe upright, 12.4-14.4 cm folded on the library skeleton.
+# Wrist and elbow probes retained this clean route. The bind is drawn as far as it goes:
 # each forearm across the back to the far hip, the hand turned toward its
 # foot. The first arm crosses closer to the back and higher, the second
 # further out and lower, so the two forearms stack instead of meeting.
 # Wrist places and elbow hints in the pelvis frame: (left, up, back).
 BIND = {
-    'L': {'wrist': (-0.15, 0.18, 0.13), 'hint': (1, 0.3, 1)},
+    'L': {'wrist': (-0.15, 0.18, 0.13), 'hint': (1, -0.1, 1)},
     'R': {'wrist': (0.05, 0.12, 0.23), 'hint': (-1, 0.3, 1)},
 }
 
@@ -392,7 +393,7 @@ def swing_back(pose, side, d=SWING, reach=0.5):
     sx = 1 if side == 'L' else -1
     sh = fk(pose)[f'shoulder.{side}']
     dd = pelvis_dir(pose, sx * d[0], d[1], d[2])
-    L.arm(pose, side, add(sh, dd, reach), pelvis_dir(pose, 0, -0.3, 1), dd)
+    L.arm(pose, side, add(sh, dd, reach), pelvis_dir(pose, 0, -0.3, 1), pelvis_dir(pose, sx * d[0], 0, d[2]))
     return pose
 
 
@@ -401,3 +402,13 @@ def bind_shortfall(pose, side):
     the report records; never printed by a sheet."""
     at = fk(pose)
     return dist(at[f'fingers.{side}'], at[f'toes.{side}'])
+
+
+def palms_beside(pose, back=0.0, out=0.3):
+    """Library palms resting flat beside the seated hips."""
+    at = fk(pose)
+    for side, sx in (('L', 1), ('R', -1)):
+        hip = at[f'hip.{side}']
+        L.arm(pose, side, (hip[0] + sx * out, hip[1] + back, L.WRIST_Z),
+              (sx, 0.5, 0), L.flat_hand((0, -1, 0)))
+    return pose

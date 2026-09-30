@@ -19,15 +19,16 @@ _spec = importlib.util.spec_from_file_location('_library_lotus', Path(__file__).
 LT = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(LT)
 L = LT.L
-L.begin('yoga_mudrasana')
+L.begin('yoga_mudrasana', skeleton='library')
 
 LOTUS = LT.lotus_hands_on_knees()
+LIFT = LT.swing_back(LT.swing_back(LT.seated_lotus(), 'L', d=(1, 0, 0.2), reach=0.45), 'R', d=(1, 0, 0.2), reach=0.45)
 OUT = LT.swing_back(LT.swing_back(LT.seated_lotus(), 'L'), 'R')
 LEFT = LT.swing_back(LT.bind(LT.seated_lotus(), 'L'), 'R')
 BOUND = LT.bind(LT.bind(LT.seated_lotus(), 'L'), 'R')
 FOLDED = LT.bind(LT.bind(LT.folded_lotus(), 'L'), 'R')
 
-WIDE = {'center_z': 0.45, 'scale': 1.45}   # an arm swung out wide
+WIDE = {'center_z': 0.45, 'scale': 1.75}   # an arm swung out wide
 SIDE = {'center_z': 0.3, 'scale': 1.2}    # the fold from the side
 
 POSTURE = L.check({
@@ -38,6 +39,7 @@ POSTURE = L.check({
     'transition': 10,
     'stages': [
         {'label': 'Lotus', 'pose': LOTUS, 'hold': 4, 'notice': ['hips', 'lower-back', 'breath']},
+        {'label': 'Hands away from knees', 'pose': LIFT, 'hold': 3, 'frame': WIDE, 'notice': ['shoulders']},
         {'label': 'Arms swing back', 'pose': OUT, 'hold': 3, 'view': 'back', 'frame': WIDE, 'notice': ['shoulders']},
         {'label': 'Left arm round', 'pose': LEFT, 'hold': 3, 'view': 'back', 'frame': WIDE, 'notice': ['shoulders']},
         {'label': 'Bound', 'pose': BOUND, 'hold': 4, 'view': 'back', 'notice': ['shoulders', 'breath']},
@@ -46,5 +48,6 @@ POSTURE = L.check({
         {'label': 'Come up', 'pose': BOUND, 'hold': 3, 'view': 'back', 'notice': ['lower-back']},
         {'label': 'Right arm out', 'pose': LEFT, 'hold': 3, 'view': 'back', 'frame': WIDE, 'notice': ['shoulders']},
         {'label': 'Arms out', 'pose': OUT, 'hold': 3, 'view': 'back', 'frame': WIDE, 'notice': ['shoulders']},
+        {'label': 'Hands forward', 'pose': LIFT, 'hold': 3, 'frame': WIDE, 'notice': ['shoulders']},
     ],
 })
