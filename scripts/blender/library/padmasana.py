@@ -14,23 +14,24 @@ pelvis's own frame. Shape from the book's photograph; the stages are ours.
 import importlib.util
 from pathlib import Path
 
-_spec = importlib.util.spec_from_file_location('_library_lib', Path(__file__).resolve().parent / '_lib.py')
-L = importlib.util.module_from_spec(_spec)
-_spec.loader.exec_module(L)
-L.begin('padmasana')
+_spec = importlib.util.spec_from_file_location('_library_lotus', Path(__file__).resolve().parent / '_lotus.py')
+LT = importlib.util.module_from_spec(_spec)
+_spec.loader.exec_module(LT)
+L = LT.L
+L.begin('padmasana', skeleton='library')
 
 UP = (0, 0, 1)   # sitting: the lap's upper face
 # the palms on the mat wide of the hips while the legs cross: from there the
 # arms reach the knees outside the thighs (from beside the hips they swept
 # through the left thigh)
-OUT = 0.3
+OUT = 0.36
 
 
 def staff():
     """Sitting tall, legs straight and together, palms beside the hips."""
     pose = L.sit()
     L.legs_forward(pose)
-    return L.palms_beside(pose, out=OUT)
+    return LT.palms_beside(pose, out=OUT)
 
 
 SIT = staff()
@@ -39,13 +40,13 @@ SIT = staff()
 HALF = L.sit()
 L.legs_forward(HALF)
 L.half_lotus(HALF, 'R')
-L.palms_beside(HALF, out=OUT)
+LT.palms_beside(HALF, out=OUT)
 
 # on its way: the right knee bent up and out, the foot lifted over its landing
 RIGHT_UP = L.sit()
 L.legs_forward(RIGHT_UP)
 L.carry_foot(RIGHT_UP, 'R', L.fk(HALF)['ankle.R'], UP, up=0.12, hint=(-1, -0.2, 0.8))
-L.palms_beside(RIGHT_UP, out=OUT)
+LT.palms_beside(RIGHT_UP, out=OUT)
 
 # the full lotus
 LOTUS = L.sit()
@@ -56,7 +57,7 @@ L.hands_on_knees(LOTUS)
 # on that thigh), the shin raised so the foot hangs over the right shin
 LEFT_UP = {**LOTUS}
 L.lift_shin(LEFT_UP, 'L', L.fk(LOTUS)['ankle.L'], UP)
-L.palms_beside(LEFT_UP, out=OUT)
+LT.palms_beside(LEFT_UP, out=OUT)
 
 # the common mistake: the back slumps and the head drops forward (the
 # crossed legs are the same)
@@ -69,11 +70,11 @@ GUIDES = [
     {'from': (0, L.SEAT[1], 0.0), 'to': (0, L.SEAT[1], 0.95)},   # the spine erect over the seat
 ]
 
-POSTURE = L.check({
+POSTURE = {
     'id': 'library:padmasana',
     'position': {'start': 'seated', 'end': 'seated'},
     'view': 'front',
-    'frame': L.LOTUS_FRAME,
+    'frame': {**L.LOTUS_FRAME, 'scale': 1.16},
     'transition': 10,
     'stages': [
         {'label': 'Sit', 'pose': SIT, 'hold': 4, 'view': 'quarter', 'frame': L.SEATED_FRAME,
@@ -87,4 +88,18 @@ POSTURE = L.check({
         {'label': 'Right foot only', 'pose': HALF, 'hold': 3, 'notice': ['hips']},
         {'label': 'Right foot off', 'pose': RIGHT_UP, 'hold': 3, 'notice': ['hips']},
     ],
-})
+}
+
+# The two lifted-foot waypoints also clear each other directly: the first
+# foot settles as the second shin rises. Keep both lifts, reuse the staff
+# rest, and demonstrate the opposite order within twelve stages.
+first_run = [POSTURE['stages'][i] for i in (0, 1, 3, 4, 5, 7)]
+second_run = []
+for st in first_run:
+    label = st['label'].replace('Left', 'SECOND').replace('Right', 'Left').replace('SECOND', 'Right')
+    other = {**st, 'label': label + ' (reversed)', 'pose': L.mirror(st['pose'])}
+    if 'ghost' in st:
+        other['ghost'] = L.mirror(st['ghost'])
+    second_run.append(other)
+POSTURE['stages'] = first_run + second_run
+POSTURE = L.check(POSTURE)

@@ -15,11 +15,17 @@ _spec = importlib.util.spec_from_file_location('_library_lotus', Path(__file__).
 LT = importlib.util.module_from_spec(_spec)
 _spec.loader.exec_module(LT)
 L = LT.L
-L.begin('parvatasana')
+L.begin('parvatasana', skeleton='library')
 
 LOTUS = LT.lotus_hands_on_knees()
 
 FORWARD = LT.laced_forward(LT.seated_lotus())
+
+DIAGONAL = LT.seated_lotus()
+for side, sx in [('L', 1), ('R', -1)]:
+    sh = L.fk(DIAGONAL)['shoulder.' + side]
+    L.arm(DIAGONAL, side, (sx * LT.LACE_X, sh[1] - 0.38, sh[2] + 0.38),
+          (sx, 0, 0), L.n((-sx, -0.2, 0.2)))
 
 UP = LT.laced_up({**LT.seated_lotus(), **LT.BOWED})
 
@@ -37,14 +43,16 @@ POSTURE = L.check({
     'id': 'library:parvatasana',
     'position': {'start': 'seated', 'end': 'seated'},
     'view': 'front',
-    'frame': {'center_z': 0.56, 'scale': 1.3},
+    'frame': {'center_z': 0.60, 'scale': 1.4},
     'transition': 10,
     'stages': [
         {'label': 'Lotus', 'pose': LOTUS, 'hold': 4, 'notice': ['hips', 'lower-back', 'breath']},
         {'label': 'Fingers laced', 'pose': FORWARD, 'hold': 3, 'hands': 'laced', 'view': 'quarter',
          'notice': ['shoulders', 'wrists']},
+        {'label': 'Lift the arms', 'pose': DIAGONAL, 'hold': 3, 'hands': 'laced', 'notice': ['shoulders']},
         {'label': 'Arms up', 'pose': UP, 'hold': 14, 'hands': 'laced', 'guides': GUIDES, 'ghost': GHOST,
          'notice': ['shoulders', 'upper-back', 'neck', 'breath']},
+        {'label': 'Lower the arms', 'pose': DIAGONAL, 'hold': 3, 'hands': 'laced', 'notice': ['shoulders']},
         {'label': 'Arms forward', 'pose': FORWARD, 'hold': 3, 'hands': 'laced', 'view': 'quarter',
          'notice': ['shoulders']},
     ],

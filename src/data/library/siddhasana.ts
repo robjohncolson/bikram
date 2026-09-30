@@ -14,9 +14,8 @@ export const siddhasana: LibraryAsana = {
     { text: 'Do not sit back on the heels. Stretch the arms and rest the backs of the hands on the knees, palms up, thumb and forefinger joined.', stage: 3 },
     { text: 'Stay, the back, neck and head upright and the gaze drawn in, as if resting on the tip of the nose.', stage: 3 },
     { text: 'To come out, lift the right foot off.', stage: 4 },
-    { text: 'Then release the left leg and stretch both legs out.' },
-    // the other side: the figure only shows the left heel in first, so this step points at no stage
-    { text: 'Rest, then sit again for the same time with the legs the other way: the right heel in first.' },
+    { text: 'Then release the left leg and stretch both legs out.', stage: 6 },
+    { text: 'Rest, then sit again for the same time with the legs the other way: the right heel in first. Release each foot in turn when you finish.', stage: 9 },
   ],
   hold: 'As long as you can, the back, neck and head erect (p. 61).',
   cautions: [
